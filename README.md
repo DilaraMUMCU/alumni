@@ -76,7 +76,8 @@ cd alumni
 docker compose up -d --build
 ```
 
-### 📚 API Documentation (Swagger)
+
+## API Documentation (Swagger)
 
 Once the application is running, you can access the interactive API documentation via your browser:
 
