@@ -59,62 +59,6 @@ Built with modern web standards, this platform offers a secure, modular, and cus
 - **Analytics & Demographics:** Visual reporting on alumni employment rates, industry distribution, and regional density.
 
 
----
-
-## 🤖 Otomatik Dokümantasyon ve Swagger Protokolü (AI & Geliştirici Kuralı)
-
-> ### ⚠️ ZORUNLU KURAL (MANDATORY INSTRUCTION FOR AI AGENT & DEVELOPERS)
-> **Bu projede her yeni rota (endpoint), API metodu veya özellik eklendiğinde kullanıcı ayrıca talep etmese veya hatırlatmasa dahi aşağıdaki adımlar otomatik olarak sırasıyla uygulanmak ZORUNDADIR:**
->
-> 1. **Endpoint'i Kodla:** İstenen rotayı `routes/web.php` (veya ilgili controller dosyasında) uygun HTTP metodu (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) ve durum kodları (`200`, `201`, `400`, `404`) ile eksiksiz tanımla.
-> 2. **Swagger Şemasını Otomatik Güncelle:** Kullanıcının söylemesine gerek kalmadan anında `app/Http/SwaggerSpec.php` dosyasını aç; yeni rotayı, etiketini (`tags`), özetini (`summary`), açıklamasını (`description`), varsa parametrelerini (`parameters`), gövde şemasını (`requestBody`) ve yanıt örneklerini (`responses`) ekle.
-> 3. **Swagger'ı Çalıştır ve Doğrula:** Dokümantasyonun çalıştığını ve yeni rotanın dahil edildiğini doğrulamak için `GET /api/swagger` ve `GET /api/swagger.json` adreslerini çağırarak doğrula.
-> 4. **README Tablosuna İşle:** Aşağıdaki **"Aktif Endpoint Referans Tablosu"** bölümüne yeni rotayı (Hafta, Metot, URI, Açıklama, Örnek Yanıt) satır olarak ekle.
->
-> *Bu kural sayesinde kullanıcı yeni bir rota talep ettiğinde; rota kodlanır, Swagger güncellenip çalıştırılır ve README tablosuna işlenir — kullanıcıdan ikinci bir dokümantasyon talimatı beklenmez.*
-
-
----
-
-## 📖 API Dokümantasyonu (Swagger UI & OpenAPI JSON)
-
-Uygulamanın tüm API uç noktaları **OpenAPI 3.0** standardında belgelenmiştir ve 2 farklı şekilde erişilebilir:
-
-1. **İnteraktif Web Arayüzü (Swagger UI):**
-   - **Adres:** 👉 **[http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)**
-   - **Kullanım:** Bu adresi **Google Chrome, Edge veya Firefox** gibi bir web tarayıcısında açtığınızda tüm rotalar görsel olarak listelenir; **"Try it out"** butonuna basarak doğrudan tarayıcı üzerinden canlı API istekleri gönderebilirsiniz.
-
-2. **JSON Formatında OpenAPI Spesifikasyonu (Postman & Harici Araçlar İçin):**
-   - **Saf JSON Adresi:** 👉 **[http://localhost:8000/api/swagger.json](http://localhost:8000/api/swagger.json)**
-   - **Postman ile Kullanım:** Postman'e `GET http://localhost:8000/api/swagger` veya `GET http://localhost:8000/api/swagger.json` adresini girdiğinizde tüm endpoint şemalarını içeren saf OpenAPI 3.0 **JSON çıktısını** doğrudan alırsınız.
-
-
----
-
-## 📋 Aktif Endpoint Referans Tablosu
-
-Proje üzerinde geliştirilen tüm rotalar ve özellikleri aşağıda listelenmiştir:
-
-| Hafta / Aşama | Metot | Endpoint (URI) | Açıklama / Görev | Örnek İstek / Yanıt |
-| :---: | :---: | :--- | :--- | :--- |
-| **Hafta 1** | `GET` | `/` | Geçici Ana Sayfa (*Temporary Main Page*) | HTML Arayüzü & Rota Listesi |
-| **Hafta 1** | `GET` | `/about` | Geçici Hakkında Sayfası (*Temporary About Page*) | HTML Arayüzü |
-| **Hafta 1** | `GET` | `/hello` | Sabit Karşılama Rotası | `"Hello, world!"` |
-| **Hafta 1** | `GET` | `/hello/{name}` | Dinamik İsim Parametreli Karşılama | `/hello/dilara` ➔ `"Hello, Dilara!"` |
-| **Hafta 1** | `GET` | `/sum/{n1}/{n2}` | İki Sayının Toplamı | `/sum/5/3` ➔ `"8"` |
-| **Hafta 2** | `GET` | `/api/health` | Sistem Sağlık Kontrolü (JSON) | `{"status": "ok"}` |
-| **Hafta 2** | `GET` | `/api/users` | Tüm Alumni ve Öğrenci Listesi (JSON) | `{"success": true, "count": 3, "data": [...]}` |
-| **Hafta 2** | `GET` | `/api/users/{id}` | Tekil Kullanıcı Bilgisi Getirme (JSON) | ID'ye göre kullanıcı detayları döner (404 kontrolü) |
-| **Hafta 2** | `POST` | `/api/users` | Yeni Kullanıcı Profili Oluşturma (JSON) | Gövdedeki verilerle kullanıcı ekler (HTTP 201) |
-| **Hafta 2** | `PUT` | `/api/users/{id}` | Kullanıcı Bilgilerini Tam Değiştirme (*Full Replacement*) | Gönderilmeyen alanlar standart gereği `null` yapılır |
-| **Hafta 2** | `PATCH` | `/api/users/{id}` | Kullanıcı Bilgilerini Kısmi Güncelleme (*Partial Update*) | Yalnızca gönderilen alanlar değişir, diğerleri korunur |
-| **Hafta 2** | `DELETE`| `/api/users/{id}` | Kullanıcı Profilini Silme | ID'ye göre kullanıcıyı listeden siler |
-| **Hafta 2** | `GET` | `/api/swagger` | Swagger Dokümantasyonu (Tarayıcıda UI, Postman'de JSON) | Swagger UI & OpenAPI JSON |
-| **Hafta 2** | `GET` | `/api/swagger.json` | OpenAPI 3.0 Spesifikasyonu (Saf JSON) | JSON Dokümantasyon Şeması |
-
-
----
-
 ## Getting Started with Docker
 
 ### Prerequisites
@@ -132,8 +76,8 @@ cd alumni
 docker compose up -d --build
 ```
 
-### 3. Open in Browser
-- **Main Page:** [http://localhost:8000](http://localhost:8000)
-- **Swagger Documentation:** [http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)
-- **Swagger Raw JSON:** [http://localhost:8000/api/swagger.json](http://localhost:8000/api/swagger.json)
-- **Health Check:** [http://localhost:8000/api/health](http://localhost:8000/api/health)
+### 📚 API Documentation (Swagger)
+
+Once the application is running, you can access the interactive API documentation via your browser:
+
+- **Swagger UI:** [http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)
