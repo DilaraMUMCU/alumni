@@ -61,7 +61,22 @@ Built with modern web standards, this platform offers a secure, modular, and cus
 
 ---
 
-## 📖 API Dokümantasyonu (Swagger UI & JSON)
+## 🤖 Otomatik Dokümantasyon ve Swagger Protokolü (AI & Geliştirici Kuralı)
+
+> ### ⚠️ ZORUNLU KURAL (MANDATORY INSTRUCTION FOR AI AGENT & DEVELOPERS)
+> **Bu projede her yeni rota (endpoint), API metodu veya özellik eklendiğinde kullanıcı ayrıca talep etmese veya hatırlatmasa dahi aşağıdaki adımlar otomatik olarak sırasıyla uygulanmak ZORUNDADIR:**
+>
+> 1. **Endpoint'i Kodla:** İstenen rotayı `routes/web.php` (veya ilgili controller dosyasında) uygun HTTP metodu (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) ve durum kodları (`200`, `201`, `400`, `404`) ile eksiksiz tanımla.
+> 2. **Swagger Şemasını Otomatik Güncelle:** Kullanıcının söylemesine gerek kalmadan anında `app/Http/SwaggerSpec.php` dosyasını aç; yeni rotayı, etiketini (`tags`), özetini (`summary`), açıklamasını (`description`), varsa parametrelerini (`parameters`), gövde şemasını (`requestBody`) ve yanıt örneklerini (`responses`) ekle.
+> 3. **Swagger'ı Çalıştır ve Doğrula:** Dokümantasyonun çalıştığını ve yeni rotanın dahil edildiğini doğrulamak için `GET /api/swagger` ve `GET /api/swagger.json` adreslerini çağırarak doğrula.
+> 4. **README Tablosuna İşle:** Aşağıdaki **"Aktif Endpoint Referans Tablosu"** bölümüne yeni rotayı (Hafta, Metot, URI, Açıklama, Örnek Yanıt) satır olarak ekle.
+>
+> *Bu kural sayesinde kullanıcı yeni bir rota talep ettiğinde; rota kodlanır, Swagger güncellenip çalıştırılır ve README tablosuna işlenir — kullanıcıdan ikinci bir dokümantasyon talimatı beklenmez.*
+
+
+---
+
+## 📖 API Dokümantasyonu (Swagger UI & OpenAPI JSON)
 
 Uygulamanın tüm API uç noktaları **OpenAPI 3.0** standardında belgelenmiştir ve 2 farklı şekilde erişilebilir:
 
@@ -69,7 +84,7 @@ Uygulamanın tüm API uç noktaları **OpenAPI 3.0** standardında belgelenmişt
    - **Adres:** 👉 **[http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)**
    - **Kullanım:** Bu adresi **Google Chrome, Edge veya Firefox** gibi bir web tarayıcısında açtığınızda tüm rotalar görsel olarak listelenir; **"Try it out"** butonuna basarak doğrudan tarayıcı üzerinden canlı API istekleri gönderebilirsiniz.
 
-2. **JSON Formatında OpenAPI Spesifikasyonu (Postman & Araçlar İçin):**
+2. **JSON Formatında OpenAPI Spesifikasyonu (Postman & Harici Araçlar İçin):**
    - **Saf JSON Adresi:** 👉 **[http://localhost:8000/api/swagger.json](http://localhost:8000/api/swagger.json)**
    - **Postman ile Kullanım:** Postman'e `GET http://localhost:8000/api/swagger` veya `GET http://localhost:8000/api/swagger.json` adresini girdiğinizde tüm endpoint şemalarını içeren saf OpenAPI 3.0 **JSON çıktısını** doğrudan alırsınız.
 
@@ -96,45 +111,6 @@ Proje üzerinde geliştirilen tüm rotalar ve özellikleri aşağıda listelenmi
 | **Hafta 2** | `DELETE`| `/api/users/{id}` | Kullanıcı Profilini Silme | ID'ye göre kullanıcıyı listeden siler |
 | **Hafta 2** | `GET` | `/api/swagger` | Swagger Dokümantasyonu (Tarayıcıda UI, Postman'de JSON) | Swagger UI & OpenAPI JSON |
 | **Hafta 2** | `GET` | `/api/swagger.json` | OpenAPI 3.0 Spesifikasyonu (Saf JSON) | JSON Dokümantasyon Şeması |
-
-
----
-
-## 🛠️ Haftalık Geliştirme ve Dokümantasyon Yönergesi
-
-Her hafta projeye yeni bir özellik, rota veya modül eklediğinizde dokümantasyonun güncel ve düzenli kalması için aşağıdaki adımları izleyin:
-
-### 1. Yeni Rotayı `routes/web.php` (veya `routes/api.php`) Dosyasında Tanımlayın
-- Metodunuza (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) karar verin.
-- Anlamlı durum kodları kullanın (`200 OK`, `201 Created`, `404 Not Found` vb.).
-- Başarılı ve başarısız durumlarda tutarlı bir JSON yapısı döndürün:
-  ```json
-  {
-    "success": true,
-    "message": "İşlem açıklaması",
-    "data": { ... }
-  }
-  ```
-
-### 2. Swagger Şemasına (`app/Http/SwaggerSpec.php`) Ekleyin
-- `SwaggerSpec::get()` fonksiyonu içerisindeki `paths` dizisine yeni rotanızı ve HTTP metodunu ekleyin.
-- Rota için `summary`, `description`, `requestBody` (POST/PUT/PATCH için) ve `responses` tanımlarını belirtin.
-- Yapılan bu ekleme otomatik olarak hem `http://localhost:8000/api/swagger` arayüzüne hem de `http://localhost:8000/api/swagger.json` çıktısına yansıyacaktır.
-
-### 3. `README.md` Dosyasındaki Referans Tablosunu Güncelleyin
-- Yukarıdaki **"Aktif Endpoint Referans Tablosu"** bölümüne yeni bir satır ekleyin:
-  ```markdown
-  | Hafta X | METOT | `/api/yeni-rota` | Rotanın işlevi | Örnek Yanıt |
-  ```
-
-### 4. Canlı Doğrulama ve Git Commit Kuralı
-- Yeni rotayı tarayıcıdan, Swagger üzerinden veya Postman ile test edin.
-- Haftalık çalışmanızı anlaşılır bir commit mesajıyla kaydedip pushlayın:
-  ```bash
-  git add .
-  git commit -m "feat(api): add new endpoints for Week X"
-  git push origin main
-  ```
 
 
 ---
