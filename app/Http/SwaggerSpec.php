@@ -33,6 +33,14 @@ class SwaggerSpec
                     'description' => 'Web arayüzü ve form uç noktaları (App\Http\Controllers\UserController tarafından yönetilir)'
                 ],
                 [
+                    'name' => 'API Announcements (ApiAnnouncementController)',
+                    'description' => 'Duyuru RESTful JSON API uç noktaları (App\Http\Controllers\ApiAnnouncementController tarafından yönetilir)'
+                ],
+                [
+                    'name' => 'Web Announcements (AnnouncementController)',
+                    'description' => 'Duyuru Web arayüzü ve yönetim uç noktaları (App\Http\Controllers\AnnouncementController tarafından yönetilir)'
+                ],
+                [
                     'name' => 'System & Health',
                     'description' => 'Sistem durumu ve sağlık kontrolleri'
                 ],
@@ -365,6 +373,198 @@ class SwaggerSpec
                         'responses' => [
                             '200' => ['description' => 'Düzenleme form şablonu'],
                             '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ]
+                ],
+
+                /* ------------------------------------------------------------------ */
+                /*     API Announcements (ApiAnnouncementController - JSON CRUD)      */
+                /* ------------------------------------------------------------------ */
+                '/api/announcements' => [
+                    'get' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Tüm duyuruları listele (JSON)',
+                        'description' => 'ApiAnnouncementController@index tarafından işlenir. Aktif ve öncelikli tüm duyuruları döner.',
+                        'responses' => [
+                            '200' => ['description' => 'Başarılı duyuru listesi']
+                        ]
+                    ],
+                    'post' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Yeni duyuru oluştur (JSON)',
+                        'description' => 'ApiAnnouncementController@store tarafından işlenir. Yeni duyuruyu önbelleğe kaydeder.',
+                        'requestBody' => [
+                            'required' => true,
+                            'content' => [
+                                'application/json' => [
+                                    'example' => [
+                                        'title' => '2026 Mezunlar Zirvesi',
+                                        'content' => 'Mezunlar Zirvesi kayıtları başlamıştır.',
+                                        'category' => 'event',
+                                        'author' => 'Mezunlar Koordinatörlüğü',
+                                        'target_audience' => 'all',
+                                        'priority' => 'important',
+                                        'pinned' => true
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'responses' => [
+                            '201' => ['description' => 'Duyuru başarıyla oluşturuldu']
+                        ]
+                    ]
+                ],
+                '/api/announcements/{id}' => [
+                    'get' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Tekil duyuru detayı (JSON)',
+                        'description' => 'ApiAnnouncementController@show tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru bulundu'],
+                            '404' => ['description' => 'Duyuru bulunamadı']
+                        ]
+                    ],
+                    'put' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Duyuruyu tam güncelle (PUT)',
+                        'description' => 'ApiAnnouncementController@update tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru güncellendi'],
+                            '404' => ['description' => 'Duyuru bulunamadı']
+                        ]
+                    ],
+                    'delete' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Duyuruyu sil (DELETE)',
+                        'description' => 'ApiAnnouncementController@destroy tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru silindi'],
+                            '404' => ['description' => 'Duyuru bulunamadı']
+                        ]
+                    ]
+                ],
+                '/api/announcements/reset' => [
+                    'post' => [
+                        'tags' => ['API Announcements (ApiAnnouncementController)'],
+                        'summary' => 'Duyuruları başlangıç verilerine sıfırla',
+                        'description' => 'ApiAnnouncementController@reset tarafından işlenir.',
+                        'responses' => [
+                            '200' => ['description' => 'Duyurular sıfırlandı']
+                        ]
+                    ]
+                ],
+
+                /* ------------------------------------------------------------------ */
+                /*     Web Announcements (AnnouncementController - Web Views & Forms) */
+                /* ------------------------------------------------------------------ */
+                '/announcements' => [
+                    'get' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Duyuru yönetim arayüzünü listele',
+                        'description' => 'AnnouncementController@index tarafından işlenir. Duyuru paneli Blade şablonunu döner.',
+                        'responses' => [
+                            '200' => ['description' => 'Başarılı web görünümü']
+                        ]
+                    ],
+                    'post' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Web formu ile yeni duyuru yayınla',
+                        'description' => 'AnnouncementController@store tarafından işlenir.',
+                        'responses' => [
+                            '302' => ['description' => 'Yönlendirme (Duyurular listesine)']
+                        ]
+                    ]
+                ],
+                '/announcements/create' => [
+                    'get' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Yeni duyuru formu arayüzü',
+                        'description' => 'AnnouncementController@create tarafından işlenir.',
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru oluşturma formu']
+                        ]
+                    ]
+                ],
+                '/announcements/{id}' => [
+                    'get' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Web duyuru detay sayfası',
+                        'description' => 'AnnouncementController@show tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru detay sayfası'],
+                            '404' => ['description' => 'Duyuru bulunamadı']
+                        ]
+                    ],
+                    'put' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Web üzerinden duyuru güncelle',
+                        'description' => 'AnnouncementController@update tarafından işlenir.',
+                        'responses' => [
+                            '302' => ['description' => 'Yönlendirme']
+                        ]
+                    ],
+                    'delete' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Web üzerinden duyuru sil',
+                        'description' => 'AnnouncementController@destroy tarafından işlenir.',
+                        'responses' => [
+                            '302' => ['description' => 'Yönlendirme']
+                        ]
+                    ]
+                ],
+                '/announcements/{id}/edit' => [
+                    'get' => [
+                        'tags' => ['Web Announcements (AnnouncementController)'],
+                        'summary' => 'Duyuru düzenleme formu',
+                        'description' => 'AnnouncementController@edit tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Duyuru düzenleme formu'],
+                            '404' => ['description' => 'Duyuru bulunamadı']
                         ]
                     ]
                 ],

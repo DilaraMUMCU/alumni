@@ -93,6 +93,7 @@ flowchart TD
 #### 🔹 Model (M) — Data Representation & Persistence
 The Model layer represents the business data, schemas, and state management.
 - **Standalone User Model (`app/Models/User.php`):** Implements complete CRUD functionality (`all()`, `find()`, `create()`, `update()`, `deleteById()`, `reset()`) without requiring an active database connection. Backed by Laravel's Cache subsystem, it encapsulates domain attributes, validation, array conversions, and auto-incrementing ID generation.
+- **Standalone Announcement Model (`app/Models/Announcement.php`):** Implements complete announcement CRUD functionality (`all()`, `find()`, `create()`, `update()`, `deleteById()`, `reset()`) without database connection, backed by Cache with category, audience, priority, and pinning support.
 - **Target Eloquent Models (`app/Models/`):** The designated directory for data models. Once MySQL tables and migrations are integrated in future phases, models can transition to Eloquent ORM.
 - **Specification Model (`app/Http/SwaggerSpec.php`):** Encapsulates the domain model for API specifications, defining data schemas, request parameters, and response structures according to the OpenAPI 3.0 standard.
 
@@ -102,18 +103,20 @@ The View layer is responsible for rendering content and presenting data to the u
   - `resources/views/welcome.blade.php`: The primary visual portal and landing page displaying project status, module cards, and navigation links.
   - `resources/views/about.blade.php`: Static informational page describing the institutional mission.
   - `resources/views/swagger.blade.php`: Interactive API documentation interface embedding Swagger UI v5 via CDN, allowing browser-based endpoint exploration and execution ("Try it out").
-  - `resources/views/users/index.blade.php`: User management directory listing all users with cards, links to details/edit, and a quick-add form (`GET /users` & `POST /users`).
-  - `resources/views/users/create.blade.php`: Dedicated user creation page (`GET /users/create`).
-  - `resources/views/users/show.blade.php`: Dedicated user profile view displaying full attributes and actions (`GET /users/{id}`).
-  - `resources/views/users/edit.blade.php`: Dedicated user edit page pre-filled with user data and submitting updates via `@method('PUT')` (`GET /users/{id}/edit`).
+  - `resources/views/users/`: Full User CRUD views (`index.blade.php`, `create.blade.php`, `show.blade.php`, `edit.blade.php`).
+  - `resources/views/announcements/`: Full Announcement CRUD views (`index.blade.php` dashboard with statistics & quick add, `create.blade.php`, `show.blade.php`, `edit.blade.php`).
 - **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
 
 #### 🔹 Controller (C) — Request Handling & Business Logic
 The Controller layer processes incoming requests, coordinates domain models, and returns formatted responses.
-- **REST API Controller (`app/Http/Controllers/ApiUserController.php`):** Implements all RESTful CRUD endpoints (`index`, `store`, `show`, `update`, `destroy`, `reset`) returning structured JSON responses, handling payload normalization, and enforcing RFC-compliant PUT/PATCH behavior.
-- **Web User Controller (`app/Http/Controllers/UserController.php`):** Handles web user requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
+- **REST API Controllers (`app/Http/Controllers/`):**
+  - `ApiUserController.php`: Implements RESTful JSON CRUD endpoints for users (`index`, `store`, `show`, `update`, `destroy`, `reset`).
+  - `ApiAnnouncementController.php`: Implements RESTful JSON CRUD endpoints for announcements (`index`, `store`, `show`, `update`, `destroy`, `reset`).
+- **Web Controllers (`app/Http/Controllers/`):**
+  - `UserController.php`: Handles web user requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
+  - `AnnouncementController.php`: Handles web announcement requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
 - **HTTP Front Controller (`public/index.php`):** The unified entry point for all incoming web requests directed through Nginx.
-- **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware, routing, and CSRF token exemption rules for API routes (`api/*`).
+- **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware, routing, and CSRF token exemption rules for API routes (`api/*`) and web forms (`users/*`, `announcements/*`).
 
 ---
 
@@ -128,10 +131,13 @@ alumni/
 │   │   ├── Controllers/              # [Controller Layer] Controller classes directory
 │   │   │   ├── Controller.php        # Base controller class
 │   │   │   ├── UserController.php    # Web Controller with full CRUD functions
-│   │   │   └── ApiUserController.php # REST API Controller with full CRUD functions
+│   │   │   ├── ApiUserController.php # REST API Controller with full CRUD functions
+│   │   │   ├── AnnouncementController.php    # Web Announcement Controller with full CRUD functions
+│   │   │   └── ApiAnnouncementController.php # REST API Announcement Controller with full CRUD
 │   │   └── SwaggerSpec.php           # [Model/Spec] Centralized OpenAPI 3.0 specification definition
 │   ├── Models/                       # [Model Layer] Domain data models
-│   │   └── User.php                  # Database-independent User model with full CRUD functions
+│   │   ├── User.php                  # Database-independent User model with full CRUD functions
+│   │   └── Announcement.php          # Database-independent Announcement model with full CRUD
 │   └── Providers/                    # Service providers bootstrapping core components
 │
 ├── bootstrap/                        # Framework startup and bootstrapping
@@ -158,16 +164,21 @@ alumni/
 │       ├── about.blade.php           # Temporary About page
 │       ├── swagger.blade.php         # Interactive Swagger UI dashboard
 │       ├── welcome.blade.php         # Main application landing page
-│       └── users/                    # [User View Layer]
-│           ├── index.blade.php       # User directory & creation form (GET /users & POST /users)
-│           ├── create.blade.php      # Dedicated user creation view (GET /users/create)
-│           ├── show.blade.php        # Detailed user profile view (GET /users/{id})
-│           └── edit.blade.php        # Dedicated user edit form view (GET /users/{id}/edit & PUT /users/{id})
+│       ├── users/                    # [User View Layer]
+│       │   ├── index.blade.php       # User directory & creation form (GET /users & POST /users)
+│       │   ├── create.blade.php      # Dedicated user creation view (GET /users/create)
+│       │   ├── show.blade.php        # Dedicated user profile view (GET /users/{id})
+│       │   └── edit.blade.php        # Dedicated user edit form view (GET /users/{id}/edit & PUT /users/{id})
+│       └── announcements/            # [Announcement View Layer]
+│           ├── index.blade.php       # Announcement management dashboard & list (GET /announcements)
+│           ├── create.blade.php      # Dedicated announcement creation view (GET /announcements/create)
+│           ├── show.blade.php        # Detailed announcement view (GET /announcements/{id})
+│           └── edit.blade.php        # Dedicated announcement edit view (GET /announcements/{id}/edit)
 │
 ├── routes/                           # Application route definitions
-│   ├── api.php                       # [API Router] RESTful API endpoints (ApiUserController)
+│   ├── api.php                       # [API Router] RESTful API endpoints (Users & Announcements)
 │   ├── console.php                   # Artisan CLI command routes
-│   └── web.php                       # [Web Router] Web routes & pages (UserController)
+│   └── web.php                       # [Web Router] Web routes & pages (Users & Announcements)
 │
 ├── storage/                          # Generated files, logs, and framework cache
 │   ├── framework/                    # Compiled Blade templates, cache stores, and sessions

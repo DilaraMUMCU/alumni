@@ -222,6 +222,13 @@
                 </div>
                 <span class="route-desc" style="color: #e9d5ff; font-weight: 600;">👥 Web Arayüzü: Kullanıcı Listesi & Ekleme Formu (View Layer)</span>
             </div>
+            <div class="route-item" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); margin-bottom: 8px;">
+                <div>
+                    <span class="route-badge" style="background: #eab308; color: #713f12; font-weight: 800;">VIEW</span>
+                    <a class="route-link" style="color: #fde047; font-weight: 700;" href="/announcements">/announcements</a>
+                </div>
+                <span class="route-desc" style="color: #fef08a; font-weight: 600;">📢 Web Arayüzü: Duyurular Yönetimi & Ekleme Formu (View Layer)</span>
+            </div>
             <div class="route-item">
                 <div>
                     <span class="route-badge badge-get">GET</span>

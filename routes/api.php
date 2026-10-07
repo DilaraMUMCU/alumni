@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiUserController;
+use App\Http\Controllers\ApiAnnouncementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,14 @@ Route::put('/users/{id}', [ApiUserController::class, 'update']);
 Route::patch('/users/{id}', [ApiUserController::class, 'update']);
 Route::delete('/users/{id}', [ApiUserController::class, 'destroy']);
 Route::post('/users/reset', [ApiUserController::class, 'reset']);
+
+/* -------------------------------------------------------------------------- */
+/*          API Announcement CRUD Routes -> ApiAnnouncementController         */
+/* -------------------------------------------------------------------------- */
+Route::get('/announcements', [ApiAnnouncementController::class, 'index']);
+Route::post('/announcements', [ApiAnnouncementController::class, 'store']);
+Route::get('/announcements/{id}', [ApiAnnouncementController::class, 'show']);
+Route::put('/announcements/{id}', [ApiAnnouncementController::class, 'update']);
+Route::patch('/announcements/{id}', [ApiAnnouncementController::class, 'update']);
+Route::delete('/announcements/{id}', [ApiAnnouncementController::class, 'destroy']);
+Route::post('/announcements/reset', [ApiAnnouncementController::class, 'reset']);

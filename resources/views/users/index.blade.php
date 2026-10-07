@@ -384,6 +384,7 @@
         <div class="navbar-links">
             <a href="/">🏠 Ana Sayfa</a>
             <a href="/users" class="active">👥 Kullanıcılar (/users)</a>
+            <a href="/announcements">📢 Duyurular (/announcements)</a>
             <a href="/users/create">➕ Yeni Kullanıcı Sayfası</a>
             <a href="/about">ℹ️ Hakkında</a>
             <a href="/api/swagger" target="_blank">📜 Swagger UI</a>

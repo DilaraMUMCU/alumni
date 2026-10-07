@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiUserController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ApiAnnouncementController;
 use App\Http\SwaggerSpec;
 
 // 1. & 5. Adım: Base URL (/) -> Temporary Main Page
@@ -59,6 +61,28 @@ Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
 Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
 Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
 Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+/* -------------------------------------------------------------------------- */
+/*       API Announcement Routes (ApiAnnouncementController - JSON CRUD)      */
+/* -------------------------------------------------------------------------- */
+Route::get('/api/announcements', [ApiAnnouncementController::class, 'index']);
+Route::post('/api/announcements', [ApiAnnouncementController::class, 'store']);
+Route::get('/api/announcements/{id}', [ApiAnnouncementController::class, 'show']);
+Route::put('/api/announcements/{id}', [ApiAnnouncementController::class, 'update']);
+Route::patch('/api/announcements/{id}', [ApiAnnouncementController::class, 'update']);
+Route::delete('/api/announcements/{id}', [ApiAnnouncementController::class, 'destroy']);
+Route::post('/api/announcements/reset', [ApiAnnouncementController::class, 'reset']);
+
+/* -------------------------------------------------------------------------- */
+/*       Web Announcement Routes (AnnouncementController - Web CRUD)          */
+/* -------------------------------------------------------------------------- */
+Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])->name('announcements.show');
+Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
+Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*                       Swagger / OpenAPI Dokümantasyonu                     */
