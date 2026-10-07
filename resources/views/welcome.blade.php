@@ -215,6 +215,13 @@
                 </div>
                 <span class="route-desc" style="color: #bae6fd; font-weight: 600;">⚡ İnteraktif Swagger UI Dokümantasyonu</span>
             </div>
+            <div class="route-item" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); margin-bottom: 8px;">
+                <div>
+                    <span class="route-badge" style="background: #a855f7; color: #ffffff; font-weight: 800;">VIEW</span>
+                    <a class="route-link" style="color: #c084fc; font-weight: 700;" href="/users">/users</a>
+                </div>
+                <span class="route-desc" style="color: #e9d5ff; font-weight: 600;">👥 Web Arayüzü: Kullanıcı Listesi & Ekleme Formu (View Layer)</span>
+            </div>
             <div class="route-item">
                 <div>
                     <span class="route-badge badge-get">GET</span>

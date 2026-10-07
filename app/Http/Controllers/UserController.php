@@ -53,9 +53,10 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $user = User::create($request->all());
+        $payload = $request->except(['_token', '_method']);
+        $user = User::create($payload);
 
-        if ($request->wantsJson() || !$request->header('referer')) {
+        if ($request->wantsJson() || $request->isJson()) {
             return response()->json([
                 'success' => true,
                 'source'  => 'UserController@store',
@@ -64,7 +65,7 @@ class UserController extends Controller
             ], 201);
         }
 
-        return redirect('/users')->with('success', 'User created successfully');
+        return redirect('/users')->with('success', 'Kullanıcı başarıyla oluşturuldu ve listeye eklendi! (POST /users)');
     }
 
     /**

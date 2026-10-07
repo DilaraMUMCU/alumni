@@ -102,6 +102,7 @@ The View layer is responsible for rendering content and presenting data to the u
   - `resources/views/welcome.blade.php`: The primary visual portal and landing page displaying project status, module cards, and navigation links.
   - `resources/views/about.blade.php`: Static informational page describing the institutional mission.
   - `resources/views/swagger.blade.php`: Interactive API documentation interface embedding Swagger UI v5 via CDN, allowing browser-based endpoint exploration and execution ("Try it out").
+  - `resources/views/users/index.blade.php`: Dedicated User Management view layer providing visual user cards and an interactive form submitting to `POST /users`.
 - **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
 
 #### 🔹 Controller (C) — Request Handling & Business Logic
@@ -153,7 +154,9 @@ alumni/
 │   └── views/                        # [View] Blade HTML templates
 │       ├── about.blade.php           # Temporary About page
 │       ├── swagger.blade.php         # Interactive Swagger UI dashboard
-│       └── welcome.blade.php         # Main application landing page
+│       ├── welcome.blade.php         # Main application landing page
+│       └── users/                    # [User View Layer]
+│           └── index.blade.php       # User directory and creation form view (GET /users & POST /users)
 │
 ├── routes/                           # Application route definitions
 │   ├── api.php                       # [API Router] RESTful API endpoints (ApiUserController)
