@@ -105,13 +105,9 @@ The View layer is responsible for rendering content and presenting data to the u
 - **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
 
 #### 🔹 Controller (C) — Request Handling & Business Logic
-The Controller layer processes incoming user requests, coordinates models, and selects the appropriate view or response format.
-- **Route Closures / Anonymous Controllers (`routes/web.php`):** In the current development stage, routes utilize anonymous closure controllers that:
-  - Sanitize and normalize input using `$getPayload` (supporting raw JSON, form-data, and URL-encoded bodies).
-  - Enforce business logic (e.g., RFC-compliant `PUT` full replacement vs. `PATCH` partial update).
-  - Interact with the model/cache state.
-  - Handle content negotiation (returning HTML to browsers and JSON to Postman/API clients).
-- **Controller Classes (`app/Http/Controllers/`):** Dedicated directory where route closures will be structured into granular controller classes (e.g., `UserController`, `HealthController`, `DocumentationController`) as the codebase grows.
+The Controller layer processes incoming requests, coordinates domain models, and returns formatted responses.
+- **REST API Controller (`app/Http/Controllers/ApiUserController.php`):** Implements all RESTful CRUD endpoints (`index`, `store`, `show`, `update`, `destroy`, `reset`) returning structured JSON responses, handling payload normalization, and enforcing RFC-compliant PUT/PATCH behavior.
+- **Web User Controller (`app/Http/Controllers/UserController.php`):** Handles web user requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
 - **HTTP Front Controller (`public/index.php`):** The unified entry point for all incoming web requests directed through Nginx.
 - **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware, routing, and CSRF token exemption rules for API routes (`api/*`).
 
@@ -125,9 +121,12 @@ A comprehensive breakdown of all application directories, folders, and key files
 alumni/
 ├── app/                              # Core application business logic
 │   ├── Http/                         # HTTP transport layer
-│   │   ├── Controllers/              # [Controller] Controller classes directory
+│   │   ├── Controllers/              # [Controller Layer] Controller classes directory
+│   │   │   ├── Controller.php        # Base controller class
+│   │   │   ├── UserController.php    # Web Controller with full CRUD functions
+│   │   │   └── ApiUserController.php # REST API Controller with full CRUD functions
 │   │   └── SwaggerSpec.php           # [Model/Spec] Centralized OpenAPI 3.0 specification definition
-│   ├── Models/                       # [Model] Domain data models
+│   ├── Models/                       # [Model Layer] Domain data models
 │   │   └── User.php                  # Database-independent User model with full CRUD functions
 │   └── Providers/                    # Service providers bootstrapping core components
 │
