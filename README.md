@@ -59,6 +59,121 @@ Built with modern web standards, this platform offers a secure, modular, and cus
 - **Analytics & Demographics:** Visual reporting on alumni employment rates, industry distribution, and regional density.
 
 
+---
+
+## 🏛️ MVC Architecture & Project Structure
+
+The **Alumni Tracking System** follows the standard **Model-View-Controller (MVC)** architectural pattern provided by the Laravel framework. This architectural pattern separates application concerns into three interconnected components, ensuring maintainability, scalability, and code testability.
+
+```mermaid
+flowchart TD
+    Client["Client (Browser / Postman)"]
+    Nginx["Nginx Web Server (:8000)\n(docker/nginx/default.conf)"]
+    FrontController["Front Controller\n(public/index.php)"]
+    Bootstrap["Bootstrap & Middleware\n(bootstrap/app.php)"]
+    Router["Router / Controller Layer\n(routes/web.php)"]
+    ModelLayer["Model & Data Layer\n(Cache / app/Models/)"]
+    ViewLayer["View Layer\n(resources/views/*.blade.php)"]
+    Response["HTTP Response (JSON / HTML)"]
+
+    Client -->|HTTP Request| Nginx
+    Nginx -->|FastCGI| FrontController
+    FrontController --> Bootstrap
+    Bootstrap -->|Processed Request| Router
+    Router -->|Read / Write State| ModelLayer
+    ModelLayer -->|Data| Router
+    Router -->|Renders UI| ViewLayer
+    ViewLayer -->|Rendered HTML| Response
+    Router -->|Returns JSON API| Response
+    Response -->|HTTP Response| Client
+```
+
+### 1. The Three Pillars of MVC in This Application
+
+#### 🔹 Model (M) — Data Representation & Persistence
+The Model layer represents the business data, schemas, and state management.
+- **Current Data Layer (Cache Storage):** As database migrations are deferred in the initial stage, data persistence is currently driven by Laravel's Cache subsystem (`Illuminate\Support\Facades\Cache` in `config/cache.php`). User records are managed in-memory and persisted via file cache (`storage/framework/cache/data`).
+- **Target Eloquent Models (`app/Models/`):** The designated directory for database-backed models (e.g., `User.php`, `AlumniProfile.php`, `JobPosting.php`). Once MySQL tables and migrations are integrated, these models will handle Eloquent ORM relationships, attribute casting, and database queries.
+- **Specification Model (`app/Http/SwaggerSpec.php`):** Encapsulates the domain model for API specifications, defining data schemas, request parameters, and response structures according to the OpenAPI 3.0 standard.
+
+#### 🔹 View (V) — Presentation Layer
+The View layer is responsible for rendering content and presenting data to the user.
+- **Blade Templating Engine (`resources/views/`):** Laravel's template engine combines HTML with lightweight PHP constructs.
+  - `resources/views/welcome.blade.php`: The primary visual portal and landing page displaying project status, module cards, and navigation links.
+  - `resources/views/about.blade.php`: Static informational page describing the institutional mission.
+  - `resources/views/swagger.blade.php`: Interactive API documentation interface embedding Swagger UI v5 via CDN, allowing browser-based endpoint exploration and execution ("Try it out").
+- **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
+
+#### 🔹 Controller (C) — Request Handling & Business Logic
+The Controller layer processes incoming user requests, coordinates models, and selects the appropriate view or response format.
+- **Route Closures / Anonymous Controllers (`routes/web.php`):** In the current development stage, routes utilize anonymous closure controllers that:
+  - Sanitize and normalize input using `$getPayload` (supporting raw JSON, form-data, and URL-encoded bodies).
+  - Enforce business logic (e.g., RFC-compliant `PUT` full replacement vs. `PATCH` partial update).
+  - Interact with the model/cache state.
+  - Handle content negotiation (returning HTML to browsers and JSON to Postman/API clients).
+- **Controller Classes (`app/Http/Controllers/`):** Dedicated directory where route closures will be structured into granular controller classes (e.g., `UserController`, `HealthController`, `DocumentationController`) as the codebase grows.
+- **HTTP Front Controller (`public/index.php`):** The unified entry point for all incoming web requests directed through Nginx.
+- **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware, routing, and CSRF token exemption rules for API routes (`api/*`).
+
+---
+
+### 2. Directory, Folder & File Map
+
+A comprehensive breakdown of all application directories, folders, and key files:
+
+```text
+alumni/
+├── app/                              # Core application business logic
+│   ├── Http/                         # HTTP transport layer
+│   │   ├── Controllers/              # [Controller] Controller classes directory
+│   │   └── SwaggerSpec.php           # [Model/Spec] Centralized OpenAPI 3.0 specification definition
+│   ├── Models/                       # [Model] Eloquent data models (User, Alumni, etc.)
+│   └── Providers/                    # Service providers bootstrapping core components
+│
+├── bootstrap/                        # Framework startup and bootstrapping
+│   ├── app.php                       # [Controller Pipeline] Application initialization & middleware
+│   └── cache/                        # Cached package and service provider manifests
+│
+├── config/                           # Application configuration files
+│   ├── app.php                       # Application name, timezone, locale, and encryption key
+│   ├── cache.php                     # [Model State] Cache store definitions (file cache settings)
+│   ├── database.php                  # Database connection settings (MySQL, SQLite, Redis)
+│   └── view.php                      # [View Config] Blade compiled views path settings
+│
+├── docker/                           # Containerization & infrastructure configuration
+│   ├── nginx/
+│   │   └── default.conf              # Nginx web server configuration and reverse proxy
+│   └── php/
+│       └── Dockerfile                # Custom PHP 8.2-FPM container image definition
+│
+├── public/                           # Web server document root (publicly exposed)
+│   └── index.php                     # [Front Controller] Initial entry point for all requests
+│
+├── resources/                        # Presentation layer assets and templates
+│   └── views/                        # [View] Blade HTML templates
+│       ├── about.blade.php           # Temporary About page
+│       ├── swagger.blade.php         # Interactive Swagger UI dashboard
+│       └── welcome.blade.php         # Main application landing page
+│
+├── routes/                           # Application route definitions
+│   ├── console.php                   # Artisan CLI command routes
+│   └── web.php                       # [Router & Controllers] Web routes, API endpoints & logic
+│
+├── storage/                          # Generated files, logs, and framework cache
+│   ├── framework/                    # Compiled Blade templates, cache stores, and sessions
+│   └── logs/                         # Runtime log files (laravel.log)
+│
+├── .env / .env.example               # Environment variables configuration
+├── .gitignore                        # Git version control ignore rules
+├── artisan                           # Laravel Artisan CLI executable
+├── composer.json / composer.lock     # PHP dependencies, autoloading, and package lock
+├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB)
+└── README.md                         # Project documentation and developer reference
+```
+
+
+---
+
 ## Getting Started with Docker
 
 ### Prerequisites
@@ -82,3 +197,4 @@ docker compose up -d --build
 Once the application is running, you can access the interactive API documentation via your browser:
 
 - **Swagger UI:** [http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)
+- **Raw OpenAPI JSON:** [http://localhost:8000/api/swagger.json](http://localhost:8000/api/swagger.json)
