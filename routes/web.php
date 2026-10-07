@@ -1,15 +1,15 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use App\Http\SwaggerSpec;
+use App\Models\User;
 
-// Gelen iste�i format farketmeksizin (JSON, raw, urlencoded, form-data) ayr��t�ran yard�mc� fonksiyon
+// Gelen isteği format farketmeksizin (JSON, raw, urlencoded, form-data) ayrıştıran yardımcı fonksiyon
 $getPayload = function (Request $request) {
     $payload = [];
 
-    // 1. Raw body (JSON veya query-string format�)
+    // 1. Raw body (JSON veya query-string formatı)
     $raw = $request->getContent();
     if (!empty($raw)) {
         $json = json_decode($raw, true);
@@ -48,138 +48,66 @@ $getPayload = function (Request $request) {
     return $payload;
 };
 
-// Ba�lang�� �rnek verileri
-$getInitialUsers = function () {
-    return [
-        [
-            'id' => 1,
-            'name' => 'Dilara Mumcu',
-            'email' => 'dilara@alumni.edu',
-            'role' => 'alumni',
-            'department' => 'Computer Engineering',
-            'graduation_year' => 2024,
-            'current_company' => 'Google',
-            'job_title' => 'Software Engineer',
-            'linkedin_url' => 'https://linkedin.com/in/dilaramumcu',
-            'skills' => ['PHP', 'Laravel', 'Docker', 'MySQL'],
-            'created_at' => '2024-06-15T10:00:00Z',
-        ],
-        [
-            'id' => 2,
-            'name' => 'Caner Y�lmaz',
-            'email' => 'caner@alumni.edu',
-            'role' => 'alumni',
-            'department' => 'Industrial Engineering',
-            'graduation_year' => 2023,
-            'current_company' => 'Amazon',
-            'job_title' => 'Product Manager',
-            'linkedin_url' => 'https://linkedin.com/in/caneryilmaz',
-            'skills' => ['Agile', 'Scrum', 'Product Strategy', 'Data Analysis'],
-            'created_at' => '2023-07-20T14:30:00Z',
-        ],
-        [
-            'id' => 3,
-            'name' => 'Elif Demir',
-            'email' => 'elif@student.edu',
-            'role' => 'student',
-            'department' => 'Computer Engineering',
-            'graduation_year' => 2026,
-            'current_company' => 'Tech Intern at Microsoft',
-            'job_title' => 'Intern',
-            'linkedin_url' => 'https://linkedin.com/in/elifdemir',
-            'skills' => ['Python', 'Machine Learning', 'Git'],
-            'created_at' => '2025-09-01T09:15:00Z',
-        ],
-    ];
-};
-
-// 1. & 5. Ad�m: Base URL (/) -> Temporary Main Page
+// 1. & 5. Adım: Base URL (/) -> Temporary Main Page
 Route::get('/', function () {
     return view('welcome');
 });
 
-// 2. Ad�m: Sabit hello rotas�
+// 2. Adım: Sabit hello rotası
 Route::get('/hello', function () {
     return 'Hello, world!';
 });
 
-// 3. Ad�m: Dinamik isim parametreli hello rotas�
+// 3. Adım: Dinamik isim parametreli hello rotası
 Route::get('/hello/{name}', function ($name) {
     return 'Hello, ' . ucfirst($name) . '!';
 });
 
-// 4. Ad�m: �ki say�y� toplayan dinamik sum rotas�
+// 4. Adım: İki sayıyı toplayan dinamik sum rotası
 Route::get('/sum/{number1}/{number2}', function ($number1, $number2) {
     return (string) ($number1 + $number2);
 });
 
-// 6. Ad�m: Temporary About Page
+// 6. Adım: Temporary About Page
 Route::get('/about', function () {
     return view('about');
 });
 
-// 7. Ad�m: JSON Health Check rotas�
+// 7. Adım: JSON Health Check rotası
 Route::get('/api/health', function () {
     return response()->json([
         'status' => 'ok',
     ]);
 });
 
-// 8. Ad�m: POST /api/users (Yeni kullan�c� ekleme)
-Route::post('/api/users', function (Request $request) use ($getInitialUsers, $getPayload) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
+// 8. Adım: POST /api/users (Yeni kullanıcı ekleme - User Model üzerinden)
+Route::post('/api/users', function (Request $request) use ($getPayload) {
     $payload = $getPayload($request);
-
-    $nextId = count($users) > 0 ? (max(array_column($users, 'id')) + 1) : 1;
-
-    $newUser = [
-        'id' => $nextId,
-        'name' => $payload['name'] ?? 'Dilara Mumcu',
-        'email' => $payload['email'] ?? 'dilara@alumni.edu',
-        'role' => $payload['role'] ?? 'alumni',
-        'department' => $payload['department'] ?? 'Computer Engineering',
-        'graduation_year' => isset($payload['graduation_year']) ? (int) $payload['graduation_year'] : 2024,
-        'current_company' => $payload['current_company'] ?? 'Google',
-        'job_title' => $payload['job_title'] ?? 'Software Engineer',
-        'linkedin_url' => $payload['linkedin_url'] ?? 'https://linkedin.com/in/dilaramumcu',
-        'skills' => $payload['skills'] ?? ['PHP', 'Laravel', 'Docker', 'MySQL'],
-        'created_at' => now()->toIso8601String(),
-    ];
-
-    $users[] = $newUser;
-    Cache::forever('alumni_users', $users);
+    $user = User::create($payload);
 
     return response()->json([
         'success' => true,
         'message' => 'User created successfully and stored without database (via Cache)!',
-        'data' => $newUser,
+        'data' => $user->toArray(),
     ], 201);
 });
 
-// 9. Ad�m: GET /api/users (T�m kullan�c�lar� listeleme)
-Route::get('/api/users', function () use ($getInitialUsers) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
+// 9. Adım: GET /api/users (Tüm kullanıcıları listeleme - User Model üzerinden)
+Route::get('/api/users', function () {
+    $users = User::all();
 
     return response()->json([
         'success' => true,
         'count' => count($users),
-        'data' => $users,
+        'data' => array_map(fn($u) => $u->toArray(), $users),
     ]);
 });
 
 // 10. Adım: PUT /api/users/{id} (Kullanıcı bilgilerini tam değiştirme - RFC standartlarına uygun)
-Route::put('/api/users/{id}', function (Request $request, $id) use ($getInitialUsers, $getPayload) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
-    $foundIndex = null;
+Route::put('/api/users/{id}', function (Request $request, $id) use ($getPayload) {
+    $user = User::find($id);
 
-    foreach ($users as $index => $u) {
-        if ((string)$u['id'] === (string)$id) {
-            $foundIndex = $index;
-            break;
-        }
-    }
-
-    if ($foundIndex === null) {
+    if (!$user) {
         return response()->json([
             'success' => false,
             'message' => "User with ID {$id} not found.",
@@ -187,46 +115,20 @@ Route::put('/api/users/{id}', function (Request $request, $id) use ($getInitialU
     }
 
     $payload = $getPayload($request);
-
-    // REST standartlarına göre PUT tam bir değiştirmedir (full replacement).
-    // İstekte gönderilmeyen veya boş bırakılan tüm alanlar sıfırlanır (null olur).
-    $users[$foundIndex] = [
-        'id'              => (int) $id,
-        'name'            => $payload['name'] ?? null,
-        'email'           => $payload['email'] ?? null,
-        'role'            => $payload['role'] ?? null,
-        'department'      => $payload['department'] ?? null,
-        'graduation_year' => (isset($payload['graduation_year']) && $payload['graduation_year'] !== '') ? (int) $payload['graduation_year'] : null,
-        'current_company' => $payload['current_company'] ?? null,
-        'job_title'       => $payload['job_title'] ?? null,
-        'linkedin_url'    => $payload['linkedin_url'] ?? null,
-        'skills'          => (isset($payload['skills']) && is_array($payload['skills'])) ? $payload['skills'] : null,
-        'created_at'      => $users[$foundIndex]['created_at'] ?? now()->toIso8601String(),
-        'updated_at'      => now()->toIso8601String(),
-    ];
-
-    Cache::forever('alumni_users', $users);
+    $user->update($payload, fullReplacement: true);
 
     return response()->json([
         'success' => true,
         'message' => "User {$id} replaced successfully (PUT: omitted fields reset to null)",
-        'data'    => $users[$foundIndex],
+        'data'    => $user->toArray(),
     ]);
 });
 
-// 11. Ad�m: PATCH /api/users/{id} (Kullan�c� bilgilerini k�smi g�ncelleme)
-Route::patch('/api/users/{id}', function (Request $request, $id) use ($getInitialUsers, $getPayload) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
-    $foundIndex = null;
+// 11. Adım: PATCH /api/users/{id} (Kullanıcı bilgilerini kısmi güncelleme)
+Route::patch('/api/users/{id}', function (Request $request, $id) use ($getPayload) {
+    $user = User::find($id);
 
-    foreach ($users as $index => $u) {
-        if ((string)$u['id'] === (string)$id) {
-            $foundIndex = $index;
-            break;
-        }
-    }
-
-    if ($foundIndex === null) {
+    if (!$user) {
         return response()->json([
             'success' => false,
             'message' => "User with ID {$id} not found.",
@@ -234,84 +136,57 @@ Route::patch('/api/users/{id}', function (Request $request, $id) use ($getInitia
     }
 
     $payload = $getPayload($request);
-
-    // Gelen her bir alan� dinamik olarak g�ncelle
-    foreach ($payload as $key => $val) {
-        if ($key !== 'id' && $key !== 'created_at' && $key !== '_method' && $key !== '_token') {
-            if ($key === 'graduation_year') {
-                $val = (int) $val;
-            }
-            $users[$foundIndex][$key] = $val;
-        }
-    }
-
-    $users[$foundIndex]['updated_at'] = now()->toIso8601String();
-
-    Cache::forever('alumni_users', $users);
+    $user->update($payload, fullReplacement: false);
 
     return response()->json([
         'success' => true,
         'message' => "User {$id} partially updated successfully (PATCH, in cache)",
-        'data' => $users[$foundIndex],
+        'data' => $user->toArray(),
     ]);
 });
 
-// Tekil kullan�c� getirme: GET /api/users/{id}
-Route::get('/api/users/{id}', function ($id) use ($getInitialUsers) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
+// Tekil kullanıcı getirme: GET /api/users/{id}
+Route::get('/api/users/{id}', function ($id) {
+    $user = User::find($id);
 
-    foreach ($users as $u) {
-        if ((string)$u['id'] === (string)$id) {
-            return response()->json([
-                'success' => true,
-                'data' => $u,
-            ]);
-        }
-    }
-
-    return response()->json([
-        'success' => false,
-        'message' => "User with ID {$id} not found.",
-    ], 404);
-});
-
-// Kullan�c� listesini s�f�rlama
-Route::post('/api/users/reset', function () use ($getInitialUsers) {
-    Cache::forget('alumni_users');
-    return response()->json([
-        'success' => true,
-        'message' => 'Users list reset to initial defaults.',
-        'data' => $getInitialUsers(),
-    ]);
-});
-
-// 12. Adım: DELETE /api/users/{id} (Kullanıcı silme)
-Route::delete('/api/users/{id}', function ($id) use ($getInitialUsers) {
-    $users = Cache::get('alumni_users', $getInitialUsers());
-    $foundIndex = null;
-
-    foreach ($users as $index => $u) {
-        if ((string)$u['id'] === (string)$id) {
-            $foundIndex = $index;
-            break;
-        }
-    }
-
-    if ($foundIndex === null) {
+    if (!$user) {
         return response()->json([
             'success' => false,
             'message' => "User with ID {$id} not found.",
         ], 404);
     }
 
-    $deletedUser = $users[$foundIndex];
-    array_splice($users, $foundIndex, 1);
-    Cache::forever('alumni_users', $users);
+    return response()->json([
+        'success' => true,
+        'data' => $user->toArray(),
+    ]);
+});
+
+// Kullanıcı listesini sıfırlama
+Route::post('/api/users/reset', function () {
+    $users = User::reset();
+    return response()->json([
+        'success' => true,
+        'message' => 'Users list reset to initial defaults.',
+        'data' => array_map(fn($u) => $u->toArray(), $users),
+    ]);
+});
+
+// 12. Adım: DELETE /api/users/{id} (Kullanıcı silme)
+Route::delete('/api/users/{id}', function ($id) {
+    $deletedUser = User::deleteById($id);
+
+    if (!$deletedUser) {
+        return response()->json([
+            'success' => false,
+            'message' => "User with ID {$id} not found.",
+        ], 404);
+    }
 
     return response()->json([
         'success' => true,
         'message' => "User {$id} deleted successfully.",
-        'deleted_user' => $deletedUser,
+        'deleted_user' => $deletedUser->toArray(),
     ]);
 });
 

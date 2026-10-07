@@ -92,8 +92,8 @@ flowchart TD
 
 #### 🔹 Model (M) — Data Representation & Persistence
 The Model layer represents the business data, schemas, and state management.
-- **Current Data Layer (Cache Storage):** As database migrations are deferred in the initial stage, data persistence is currently driven by Laravel's Cache subsystem (`Illuminate\Support\Facades\Cache` in `config/cache.php`). User records are managed in-memory and persisted via file cache (`storage/framework/cache/data`).
-- **Target Eloquent Models (`app/Models/`):** The designated directory for database-backed models (e.g., `User.php`, `AlumniProfile.php`, `JobPosting.php`). Once MySQL tables and migrations are integrated, these models will handle Eloquent ORM relationships, attribute casting, and database queries.
+- **Standalone User Model (`app/Models/User.php`):** Implements complete CRUD functionality (`all()`, `find()`, `create()`, `update()`, `deleteById()`, `reset()`) without requiring an active database connection. Backed by Laravel's Cache subsystem, it encapsulates domain attributes, validation, array conversions, and auto-incrementing ID generation.
+- **Target Eloquent Models (`app/Models/`):** The designated directory for data models. Once MySQL tables and migrations are integrated in future phases, models can transition to Eloquent ORM.
 - **Specification Model (`app/Http/SwaggerSpec.php`):** Encapsulates the domain model for API specifications, defining data schemas, request parameters, and response structures according to the OpenAPI 3.0 standard.
 
 #### 🔹 View (V) — Presentation Layer
@@ -127,7 +127,8 @@ alumni/
 │   ├── Http/                         # HTTP transport layer
 │   │   ├── Controllers/              # [Controller] Controller classes directory
 │   │   └── SwaggerSpec.php           # [Model/Spec] Centralized OpenAPI 3.0 specification definition
-│   ├── Models/                       # [Model] Eloquent data models (User, Alumni, etc.)
+│   ├── Models/                       # [Model] Domain data models
+│   │   └── User.php                  # Database-independent User model with full CRUD functions
 │   └── Providers/                    # Service providers bootstrapping core components
 │
 ├── bootstrap/                        # Framework startup and bootstrapping
