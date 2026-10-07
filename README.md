@@ -156,8 +156,9 @@ alumni/
 │       └── welcome.blade.php         # Main application landing page
 │
 ├── routes/                           # Application route definitions
+│   ├── api.php                       # [API Router] RESTful API endpoints (ApiUserController)
 │   ├── console.php                   # Artisan CLI command routes
-│   └── web.php                       # [Router & Controllers] Web routes, API endpoints & logic
+│   └── web.php                       # [Web Router] Web routes & pages (UserController)
 │
 ├── storage/                          # Generated files, logs, and framework cache
 │   ├── framework/                    # Compiled Blade templates, cache stores, and sessions

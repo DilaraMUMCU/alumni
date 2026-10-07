@@ -11,7 +11,7 @@ class SwaggerSpec
             'info' => [
                 'title' => 'Alumni Tracking & Community Networking System API',
                 'version' => '1.0.0',
-                'description' => 'Haftalık olarak geliştirilen Alumni web uygulamasının tüm RESTful ve Web rotalarını içeren interaktif Swagger dokümantasyonu.',
+                'description' => 'Haftalık olarak geliştirilen Alumni web uygulamasının MVC mimarisinde (UserController & ApiUserController) çalışan tüm RESTful API ve Web rotalarını içeren interaktif Swagger dokümantasyonu.',
                 'contact' => [
                     'name' => 'Dilara MUMCU',
                     'email' => 'dilaramumcu.ogr.iu.edu.tr'
@@ -24,12 +24,371 @@ class SwaggerSpec
                 ]
             ],
             'tags' => [
-                ['name' => 'Users', 'description' => 'Mezun ve öğrenci profili CRUD işlemleri (In-Memory / File Cache)'],
-                ['name' => 'System & Health', 'description' => 'Sistem durumu ve sağlık kontrolleri'],
-                ['name' => 'Documentation', 'description' => 'API ve Swagger dokümantasyon rotaları'],
-                ['name' => 'Web Pages & Basic Routes', 'description' => 'Temel web rotaları ve sayfalar']
+                [
+                    'name' => 'API Users (ApiUserController)',
+                    'description' => 'RESTful JSON API uç noktaları (App\Http\Controllers\ApiUserController tarafından yönetilir)'
+                ],
+                [
+                    'name' => 'Web Users (UserController)',
+                    'description' => 'Web arayüzü ve form uç noktaları (App\Http\Controllers\UserController tarafından yönetilir)'
+                ],
+                [
+                    'name' => 'System & Health',
+                    'description' => 'Sistem durumu ve sağlık kontrolleri'
+                ],
+                [
+                    'name' => 'Documentation',
+                    'description' => 'Swagger UI ve OpenAPI JSON dokümantasyon rotaları'
+                ],
+                [
+                    'name' => 'Web Pages & Basic Routes',
+                    'description' => 'Temel web rotaları, şablonlar ve yardımcı sayfalar'
+                ]
             ],
             'paths' => [
+                /* ------------------------------------------------------------------ */
+                /*             API Users (ApiUserController - JSON Responses)         */
+                /* ------------------------------------------------------------------ */
+                '/api/users' => [
+                    'get' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Tüm kullanıcıları listele (JSON)',
+                        'description' => 'ApiUserController@index tarafından işlenir. Kayıtlı tüm mezun ve öğrenci listesini döner.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Başarılı kullanıcılar listesi',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'count' => 3,
+                                            'data' => [
+                                                [
+                                                    'id' => 1,
+                                                    'name' => 'Dilara MUMCU',
+                                                    'email' => 'dilaramumcu.ogr.iu.edu.tr',
+                                                    'role' => 'student',
+                                                    'department' => 'MIS',
+                                                    'graduation_year' => 2028,
+                                                    'current_company' => 'Samsung',
+                                                    'job_title' => 'Data Scientist',
+                                                    'linkedin_url' => null,
+                                                    'skills' => null,
+                                                    'created_at' => '2024-06-15T10:00:00Z',
+                                                    'updated_at' => '2026-09-30T12:23:15+00:00'
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'post' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Yeni kullanıcı oluştur (JSON)',
+                        'description' => 'ApiUserController@store tarafından işlenir. User Model üzerinden veritabanı olmadan Cache üzerinde yeni kullanıcı kaydeder.',
+                        'requestBody' => [
+                            'required' => true,
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        'type' => 'object',
+                                        'required' => ['name', 'email'],
+                                        'properties' => [
+                                            'name' => ['type' => 'string', 'example' => 'Dilara MUMCU'],
+                                            'email' => ['type' => 'string', 'example' => 'dilaramumcu.ogr.iu.edu.tr'],
+                                            'role' => ['type' => 'string', 'example' => 'student'],
+                                            'department' => ['type' => 'string', 'example' => 'MIS'],
+                                            'graduation_year' => ['type' => 'integer', 'example' => 2028],
+                                            'current_company' => ['type' => 'string', 'example' => 'Samsung'],
+                                            'job_title' => ['type' => 'string', 'example' => 'Data Scientist'],
+                                            'linkedin_url' => ['type' => 'string', 'example' => 'https://linkedin.com/in/dilaramumcu'],
+                                            'skills' => [
+                                                'type' => 'array',
+                                                'items' => ['type' => 'string'],
+                                                'example' => ['PHP', 'Laravel', 'Docker', 'MySQL']
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'responses' => [
+                            '201' => [
+                                'description' => 'Kullanıcı başarıyla oluşturuldu',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'User created successfully and stored without database (via Cache)!',
+                                            'data' => [
+                                                'id' => 4,
+                                                'name' => 'Dilara MUMCU',
+                                                'email' => 'dilaramumcu.ogr.iu.edu.tr',
+                                                'role' => 'student'
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                '/api/users/{id}' => [
+                    'get' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Tekil kullanıcıyı getir (JSON)',
+                        'description' => 'ApiUserController@show tarafından işlenir. Belirtilen ID\'ye sahip kullanıcının detaylarını döner.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı bulundu'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ],
+                    'put' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Kullanıcıyı tam değiştir (Full Replacement)',
+                        'description' => 'ApiUserController@update tarafından işlenir. REST standardına göre gönderilmeyen/boş alanlar null yapılır.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'requestBody' => [
+                            'required' => true,
+                            'content' => [
+                                'application/json' => [
+                                    'example' => [
+                                        'name' => 'Dilara MUMCU',
+                                        'email' => 'dilaramumcu.ogr.iu.edu.tr',
+                                        'role' => 'student',
+                                        'department' => 'MIS',
+                                        'graduation_year' => 2028,
+                                        'current_company' => 'Samsung',
+                                        'job_title' => 'Data Scientist',
+                                        'linkedin_url' => null,
+                                        'skills' => null
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı başarıyla tam güncellendi (eksik alanlar null yapıldı)'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ],
+                    'patch' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Kullanıcıyı kısmi güncelle (Partial Update)',
+                        'description' => 'ApiUserController@update tarafından işlenir. Yalnızca gönderilen alanlar güncellenir, diğerleri korunur.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'requestBody' => [
+                            'required' => true,
+                            'content' => [
+                                'application/json' => [
+                                    'example' => [
+                                        'current_company' => 'Google DeepMind',
+                                        'job_title' => 'Senior AI Engineer'
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kısmi güncelleme başarılı'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ],
+                    'delete' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Kullanıcıyı sil (JSON)',
+                        'description' => 'ApiUserController@destroy tarafından işlenir. Belirtilen ID\'ye sahip kullanıcıyı sistemden siler.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 3
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı başarıyla silindi'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ]
+                ],
+                '/api/users/reset' => [
+                    'post' => [
+                        'tags' => ['API Users (ApiUserController)'],
+                        'summary' => 'Kullanıcı listesini başlangıç verilerine sıfırla',
+                        'description' => 'ApiUserController@reset tarafından işlenir. Test ve geliştirme için kullanıcı listesini fabrika ayarlarına döndürür.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Kullanıcılar başarıyla sıfırlandı',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => [
+                                            'success' => true,
+                                            'message' => 'Users list reset to initial defaults.',
+                                            'data' => []
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+
+                /* ------------------------------------------------------------------ */
+                /*             Web Users (UserController - Web Views & Forms)         */
+                /* ------------------------------------------------------------------ */
+                '/users' => [
+                    'get' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Web kullanıcı rehberini listele',
+                        'description' => 'UserController@index tarafından işlenir. Kullanıcı listesini web/view olarak döner.',
+                        'responses' => [
+                            '200' => ['description' => 'Başarılı web görünümü / kullanıcı listesi']
+                        ]
+                    ],
+                    'post' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Web formu üzerinden kullanıcı kaydet',
+                        'description' => 'UserController@store tarafından işlenir. Form verilerini alır ve kullanıcıyı kaydeder.',
+                        'responses' => [
+                            '201' => ['description' => 'Kullanıcı başarıyla oluşturuldu'],
+                            '302' => ['description' => 'Web yönlendirmesi']
+                        ]
+                    ]
+                ],
+                '/users/create' => [
+                    'get' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Yeni kullanıcı oluşturma formunu aç',
+                        'description' => 'UserController@create tarafından işlenir. Kullanıcı ekleme form arayüzünü döner.',
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı form şablonu']
+                        ]
+                    ]
+                ],
+                '/users/{id}' => [
+                    'get' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Web kullanıcı profilini göster',
+                        'description' => 'UserController@show tarafından işlenir. Kullanıcı detay sayfasını sunar.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı profili sayfası'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ],
+                    'put' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Web kullanıcı profilini güncelle',
+                        'description' => 'UserController@update tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı güncellendi'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ],
+                    'delete' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Web üzerinden kullanıcıyı sil',
+                        'description' => 'UserController@destroy tarafından işlenir.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Kullanıcı silindi'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ]
+                ],
+                '/users/{id}/edit' => [
+                    'get' => [
+                        'tags' => ['Web Users (UserController)'],
+                        'summary' => 'Kullanıcı düzenleme formunu aç',
+                        'description' => 'UserController@edit tarafından işlenir. Kullanıcı düzenleme arayüzünü döner.',
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                                'example' => 1
+                            ]
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Düzenleme form şablonu'],
+                            '404' => ['description' => 'Kullanıcı bulunamadı']
+                        ]
+                    ]
+                ],
+
+                /* ------------------------------------------------------------------ */
+                /*                      System, Health & Documentation                */
+                /* ------------------------------------------------------------------ */
+                '/api/health' => [
+                    'get' => [
+                        'tags' => ['System & Health'],
+                        'summary' => 'Sistem sağlık kontrolü (JSON)',
+                        'description' => 'Uygulamanın aktif ve çalışır olduğunu doğrulayan JSON sağlık yanıtı döner.',
+                        'responses' => [
+                            '200' => [
+                                'description' => 'Sistem çalışıyor',
+                                'content' => [
+                                    'application/json' => [
+                                        'example' => ['status' => 'ok']
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
                 '/api/swagger' => [
                     'get' => [
                         'tags' => ['Documentation'],
@@ -79,212 +438,10 @@ class SwaggerSpec
                         ]
                     ]
                 ],
-                '/api/health' => [
-                    'get' => [
-                        'tags' => ['System & Health'],
-                        'summary' => 'Sistem sağlık kontrolü',
-                        'description' => 'Uygulamanın aktif ve çalışır olduğunu doğrulayan JSON sağlık yanıtı döner.',
-                        'responses' => [
-                            '200' => [
-                                'description' => 'Sistem çalışıyor',
-                                'content' => [
-                                    'application/json' => [
-                                        'example' => ['status' => 'ok']
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ],
-                '/api/users' => [
-                    'get' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Tüm kullanıcıları listele',
-                        'description' => 'Kayıtlı tüm mezun ve öğrencilerin listesini döner.',
-                        'responses' => [
-                            '200' => [
-                                'description' => 'Kullanıcılar listesi',
-                                'content' => [
-                                    'application/json' => [
-                                        'example' => [
-                                            'success' => true,
-                                            'count' => 3,
-                                            'data' => [
-                                                [
-                                                    'id' => 1,
-                                                    'name' => 'Dilara MUMCU',
-                                                    'email' => 'dilaramumcu.ogr.iu.edu.tr',
-                                                    'role' => 'student',
-                                                    'department' => 'MIS',
-                                                    'graduation_year' => 2028,
-                                                    'current_company' => 'Samsung',
-                                                    'job_title' => 'Data Scientist',
-                                                    'linkedin_url' => null,
-                                                    'skills' => null,
-                                                    'created_at' => '2024-06-15T10:00:00Z',
-                                                    'updated_at' => '2026-09-30T12:23:15+00:00'
-                                                ]
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ],
-                    'post' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Yeni kullanıcı oluştur',
-                        'description' => 'Yeni bir mezun veya öğrenci profili ekler (In-Memory / File Cache).',
-                        'requestBody' => [
-                            'required' => true,
-                            'content' => [
-                                'application/json' => [
-                                    'schema' => [
-                                        'type' => 'object',
-                                        'required' => ['name', 'email'],
-                                        'properties' => [
-                                            'name' => ['type' => 'string', 'example' => 'Dilara MUMCU'],
-                                            'email' => ['type' => 'string', 'example' => 'dilaramumcu.ogr.iu.edu.tr'],
-                                            'role' => ['type' => 'string', 'example' => 'student'],
-                                            'department' => ['type' => 'string', 'example' => 'MIS'],
-                                            'graduation_year' => ['type' => 'integer', 'example' => 2028],
-                                            'current_company' => ['type' => 'string', 'example' => 'Samsung'],
-                                            'job_title' => ['type' => 'string', 'example' => 'Data Scientist'],
-                                            'linkedin_url' => ['type' => 'string', 'example' => 'https://linkedin.com/in/dilaramumcu'],
-                                            'skills' => [
-                                                'type' => 'array',
-                                                'items' => ['type' => 'string'],
-                                                'example' => ['PHP', 'Laravel', 'Docker', 'MySQL']
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'responses' => [
-                            '201' => [
-                                'description' => 'Kullanıcı başarıyla oluşturuldu',
-                                'content' => [
-                                    'application/json' => [
-                                        'example' => [
-                                            'success' => true,
-                                            'message' => 'User created successfully',
-                                            'data' => [
-                                                'id' => 4,
-                                                'name' => 'Dilara MUMCU',
-                                                'email' => 'dilaramumcu.ogr.iu.edu.tr',
-                                                'role' => 'student'
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ],
-                '/api/users/{id}' => [
-                    'get' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Tekil kullanıcıyı getir',
-                        'description' => "Belirtilen ID'ye sahip kullanıcının detaylarını döner.",
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                                'example' => 1
-                            ]
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Kullanıcı bulundu'],
-                            '404' => ['description' => 'Kullanıcı bulunamadı']
-                        ]
-                    ],
-                    'put' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Kullanıcıyı tam değiştir (Full Replacement)',
-                        'description' => 'REST standartlarına uygun olarak kullanıcının tüm bilgilerini değiştirir. İstekte gönderilmeyen veya boş bırakılan alanlar null yapılır.',
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                                'example' => 1
-                            ]
-                        ],
-                        'requestBody' => [
-                            'required' => true,
-                            'content' => [
-                                'application/json' => [
-                                    'example' => [
-                                        'name' => 'Dilara MUMCU',
-                                        'email' => 'dilaramumcu.ogr.iu.edu.tr',
-                                        'role' => 'student',
-                                        'department' => 'MIS',
-                                        'graduation_year' => 2028,
-                                        'current_company' => 'Samsung',
-                                        'job_title' => 'Data Scientist',
-                                        'linkedin_url' => null,
-                                        'skills' => null
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Kullanıcı başarıyla tam güncellendi (eksik alanlar null yapıldı)'],
-                            '404' => ['description' => 'Kullanıcı bulunamadı']
-                        ]
-                    ],
-                    'patch' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Kullanıcıyı kısmi güncelle (Partial Update)',
-                        'description' => 'Yalnızca istekte gönderilen alanları günceller, diğer mevcut alanları aynen korur.',
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                                'example' => 1
-                            ]
-                        ],
-                        'requestBody' => [
-                            'required' => true,
-                            'content' => [
-                                'application/json' => [
-                                    'example' => [
-                                        'current_company' => 'Google DeepMind',
-                                        'job_title' => 'AI Engineer'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Kısmi güncelleme başarılı'],
-                            '404' => ['description' => 'Kullanıcı bulunamadı']
-                        ]
-                    ],
-                    'delete' => [
-                        'tags' => ['Users'],
-                        'summary' => 'Kullanıcıyı sil',
-                        'description' => "Belirtilen ID'ye sahip kullanıcıyı sistemden siler.",
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                                'example' => 3
-                            ]
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Kullanıcı silindi'],
-                            '404' => ['description' => 'Kullanıcı bulunamadı']
-                        ]
-                    ]
-                ],
+
+                /* ------------------------------------------------------------------ */
+                /*                      Web Pages & Basic Routes                      */
+                /* ------------------------------------------------------------------ */
                 '/' => [
                     'get' => [
                         'tags' => ['Web Pages & Basic Routes'],
