@@ -6,9 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 
 /**
- * UserController (Web Controller)
+ * UserController (Web Controller with View Layer)
  * 
- * Handles web-level user requests and views with complete CRUD functionality.
+ * Handles all web-level user CRUD operations and renders Blade templates.
  */
 class UserController extends Controller
 {
@@ -44,7 +44,7 @@ class UserController extends Controller
             'success' => true,
             'source'  => 'UserController@create',
             'message' => 'User create form view placeholder',
-            'fields'  => ['name', 'email', 'role', 'department', 'graduation_year', 'current_company', 'job_title', 'skills'],
+            'fields'  => ['name', 'email', 'role', 'department', 'graduation_year', 'current_company', 'job_title', 'skills', 'linkedin_url'],
         ]);
     }
 
@@ -65,7 +65,7 @@ class UserController extends Controller
             ], 201);
         }
 
-        return redirect('/users')->with('success', 'Kullanıcı başarıyla oluşturuldu ve listeye eklendi! (POST /users)');
+        return redirect('/users')->with('success', "Kullanıcı '{$user->name}' başarıyla oluşturuldu ve listeye eklendi!");
     }
 
     /**
@@ -76,10 +76,13 @@ class UserController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => "User with ID {$id} not found.",
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User with ID {$id} not found.",
+                ], 404);
+            }
+            return redirect('/users')->with('error', "ID #{$id} ile kayıtlı kullanıcı bulunamadı.");
         }
 
         if (view()->exists('users.show')) {
@@ -101,10 +104,13 @@ class UserController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => "User with ID {$id} not found.",
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User with ID {$id} not found.",
+                ], 404);
+            }
+            return redirect('/users')->with('error', "Düzenlenecek kullanıcı #{$id} bulunamadı.");
         }
 
         if (view()->exists('users.edit')) {
@@ -127,16 +133,20 @@ class UserController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => "User with ID {$id} not found.",
-            ], 404);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User with ID {$id} not found.",
+                ], 404);
+            }
+            return redirect('/users')->with('error', "Güncellenecek kullanıcı #{$id} bulunamadı.");
         }
 
         $fullReplacement = $request->isMethod('PUT');
-        $user->update($request->all(), $fullReplacement);
+        $payload = $request->except(['_token', '_method']);
+        $user->update($payload, $fullReplacement);
 
-        if ($request->wantsJson() || !$request->header('referer')) {
+        if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'source'  => 'UserController@update',
@@ -145,28 +155,35 @@ class UserController extends Controller
             ]);
         }
 
-        return redirect("/users/{$id}")->with('success', 'User updated successfully');
+        return redirect("/users/{$id}")->with('success', "Kullanıcı #{$id} ({$user->name}) başarıyla güncellendi!");
     }
 
     /**
      * Remove the specified user from storage (DELETE /users/{id}).
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $deletedUser = User::deleteById($id);
 
         if (!$deletedUser) {
-            return response()->json([
-                'success' => false,
-                'message' => "User with ID {$id} not found.",
-            ], 404);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User with ID {$id} not found.",
+                ], 404);
+            }
+            return redirect('/users')->with('error', "Silinecek kullanıcı #{$id} bulunamadı.");
         }
 
-        return response()->json([
-            'success'      => true,
-            'source'       => 'UserController@destroy',
-            'message'      => "User {$id} deleted successfully via UserController.",
-            'deleted_user' => $deletedUser->toArray(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'source'       => 'UserController@destroy',
+                'message'      => "User {$id} deleted successfully via UserController.",
+                'deleted_user' => $deletedUser->toArray(),
+            ]);
+        }
+
+        return redirect('/users')->with('success', "Kullanıcı #{$id} ({$deletedUser->name}) başarıyla sistemden silindi!");
     }
 }

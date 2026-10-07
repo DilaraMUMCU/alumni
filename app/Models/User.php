@@ -100,8 +100,12 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
             'current_company' => $attributes['current_company'] ?? 'Google',
             'job_title'       => $attributes['job_title'] ?? 'Software Engineer',
             'linkedin_url'    => $attributes['linkedin_url'] ?? 'https://linkedin.com/in/dilaramumcu',
-            'skills'          => isset($attributes['skills']) && is_array($attributes['skills'])
-                ? $attributes['skills']
+            'skills'          => isset($attributes['skills'])
+                ? (is_array($attributes['skills'])
+                    ? $attributes['skills']
+                    : (is_string($attributes['skills'])
+                        ? array_values(array_filter(array_map('trim', explode(',', $attributes['skills']))))
+                        : ['PHP', 'Laravel', 'Docker', 'MySQL']))
                 : ['PHP', 'Laravel', 'Docker', 'MySQL'],
             'created_at'      => $now,
             'updated_at'      => $now,
@@ -225,8 +229,12 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
                 'current_company' => $attributes['current_company'] ?? null,
                 'job_title'       => $attributes['job_title'] ?? null,
                 'linkedin_url'    => $attributes['linkedin_url'] ?? null,
-                'skills'          => isset($attributes['skills']) && is_array($attributes['skills'])
-                    ? $attributes['skills']
+                'skills'          => isset($attributes['skills'])
+                    ? (is_array($attributes['skills'])
+                        ? $attributes['skills']
+                        : (is_string($attributes['skills'])
+                            ? array_values(array_filter(array_map('trim', explode(',', $attributes['skills']))))
+                            : null))
                     : null,
                 'created_at'      => $this->created_at ?? $now,
                 'updated_at'      => $now,
@@ -241,6 +249,9 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
                 }
                 if ($key === 'graduation_year' && $val !== null && $val !== '') {
                     $val = (int) $val;
+                }
+                if ($key === 'skills' && is_string($val)) {
+                    $val = array_values(array_filter(array_map('trim', explode(',', $val))));
                 }
                 $newRecord[$key] = $val;
             }

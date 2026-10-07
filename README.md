@@ -102,7 +102,10 @@ The View layer is responsible for rendering content and presenting data to the u
   - `resources/views/welcome.blade.php`: The primary visual portal and landing page displaying project status, module cards, and navigation links.
   - `resources/views/about.blade.php`: Static informational page describing the institutional mission.
   - `resources/views/swagger.blade.php`: Interactive API documentation interface embedding Swagger UI v5 via CDN, allowing browser-based endpoint exploration and execution ("Try it out").
-  - `resources/views/users/index.blade.php`: Dedicated User Management view layer providing visual user cards and an interactive form submitting to `POST /users`.
+  - `resources/views/users/index.blade.php`: User management directory listing all users with cards, links to details/edit, and a quick-add form (`GET /users` & `POST /users`).
+  - `resources/views/users/create.blade.php`: Dedicated user creation page (`GET /users/create`).
+  - `resources/views/users/show.blade.php`: Dedicated user profile view displaying full attributes and actions (`GET /users/{id}`).
+  - `resources/views/users/edit.blade.php`: Dedicated user edit page pre-filled with user data and submitting updates via `@method('PUT')` (`GET /users/{id}/edit`).
 - **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
 
 #### 🔹 Controller (C) — Request Handling & Business Logic
@@ -156,7 +159,10 @@ alumni/
 │       ├── swagger.blade.php         # Interactive Swagger UI dashboard
 │       ├── welcome.blade.php         # Main application landing page
 │       └── users/                    # [User View Layer]
-│           └── index.blade.php       # User directory and creation form view (GET /users & POST /users)
+│           ├── index.blade.php       # User directory & creation form (GET /users & POST /users)
+│           ├── create.blade.php      # Dedicated user creation view (GET /users/create)
+│           ├── show.blade.php        # Detailed user profile view (GET /users/{id})
+│           └── edit.blade.php        # Dedicated user edit form view (GET /users/{id}/edit & PUT /users/{id})
 │
 ├── routes/                           # Application route definitions
 │   ├── api.php                       # [API Router] RESTful API endpoints (ApiUserController)

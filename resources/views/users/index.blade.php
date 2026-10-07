@@ -83,11 +83,8 @@
             }
         }
 
-        .alert-success {
+        .alert {
             grid-column: 1 / -1;
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: #4ade80;
             padding: 16px 20px;
             border-radius: 12px;
             display: flex;
@@ -95,7 +92,20 @@
             gap: 12px;
             font-size: 15px;
             font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #4ade80;
             box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
         }
 
         .card {
@@ -125,7 +135,7 @@
             gap: 10px;
         }
 
-        .card-header .count-badge {
+        .count-badge {
             background: rgba(56, 189, 248, 0.2);
             color: #38bdf8;
             padding: 4px 12px;
@@ -308,15 +318,59 @@
             font-weight: 500;
         }
 
-        .user-footer {
+        .user-actions {
             margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 11px;
-            color: #64748b;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .btn-view:hover {
+            background: rgba(56, 189, 248, 0.3);
+            color: #ffffff;
+        }
+
+        .btn-edit {
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+        .btn-edit:hover {
+            background: rgba(234, 179, 8, 0.3);
+            color: #ffffff;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ffffff;
         }
     </style>
 </head>
@@ -330,6 +384,7 @@
         <div class="navbar-links">
             <a href="/">🏠 Ana Sayfa</a>
             <a href="/users" class="active">👥 Kullanıcılar (/users)</a>
+            <a href="/users/create">➕ Yeni Kullanıcı Sayfası</a>
             <a href="/about">ℹ️ Hakkında</a>
             <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
             <a href="/api/swagger.json" target="_blank">📄 OpenAPI JSON</a>
@@ -338,11 +393,17 @@
 
     <div class="main-container">
 
-        <!-- Başarı Bildirimi (POST sonrası) -->
+        <!-- Başarı / Hata Bildirimleri -->
         @if (session('success'))
-            <div class="alert-success">
+            <div class="alert alert-success">
                 <span>✅</span>
                 <span>{{ session('success') }}</span>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-error">
+                <span>⚠️</span>
+                <span>{{ session('error') }}</span>
             </div>
         @endif
 
@@ -418,7 +479,10 @@
         <div class="card">
             <div class="card-header">
                 <h2>👥 Kayıtlı Mezun ve Öğrenciler</h2>
-                <span class="count-badge">{{ count($users) }} Kullanıcı</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <a href="/users/create" class="action-btn btn-view" style="font-size: 13px; padding: 6px 14px;">➕ Yeni Sayfada Ekle</a>
+                    <span class="count-badge">{{ count($users) }} Kullanıcı</span>
+                </div>
             </div>
 
             <div class="user-grid">
@@ -451,9 +515,21 @@
                             @endif
                         </div>
 
-                        <div class="user-footer">
-                            <span>ID: #{{ $user['id'] }}</span>
-                            <span>{{ !empty($user['created_at']) ? substr($user['created_at'], 0, 10) : '' }}</span>
+                        <!-- CRUD Eylemleri: Görüntüle (GET), Düzenle (GET), Sil (DELETE) -->
+                        <div class="user-actions">
+                            <a href="/users/{{ $user['id'] }}" class="action-btn btn-view">
+                                👁️ Detay (GET)
+                            </a>
+                            <a href="/users/{{ $user['id'] }}/edit" class="action-btn btn-edit">
+                                ✏️ Düzenle (GET)
+                            </a>
+                            <form action="/users/{{ $user['id'] }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn btn-delete">
+                                    🗑️ Sil (DELETE)
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @empty
