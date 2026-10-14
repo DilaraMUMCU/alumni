@@ -96,6 +96,7 @@ The Model layer represents the business data, schemas, and state management.
 - **Standalone Announcement Model (`app/Models/Announcement.php`):** Implements complete announcement CRUD functionality (`all()`, `find()`, `create()`, `update()`, `deleteById()`, `reset()`) without database connection, backed by Cache with category, audience, priority, and pinning support.
 - **Target Eloquent Models (`app/Models/`):** The designated directory for data models. Once MySQL tables and migrations are integrated in future phases, models can transition to Eloquent ORM.
 - **Specification Model (`app/Http/SwaggerSpec.php`):** Encapsulates the domain model for API specifications, defining data schemas, request parameters, and response structures according to the OpenAPI 3.0 standard.
+- 📊 **Detailed Data Design Documentation (DDD):** Detailed entity schemas, data dictionary, ER diagrams, cache keys, and relational persistence roadmaps are documented in [**`ddd.md`**](ddd.md).
 
 #### 🔹 View (V) — Presentation Layer
 The View layer is responsible for rendering content and presenting data to the user.
@@ -188,9 +189,25 @@ alumni/
 ├── .gitignore                        # Git version control ignore rules
 ├── artisan                           # Laravel Artisan CLI executable
 ├── composer.json / composer.lock     # PHP dependencies, autoloading, and package lock
+├── ddd.md                            # [Data Layer] Data Design Documentation (DDD)
 ├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB)
 └── README.md                         # Project documentation and developer reference
 ```
+
+
+---
+
+## 📊 Data Design & Schema Documentation (DDD)
+
+Sistemin veri mimarisi, varlık alanları, önbellek ve veritabanı persistans stratejilerine dair tüm detaylar için özel veri tasarım dokümantasyonuna erişebilirsiniz:
+
+👉 [**Data Design Documentation (`ddd.md`)**](ddd.md)
+
+### 📌 `ddd.md` İçeriğinde Neler Var?
+- **Varlık-İlişki Diyagramı (ERD):** `User`, `Announcement`, `JobPosting`, `Event` ve `Mentorship` arasındaki ilişkileri gösteren Mermaid diyagramı.
+- **Kapsamlı Veri Sözlüğü (Data Dictionary):** Tüm model alanlarının PHP veri tipleri, hedef MySQL şema tipleri, kısıtlamaları (constraints) ve örnek değerleri.
+- **2 Aşamalı Persistans Stratejisi:** Mevcut Cache/In-memory altyapısı (`alumni_users`, `alumni_announcements`) ve hedef MySQL 8.0 & Eloquent ORM geçiş yol haritası.
+- **Veri Güvenliği ve Bütünlüğü:** CSRF muafiyetleri, tip dönüşümleri, skills dizgi-dizi dönüşümleri ve payload izolasyonu.
 
 
 ---
