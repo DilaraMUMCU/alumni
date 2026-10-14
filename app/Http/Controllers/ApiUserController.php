@@ -25,7 +25,7 @@ class ApiUserController extends Controller
         return response()->json([
             'success' => true,
             'count'   => count($users),
-            'data'    => array_map(fn($u) => $u->toArray(), $users),
+            'data'    => $users instanceof \Illuminate\Support\Collection ? $users->toArray() : array_map(fn($u) => $u->toArray(), $users),
         ], 200);
     }
 
@@ -144,7 +144,7 @@ class ApiUserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Users list reset to initial defaults.',
-            'data'    => array_map(fn($u) => $u->toArray(), $users),
+            'data'    => $users instanceof \Illuminate\Support\Collection ? $users->toArray() : array_map(fn($u) => $u->toArray(), $users),
         ], 200);
     }
 

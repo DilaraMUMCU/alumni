@@ -2,385 +2,189 @@
 
 namespace App\Models;
 
-use ArrayAccess;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Support\Facades\Cache;
-use JsonSerializable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * User Model (Database-independent / In-Memory & Cache-backed)
+ * User Model (Eloquent ORM with Two-Tier & Factory Support)
  * 
- * Provides complete CRUD operations without requiring an active database connection.
- * Persists state via Laravel Cache subsystem.
+ * Provides complete CRUD operations mapping to the MySQL 'users' table.
+ * Fully compatible with Eloquent Factories, Relationships, and legacy helper methods.
  */
-class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
+class User extends Model
 {
+    use HasFactory;
+
     /**
-     * Cache key used for storing users.
+     * Cache key for backward compatibility.
      */
     public const CACHE_KEY = 'alumni_users';
 
     /**
-     * Model attributes array.
+     * Database table associated with the model.
+     *
+     * @var string
      */
-    protected array $attributes = [
-        'id'              => null,
-        'name'            => null,
-        'email'           => null,
-        'role'            => null,
-        'department'      => null,
-        'graduation_year' => null,
-        'current_company' => null,
-        'job_title'       => null,
-        'linkedin_url'    => null,
-        'skills'          => null,
-        'created_at'      => null,
-        'updated_at'      => null,
+    protected $table = 'users';
+
+    /**
+     * Mass assignable attributes.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'role',
+        'department',
+        'graduation_year',
+        'current_company',
+        'job_title',
+        'linkedin_url',
+        'skills',
     ];
 
     /**
-     * Create a new User instance.
-     */
-    public function __construct(array $attributes = [])
-    {
-        $this->fill($attributes);
-    }
-
-    /**
-     * Fill attributes into the model.
-     */
-    public function fill(array $attributes): self
-    {
-        foreach ($attributes as $key => $value) {
-            if (array_key_exists($key, $this->attributes)) {
-                if ($key === 'id' && $value !== null) {
-                    $this->attributes['id'] = (int) $value;
-                } elseif ($key === 'graduation_year' && $value !== null && $value !== '') {
-                    $this->attributes['graduation_year'] = (int) $value;
-                } elseif ($key === 'skills' && is_string($value)) {
-                    $this->attributes['skills'] = array_map('trim', explode(',', $value));
-                } else {
-                    $this->attributes[$key] = $value;
-                }
-            }
-        }
-
-        return $this;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                             CRUD: CREATE                                   */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * Create and persist a new user without a database connection.
+     * Type casts for attributes.
      *
-     * @param array $attributes
-     * @return self
+     * @var array<string, string>
      */
-    public static function create(array $attributes): self
-    {
-        $rawUsers = static::getStoredUsers();
-
-        // Calculate next auto-increment ID
-        $nextId = count($rawUsers) > 0 ? (max(array_column($rawUsers, 'id')) + 1) : 1;
-
-        $now = now()->toIso8601String();
-
-        $userData = [
-            'id'              => $nextId,
-            'name'            => $attributes['name'] ?? 'Dilara Mumcu',
-            'email'           => $attributes['email'] ?? 'dilara@alumni.edu',
-            'role'            => $attributes['role'] ?? 'alumni',
-            'department'      => $attributes['department'] ?? 'Computer Engineering',
-            'graduation_year' => isset($attributes['graduation_year']) && $attributes['graduation_year'] !== ''
-                ? (int) $attributes['graduation_year']
-                : 2024,
-            'current_company' => $attributes['current_company'] ?? 'Google',
-            'job_title'       => $attributes['job_title'] ?? 'Software Engineer',
-            'linkedin_url'    => $attributes['linkedin_url'] ?? 'https://linkedin.com/in/dilaramumcu',
-            'skills'          => isset($attributes['skills'])
-                ? (is_array($attributes['skills'])
-                    ? $attributes['skills']
-                    : (is_string($attributes['skills'])
-                        ? array_values(array_filter(array_map('trim', explode(',', $attributes['skills']))))
-                        : ['PHP', 'Laravel', 'Docker', 'MySQL']))
-                : ['PHP', 'Laravel', 'Docker', 'MySQL'],
-            'created_at'      => $now,
-            'updated_at'      => $now,
-        ];
-
-        $rawUsers[] = $userData;
-        static::saveStoredUsers($rawUsers);
-
-        return new static($userData);
-    }
+    protected $casts = [
+        'skills'          => 'array',
+        'graduation_year' => 'integer',
+    ];
 
     /* -------------------------------------------------------------------------- */
-    /*                              CRUD: READ                                    */
+    /*                                 MUTATORS                                   */
     /* -------------------------------------------------------------------------- */
 
     /**
-     * Get all users as User model instances.
-     *
-     * @return array<self>
+     * Automatically cast comma-separated strings or arrays into JSON skills.
      */
-    public static function all(): array
+    public function setSkillsAttribute(mixed $value): void
     {
-        $rawUsers = static::getStoredUsers();
-
-        return array_map(fn($item) => new static($item), $rawUsers);
-    }
-
-    /**
-     * Find a user by their ID.
-     *
-     * @param int|string $id
-     * @return self|null
-     */
-    public static function find(int|string $id): ?self
-    {
-        $rawUsers = static::getStoredUsers();
-
-        foreach ($rawUsers as $item) {
-            if ((string) $item['id'] === (string) $id) {
-                return new static($item);
-            }
+        if (is_string($value)) {
+            $parsed = array_values(array_filter(array_map('trim', explode(',', $value))));
+            $this->attributes['skills'] = json_encode($parsed);
+        } elseif (is_array($value)) {
+            $this->attributes['skills'] = json_encode(array_values($value));
+        } else {
+            $this->attributes['skills'] = null;
         }
-
-        return null;
     }
 
     /**
-     * Count total stored users.
+     * Accessor for skills guaranteeing an array return value.
      */
-    public static function count(): int
+    public function getSkillsAttribute(mixed $value): array
     {
-        return count(static::getStoredUsers());
-    }
-
-    /**
-     * Check if a user with the given ID exists.
-     */
-    public static function exists(int|string $id): bool
-    {
-        return static::find($id) !== null;
-    }
-
-    /**
-     * Filter users matching a given key-value condition.
-     *
-     * @return array<self>
-     */
-    public static function where(string $key, mixed $value): array
-    {
-        $results = [];
-        foreach (static::all() as $user) {
-            if ($user->{$key} == $value) {
-                $results[] = $user;
-            }
+        if (empty($value)) {
+            return [];
         }
-
-        return $results;
+        return is_array($value) ? $value : (json_decode($value, true) ?: []);
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                             CRUD: UPDATE                                   */
+    /*                              RELATIONSHIPS                                 */
+    /* -------------------------------------------------------------------------- */
+
+    public function jobPostings(): HasMany
+    {
+        return $this->hasMany(JobPosting::class);
+    }
+
+    public function eventRegistrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    public function events(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_registrations')->withPivot('status', 'registered_at');
+    }
+
+    public function mentorRelationships(): HasMany
+    {
+        return $this->hasMany(MentorshipRelationship::class, 'mentor_id');
+    }
+
+    public function menteeRelationships(): HasMany
+    {
+        return $this->hasMany(MentorshipRelationship::class, 'mentee_id');
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                         CRUD COMPATIBILITY HELPERS                         */
     /* -------------------------------------------------------------------------- */
 
     /**
-     * Update the user model and persist to cache store.
-     *
-     * @param array $attributes Data attributes to update
-     * @param bool $fullReplacement If true (PUT), omitted fields are reset to null. If false (PATCH), preserved.
-     * @return self
+     * Update model supporting partial (PATCH) and full replacement (PUT).
      */
-    public function update(array $attributes, bool $fullReplacement = false): self
+    public function update(array $attributes = [], $options = []): bool
     {
-        $rawUsers = static::getStoredUsers();
-        $targetId = $this->id;
-        $foundIndex = null;
-
-        foreach ($rawUsers as $index => $item) {
-            if ((string) $item['id'] === (string) $targetId) {
-                $foundIndex = $index;
-                break;
-            }
-        }
-
-        if ($foundIndex === null) {
-            return $this;
-        }
-
-        $now = now()->toIso8601String();
+        $fullReplacement = is_bool($options) ? $options : (is_array($options) && ($options['fullReplacement'] ?? false));
 
         if ($fullReplacement) {
-            // PUT: Full Replacement (Omitted fields reset to null)
-            $newRecord = [
-                'id'              => (int) $targetId,
-                'name'            => $attributes['name'] ?? null,
-                'email'           => $attributes['email'] ?? null,
-                'role'            => $attributes['role'] ?? null,
-                'department'      => $attributes['department'] ?? null,
-                'graduation_year' => isset($attributes['graduation_year']) && $attributes['graduation_year'] !== ''
-                    ? (int) $attributes['graduation_year']
-                    : null,
-                'current_company' => $attributes['current_company'] ?? null,
-                'job_title'       => $attributes['job_title'] ?? null,
-                'linkedin_url'    => $attributes['linkedin_url'] ?? null,
-                'skills'          => isset($attributes['skills'])
-                    ? (is_array($attributes['skills'])
-                        ? $attributes['skills']
-                        : (is_string($attributes['skills'])
-                            ? array_values(array_filter(array_map('trim', explode(',', $attributes['skills']))))
-                            : null))
-                    : null,
-                'created_at'      => $this->created_at ?? $now,
-                'updated_at'      => $now,
+            $defaultFields = [
+                'name'            => null,
+                'email'           => null,
+                'role'            => 'alumni',
+                'department'      => null,
+                'graduation_year' => null,
+                'current_company' => null,
+                'job_title'       => null,
+                'linkedin_url'    => null,
+                'skills'          => null,
             ];
-        } else {
-            // PATCH: Partial Update (Only provided fields change, omitted fields preserved)
-            $newRecord = $rawUsers[$foundIndex];
-
-            foreach ($attributes as $key => $val) {
-                if (in_array($key, ['id', 'created_at', '_method', '_token'])) {
-                    continue;
-                }
-                if ($key === 'graduation_year' && $val !== null && $val !== '') {
-                    $val = (int) $val;
-                }
-                if ($key === 'skills' && is_string($val)) {
-                    $val = array_values(array_filter(array_map('trim', explode(',', $val))));
-                }
-                $newRecord[$key] = $val;
-            }
-            $newRecord['updated_at'] = $now;
+            $attributes = array_merge($defaultFields, $attributes);
         }
 
-        $rawUsers[$foundIndex] = $newRecord;
-        static::saveStoredUsers($rawUsers);
-
-        $this->fill($newRecord);
-
-        return $this;
+        return parent::update($attributes, is_array($options) ? $options : []);
     }
 
     /**
-     * Static update by user ID.
+     * Update a user record by ID.
      */
     public static function updateById(int|string $id, array $attributes, bool $fullReplacement = false): ?self
     {
         $user = static::find($id);
-        if (!$user) {
-            return null;
+        if ($user) {
+            $user->update($attributes, $fullReplacement);
+            return $user;
         }
-
-        return $user->update($attributes, $fullReplacement);
+        return null;
     }
 
     /**
-     * Save current state to the persistent cache store.
-     */
-    public function save(): self
-    {
-        $rawUsers = static::getStoredUsers();
-        $found = false;
-
-        $this->attributes['updated_at'] = now()->toIso8601String();
-
-        foreach ($rawUsers as $index => $item) {
-            if ((string) $item['id'] === (string) $this->id) {
-                $rawUsers[$index] = $this->attributes;
-                $found = true;
-                break;
-            }
-        }
-
-        if (!$found) {
-            if ($this->id === null) {
-                $this->id = count($rawUsers) > 0 ? (max(array_column($rawUsers, 'id')) + 1) : 1;
-            }
-            $this->attributes['created_at'] = $this->attributes['created_at'] ?? now()->toIso8601String();
-            $rawUsers[] = $this->attributes;
-        }
-
-        static::saveStoredUsers($rawUsers);
-
-        return $this;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                             CRUD: DELETE                                   */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * Delete the user instance from cache store.
-     */
-    public function delete(): bool
-    {
-        return static::deleteById($this->id) !== null;
-    }
-
-    /**
-     * Delete a user by ID and return the deleted instance.
+     * Delete a user record by ID.
      */
     public static function deleteById(int|string $id): ?self
     {
-        $rawUsers = static::getStoredUsers();
-        $foundIndex = null;
-
-        foreach ($rawUsers as $index => $item) {
-            if ((string) $item['id'] === (string) $id) {
-                $foundIndex = $index;
-                break;
-            }
+        $user = static::find($id);
+        if ($user) {
+            $user->delete();
+            return $user;
         }
-
-        if ($foundIndex === null) {
-            return null;
-        }
-
-        $deletedItem = $rawUsers[$foundIndex];
-        array_splice($rawUsers, $foundIndex, 1);
-        static::saveStoredUsers($rawUsers);
-
-        return new static($deletedItem);
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                           STORAGE & SEED DATA                              */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * Get raw users stored in cache, initialized with seed data if empty.
-     *
-     * @return array
-     */
-    public static function getStoredUsers(): array
-    {
-        return Cache::get(static::CACHE_KEY, static::initialUsers());
-    }
-
-    /**
-     * Persist raw users to cache store.
-     */
-    public static function saveStoredUsers(array $users): void
-    {
-        Cache::forever(static::CACHE_KEY, array_values($users));
+        return null;
     }
 
     /**
      * Reset users back to initial default seed data.
-     *
-     * @return array<self>
      */
     public static function reset(): array
     {
-        $initial = static::initialUsers();
-        static::saveStoredUsers($initial);
+        // Disable foreign key checks for clean truncation
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        static::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
-        return array_map(fn($item) => new static($item), $initial);
+        foreach (static::initialUsers() as $data) {
+            static::create($data);
+        }
+
+        return static::all()->all();
     }
 
     /**
@@ -390,7 +194,6 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
     {
         return [
             [
-                'id'              => 1,
                 'name'            => 'Dilara Mumcu',
                 'email'           => 'dilara@alumni.edu',
                 'role'            => 'alumni',
@@ -400,11 +203,8 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
                 'job_title'       => 'Software Engineer',
                 'linkedin_url'    => 'https://linkedin.com/in/dilaramumcu',
                 'skills'          => ['PHP', 'Laravel', 'Docker', 'MySQL'],
-                'created_at'      => '2024-06-15T10:00:00Z',
-                'updated_at'      => '2024-06-15T10:00:00Z',
             ],
             [
-                'id'              => 2,
                 'name'            => 'Caner Yılmaz',
                 'email'           => 'caner@alumni.edu',
                 'role'            => 'alumni',
@@ -414,11 +214,8 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
                 'job_title'       => 'Product Manager',
                 'linkedin_url'    => 'https://linkedin.com/in/caneryilmaz',
                 'skills'          => ['Agile', 'Scrum', 'Product Strategy', 'Data Analysis'],
-                'created_at'      => '2023-07-20T14:30:00Z',
-                'updated_at'      => '2023-07-20T14:30:00Z',
             ],
             [
-                'id'              => 3,
                 'name'            => 'Elif Demir',
                 'email'           => 'elif@student.edu',
                 'role'            => 'student',
@@ -428,70 +225,7 @@ class User implements ArrayAccess, Arrayable, Jsonable, JsonSerializable
                 'job_title'       => 'Intern',
                 'linkedin_url'    => 'https://linkedin.com/in/elifdemir',
                 'skills'          => ['Python', 'Machine Learning', 'Git'],
-                'created_at'      => '2025-09-01T09:15:00Z',
-                'updated_at'      => '2025-09-01T09:15:00Z',
             ],
         ];
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                         CONVERSIONS & MAGIC ACCESS                         */
-    /* -------------------------------------------------------------------------- */
-
-    public function toArray(): array
-    {
-        return $this->attributes;
-    }
-
-    public function toJson($options = 0): string
-    {
-        return json_encode($this->jsonSerialize(), $options);
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return $this->toArray();
-    }
-
-    public function __get(string $name)
-    {
-        return $this->attributes[$name] ?? null;
-    }
-
-    public function __set(string $name, $value): void
-    {
-        if (array_key_exists($name, $this->attributes)) {
-            $this->attributes[$name] = $value;
-        }
-    }
-
-    public function __isset(string $name): bool
-    {
-        return isset($this->attributes[$name]);
-    }
-
-    // ArrayAccess Implementation
-    public function offsetExists($offset): bool
-    {
-        return isset($this->attributes[$offset]);
-    }
-
-    public function offsetGet($offset): mixed
-    {
-        return $this->attributes[$offset] ?? null;
-    }
-
-    public function offsetSet($offset, $value): void
-    {
-        if ($offset !== null && array_key_exists($offset, $this->attributes)) {
-            $this->attributes[$offset] = $value;
-        }
-    }
-
-    public function offsetUnset($offset): void
-    {
-        if (array_key_exists($offset, $this->attributes)) {
-            $this->attributes[$offset] = null;
-        }
     }
 }

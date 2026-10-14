@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Announcement;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class AnnouncementSeeder extends Seeder
 {
@@ -13,23 +12,18 @@ class AnnouncementSeeder extends Seeder
      */
     public function run(): void
     {
-        $announcements = Announcement::initialAnnouncements();
-
-        foreach ($announcements as $announcement) {
-            DB::table('announcements')->updateOrInsert(
-                ['title' => $announcement['title']],
-                [
-                    'content'         => $announcement['content'],
-                    'category'        => $announcement['category'],
-                    'author'          => $announcement['author'],
-                    'target_audience' => $announcement['target_audience'],
-                    'priority'        => $announcement['priority'],
-                    'is_active'       => $announcement['is_active'],
-                    'pinned'          => $announcement['pinned'],
-                    'created_at'      => $announcement['created_at'] ? date('Y-m-d H:i:s', strtotime($announcement['created_at'])) : now(),
-                    'updated_at'      => $announcement['updated_at'] ? date('Y-m-d H:i:s', strtotime($announcement['updated_at'])) : now(),
-                ]
+        // 1. Fixed Core Seed Announcements
+        foreach (Announcement::initialAnnouncements() as $announcementData) {
+            Announcement::updateOrCreate(
+                ['title' => $announcementData['title']],
+                $announcementData
             );
         }
+
+        // 2. Additional Generated Announcements via Factory
+        Announcement::factory()->count(3)->career()->create();
+        Announcement::factory()->count(3)->event()->create();
+        Announcement::factory()->count(2)->mentorship()->create();
+        Announcement::factory()->count(2)->urgent()->create();
     }
 }

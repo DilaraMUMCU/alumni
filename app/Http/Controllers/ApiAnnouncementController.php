@@ -25,7 +25,7 @@ class ApiAnnouncementController extends Controller
         return response()->json([
             'success' => true,
             'count'   => count($announcements),
-            'data'    => array_map(fn($a) => $a->toArray(), $announcements),
+            'data'    => $announcements instanceof \Illuminate\Support\Collection ? $announcements->toArray() : array_map(fn($a) => $a->toArray(), $announcements),
         ], 200);
     }
 
@@ -145,7 +145,7 @@ class ApiAnnouncementController extends Controller
             'success' => true,
             'message' => 'Announcements list reset to initial defaults.',
             'count'   => count($announcements),
-            'data'    => array_map(fn($a) => $a->toArray(), $announcements),
+            'data'    => $announcements instanceof \Illuminate\Support\Collection ? $announcements->toArray() : array_map(fn($a) => $a->toArray(), $announcements),
         ], 200);
     }
 

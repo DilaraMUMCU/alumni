@@ -492,21 +492,21 @@
         <div class="stat-card">
             <div class="stat-info">
                 <h3>Sabitlenenler</h3>
-                <div class="stat-num">{{ count(array_filter($announcements, fn($a) => !empty($a['pinned']))) }}</div>
+                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => !empty($a['pinned']))->count() }}</div>
             </div>
             <div class="stat-icon">📌</div>
         </div>
         <div class="stat-card">
             <div class="stat-info">
                 <h3>Kariyer & Staj</h3>
-                <div class="stat-num">{{ count(array_filter($announcements, fn($a) => ($a['category'] ?? '') === 'career')) }}</div>
+                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => ($a['category'] ?? '') === 'career')->count() }}</div>
             </div>
             <div class="stat-icon">💼</div>
         </div>
         <div class="stat-card">
             <div class="stat-info">
                 <h3>Etkinlikler</h3>
-                <div class="stat-num">{{ count(array_filter($announcements, fn($a) => ($a['category'] ?? '') === 'event')) }}</div>
+                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => ($a['category'] ?? '') === 'event')->count() }}</div>
             </div>
             <div class="stat-icon">🎯</div>
         </div>

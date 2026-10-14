@@ -27,7 +27,7 @@ class AnnouncementController extends Controller
             'success' => true,
             'source'  => 'AnnouncementController@index',
             'count'   => count($announcements),
-            'data'    => array_map(fn($a) => $a->toArray(), $announcements),
+            'data'    => $announcements instanceof \Illuminate\Support\Collection ? $announcements->toArray() : array_map(fn($a) => $a->toArray(), $announcements),
         ]);
     }
 

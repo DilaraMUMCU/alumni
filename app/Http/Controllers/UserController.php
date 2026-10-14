@@ -27,7 +27,7 @@ class UserController extends Controller
             'success' => true,
             'source'  => 'UserController@index',
             'count'   => count($users),
-            'data'    => array_map(fn($u) => $u->toArray(), $users),
+            'data'    => $users instanceof \Illuminate\Support\Collection ? $users->toArray() : array_map(fn($u) => $u->toArray(), $users),
         ]);
     }
 
