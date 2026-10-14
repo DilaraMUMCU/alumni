@@ -316,6 +316,39 @@
                 </div>
             @endif
 
+            <!-- İlişkisel Veritabanı Verileri: İlanlar & Etkinlikler -->
+            @if ($user->jobPostings && $user->jobPostings->isNotEmpty())
+                <div class="skills-section" style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 18px; margin-top: 18px;">
+                    <h3 style="color: #34d399; font-size: 15px; margin-bottom: 10px;">💼 Yayınlanan İş / Staj İlanları (job_postings tablosu)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        @foreach ($user->jobPostings as $job)
+                            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 14px;">
+                                <div style="font-weight: 600; color: #a7f3d0; font-size: 14px;">{{ $job->title }}</div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                                    🏢 {{ $job->company }} • 📍 {{ $job->location }} • 🕒 {{ ucfirst($job->employment_type) }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if ($user->events && $user->events->isNotEmpty())
+                <div class="skills-section" style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 18px; margin-top: 18px;">
+                    <h3 style="color: #c084fc; font-size: 15px; margin-bottom: 10px;">🎯 Kayıt Olunan Etkinlikler (events & event_registrations)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        @foreach ($user->events as $event)
+                            <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 10px 14px;">
+                                <div style="font-weight: 600; color: #e9d5ff; font-size: 14px;">{{ $event->title }}</div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                                    📍 {{ $event->location }} • 📅 {{ $event->event_date ? $event->event_date->format('d.m.Y H:i') : '-' }} • Durum: <span style="color: #34d399;">{{ $event->pivot->status ?? 'confirmed' }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div class="card-actions">
                 <div style="color: #64748b; font-size: 12px;">
                     Oluşturulma: {{ !empty($user['created_at']) ? substr($user['created_at'], 0, 19) : '-' }}

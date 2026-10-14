@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -206,6 +206,45 @@
         <h1>Alumni Tracking System</h1>
         <p class="subtitle">Complete RESTful Resource Management (GET, POST, PUT, PATCH, DELETE)</p>
 
+        <!-- Live Database Connection Status Card -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; display: inline-block;"></span>
+                    <strong style="color: #6ee7b7; font-size: 15px;">🗄️ Database: MySQL 8.0 Connected (alumni)</strong>
+                </div>
+                <span style="font-size: 12px; color: #a7f3d0; background: rgba(16, 185, 129, 0.2); padding: 3px 10px; border-radius: 9999px;">
+                    Eloquent ORM Active
+                </span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">users</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #38bdf8;">{{ \App\Models\User::count() }}</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">announcements</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #facc15;">{{ \App\Models\Announcement::count() }}</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">job_postings</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #34d399;">{{ \App\Models\JobPosting::count() }}</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">events</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #c084fc;">{{ \App\Models\Event::count() }}</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">registrations</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #f472b6;">{{ \App\Models\EventRegistration::count() }}</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
+                    <div style="font-size: 11px; color: #94a3b8;">mentorships</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #fb923c;">{{ \App\Models\MentorshipRelationship::count() }}</div>
+                </div>
+            </div>
+        </div>
+
         <div class="routes-section">
             <div class="routes-title">Aktif Rotalar (Active Routes)</div>
             <div class="route-item" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); margin-bottom: 8px;">
@@ -295,9 +334,9 @@
         </div>
 
         <div class="test-card">
-            <span style="font-weight: 600; font-size: 14px; color: #fca5a5;">RESTful API Canl� Test Konsolu</span>
+            <span style="font-weight: 600; font-size: 14px; color: #fca5a5;">🗄️ RESTful API Canlı MySQL Test Konsolu</span>
             <p style="font-size: 13px; color: #94a3b8; margin: 8px 0 12px 0;">
-                T�m CRUD i�lemlerini s�rayla canl� olarak test edebilirsiniz:
+                Tüm CRUD işlemlerini doğrudan MySQL 8.0 veritabanına bağlı olarak canlı test edebilirsiniz:
             </p>
             <div class="btn-group">
                 <button class="btn btn-get" onclick="fetchGetUsers()">1. GET (Listele)</button>

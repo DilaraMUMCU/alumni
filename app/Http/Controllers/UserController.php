@@ -17,7 +17,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::with(['jobPostings', 'events'])->orderByDesc('id')->get();
 
         if (view()->exists('users.index')) {
             return view('users.index', compact('users'));
@@ -73,7 +73,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = User::find($id);
+        $user = User::with(['jobPostings', 'events', 'mentorRelationships.mentee', 'menteeRelationships.mentor'])->find($id);
 
         if (!$user) {
             if (request()->wantsJson()) {

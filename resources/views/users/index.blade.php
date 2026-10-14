@@ -368,9 +368,33 @@
             color: #f87171;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
-        .btn-delete:hover {
-            background: rgba(239, 68, 68, 0.3);
-            color: #ffffff;
+        .db-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .db-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -385,10 +409,11 @@
             <a href="/">🏠 Ana Sayfa</a>
             <a href="/users" class="active">👥 Kullanıcılar (/users)</a>
             <a href="/announcements">📢 Duyurular (/announcements)</a>
-            <a href="/users/create">➕ Yeni Kullanıcı Sayfası</a>
-            <a href="/about">ℹ️ Hakkında</a>
+            <a href="/users/create">➕ Yeni Kullanıcı</a>
             <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
-            <a href="/api/swagger.json" target="_blank">📄 OpenAPI JSON</a>
+            <div class="db-status-badge">
+                <span class="db-dot"></span> 🗄️ MySQL 8.0: Connected (alumni.users)
+            </div>
         </div>
     </nav>
 
@@ -479,10 +504,17 @@
         <!-- SAĞ KOLON: Kayıtlı Kullanıcı Listesi (GET /users) -->
         <div class="card">
             <div class="card-header">
-                <h2>👥 Kayıtlı Mezun ve Öğrenciler</h2>
+                <div>
+                    <h2>👥 Kayıtlı Mezun ve Öğrenciler</h2>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                        🗄️ MySQL Tablo: <code style="color: #38bdf8;">users</code> • {{ $users->where('role', 'alumni')->count() }} Mezun, {{ $users->where('role', 'student')->count() }} Öğrenci
+                    </div>
+                </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <a href="/users/create" class="action-btn btn-view" style="font-size: 13px; padding: 6px 14px;">➕ Yeni Sayfada Ekle</a>
-                    <span class="count-badge">{{ count($users) }} Kullanıcı</span>
+                    <a href="/users/create" class="action-btn btn-view" style="font-size: 13px; padding: 6px 14px;">➕ Yeni Ekle</a>
+                    <span class="count-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        {{ count($users) }} Kayıt
+                    </span>
                 </div>
             </div>
 
@@ -492,7 +524,10 @@
                         <div>
                             <div class="user-header">
                                 <div>
-                                    <div class="user-name">{{ $user['name'] ?? 'İsimsiz' }}</div>
+                                    <div class="user-name">
+                                        {{ $user['name'] ?? 'İsimsiz' }}
+                                        <span style="font-size: 11px; color: #64748b; font-weight: normal;">#{{ $user['id'] }}</span>
+                                    </div>
                                     <div class="user-email">{{ $user['email'] ?? '-' }}</div>
                                 </div>
                                 <span class="role-badge {{ ($user['role'] ?? '') === 'student' ? 'role-student' : 'role-alumni' }}">
@@ -505,6 +540,19 @@
                                 @if (!empty($user['current_company']) || !empty($user['job_title']))
                                     <div>💼 <strong>İş:</strong> {{ $user['job_title'] ?? '-' }} @ {{ $user['current_company'] ?? '-' }}</div>
                                 @endif
+
+                                <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                                    @if($user->jobPostings && $user->jobPostings->isNotEmpty())
+                                        <span style="font-size: 11px; color: #34d399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 6px; border-radius: 4px;">
+                                            💼 {{ $user->jobPostings->count() }} İlan
+                                        </span>
+                                    @endif
+                                    @if($user->events && $user->events->isNotEmpty())
+                                        <span style="font-size: 11px; color: #c084fc; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); padding: 2px 6px; border-radius: 4px;">
+                                            🎯 {{ $user->events->count() }} Etkinlik
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
                             @if (!empty($user['skills']) && is_array($user['skills']))

@@ -122,11 +122,11 @@ class User extends Model
     /**
      * Update model supporting partial (PATCH) and full replacement (PUT).
      */
-    public function update(array $attributes = [], $options = []): bool
+    public function update(array $attributes = [], mixed $options = [], bool $fullReplacement = false): bool
     {
-        $fullReplacement = is_bool($options) ? $options : (is_array($options) && ($options['fullReplacement'] ?? false));
+        $isFull = $fullReplacement || (is_bool($options) ? $options : (is_array($options) && ($options['fullReplacement'] ?? false)));
 
-        if ($fullReplacement) {
+        if ($isFull) {
             $defaultFields = [
                 'name'            => null,
                 'email'           => null,

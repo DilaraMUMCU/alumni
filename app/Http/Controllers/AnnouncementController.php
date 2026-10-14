@@ -17,7 +17,7 @@ class AnnouncementController extends Controller
      */
     public function index()
     {
-        $announcements = Announcement::all();
+        $announcements = Announcement::orderByDesc('pinned')->orderByDesc('created_at')->get();
 
         if (view()->exists('announcements.index')) {
             return view('announcements.index', compact('announcements'));

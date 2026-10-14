@@ -37,12 +37,16 @@ class ApiAnnouncementController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $payload = $this->getPayload($request);
+        $payload = $request->isJson() ? $request->json()->all() : $request->all();
+        if (empty($payload)) {
+            $payload = $this->getPayload($request);
+        }
+
         $announcement = Announcement::create($payload);
 
         return response()->json([
             'success' => true,
-            'message' => 'Announcement created successfully and stored without database (via Cache)!',
+            'message' => 'Announcement created successfully and persisted to MySQL database!',
             'data'    => $announcement->toArray(),
         ], 201);
     }
@@ -92,14 +96,18 @@ class ApiAnnouncementController extends Controller
             ], 404);
         }
 
-        $payload = $this->getPayload($request);
+        $payload = $request->isJson() ? $request->json()->all() : $request->all();
+        if (empty($payload)) {
+            $payload = $this->getPayload($request);
+        }
+
         $isFullReplacement = $request->isMethod('PUT') || $request->header('X-HTTP-Method-Override') === 'PUT';
 
         $announcement->update($payload, fullReplacement: $isFullReplacement);
 
         $message = $isFullReplacement
-            ? "Announcement {$id} replaced successfully (PUT: omitted fields reset to defaults/null)"
-            : "Announcement {$id} partially updated successfully (PATCH, in cache)";
+            ? "Announcement {$id} replaced successfully (PUT in MySQL: omitted fields reset to defaults/null)"
+            : "Announcement {$id} partially updated successfully (PATCH in MySQL)";
 
         return response()->json([
             'success' => true,

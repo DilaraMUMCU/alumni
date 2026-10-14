@@ -37,12 +37,16 @@ class ApiUserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $payload = $this->getPayload($request);
+        $payload = $request->isJson() ? $request->json()->all() : $request->all();
+        if (empty($payload)) {
+            $payload = $this->getPayload($request);
+        }
+
         $user = User::create($payload);
 
         return response()->json([
             'success' => true,
-            'message' => 'User created successfully and stored without database (via Cache)!',
+            'message' => 'User created successfully and persisted to MySQL database!',
             'data'    => $user->toArray(),
         ], 201);
     }
@@ -92,14 +96,18 @@ class ApiUserController extends Controller
             ], 404);
         }
 
-        $payload = $this->getPayload($request);
+        $payload = $request->isJson() ? $request->json()->all() : $request->all();
+        if (empty($payload)) {
+            $payload = $this->getPayload($request);
+        }
+
         $isFullReplacement = $request->isMethod('PUT') || $request->header('X-HTTP-Method-Override') === 'PUT';
 
         $user->update($payload, fullReplacement: $isFullReplacement);
 
         $message = $isFullReplacement
-            ? "User {$id} replaced successfully (PUT: omitted fields reset to null)"
-            : "User {$id} partially updated successfully (PATCH, in cache)";
+            ? "User {$id} replaced successfully (PUT in MySQL: omitted fields reset to defaults/null)"
+            : "User {$id} partially updated successfully (PATCH in MySQL)";
 
         return response()->json([
             'success' => true,

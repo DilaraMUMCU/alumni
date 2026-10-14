@@ -461,6 +461,35 @@
             background: rgba(239, 68, 68, 0.3);
             color: #ffffff;
         }
+
+        .db-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .db-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -474,9 +503,11 @@
             <a href="/">🏠 Ana Sayfa</a>
             <a href="/users">👥 Kullanıcılar</a>
             <a href="/announcements" class="active">📢 Duyurular (/announcements)</a>
-            <a href="/announcements/create">➕ Yeni Duyuru Ekle</a>
+            <a href="/announcements/create">➕ Yeni Duyuru</a>
             <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
-            <a href="/api/swagger.json" target="_blank">📄 OpenAPI JSON</a>
+            <div class="db-status-badge">
+                <span class="db-dot"></span> 🗄️ MySQL 8.0: Connected (alumni.announcements)
+            </div>
         </div>
     </nav>
 
