@@ -1,38 +1,38 @@
 # 📊 Data Design Documentation (DDD)
 ## Alumni Tracking & Community Networking System
 
-Bu doküman, **Alumni Tracking & Community Networking System** uygulamasının veri mimarisini, veri modellerini, alan tanımlarını (Data Dictionary), önbellek ve veritabanı persistans stratejilerini ve ilişkisel veri tasarımını ayrıntılı olarak belgelemektedir.
+This document provides a comprehensive specification of the data architecture, data models, field definitions (Data Dictionary), cache and database persistence strategies, and relational data design for the **Alumni Tracking & Community Networking System**.
 
 ---
 
-## 📑 İçindekiler
-1. [Sistem Veri Mimarisi ve Persistans Stratejisi](#1-sistem-veri-mimarisi-ve-persistans-stratejisi)
-2. [Varlık-İlişki Diyagramı (ERD)](#2-varlık-ilişki-diyagramı-erd)
-3. [Detaylı Veri Sözlüğü (Data Dictionary)](#3-detaylı-veri-sözlüğü-data-dictionary)
-   - [3.1. User (Kullanıcı) Varlığı](#31-user-kullanıcı-varlığı)
-   - [3.2. Announcement (Duyuru) Varlığı](#32-announcement-duyuru-varlığı)
-   - [3.3. Gelecek / Planlanan Varlıklar (Job, Event, Mentorship)](#33-gelecek--planlanan-varlıklar)
-4. [Veri Erişim Katmanı (DAL) ve CRUD Mekaniği](#4-veri-erişim-katmanı-dal-ve-crud-mekaniği)
-5. [Veri Bütünlüğü, Tip Dönüşümleri ve Güvenlik](#5-veri-bütünlüğü-tip-dönüşümleri-ve-güvenlik)
-6. [İlişkisel Veritabanına (MySQL 8.0) Geçiş Yol Haritası](#6-ilişkisel-veritabanına-mysql-80-geçiş-yol-haritası)
+## 📑 Table of Contents
+1. [System Data Architecture and Persistence Strategy](#1-system-data-architecture-and-persistence-strategy)
+2. [Entity-Relationship Diagram (ERD)](#2-entity-relationship-diagram-erd)
+3. [Detailed Data Dictionary](#3-detailed-data-dictionary)
+   - [3.1. User Entity](#31-user-entity)
+   - [3.2. Announcement Entity](#32-announcement-entity)
+   - [3.3. Future / Planned Entities (Job, Event, Mentorship)](#33-future--planned-entities)
+4. [Data Access Layer (DAL) and CRUD Mechanics](#4-data-access-layer-dal-and-crud-mechanics)
+5. [Data Integrity, Type Casting, and Security](#5-data-integrity-type-casting-and-security)
+6. [Relational Database (MySQL 8.0) Migration Roadmap](#6-relational-database-mysql-80-migration-roadmap)
 
 ---
 
-## 1. Sistem Veri Mimarisi ve Persistans Stratejisi
+## 1. System Data Architecture and Persistence Strategy
 
-Uygulama, geliştirme ve operasyonel esnekliği maksimize etmek amacıyla **iki aşamalı bir veri persistans stratejisi** izlemektedir:
+The application adopts a **two-tier data persistence strategy** to maximize development agility, seamless portability, and operational scalability:
 
 ```
-[İstemci / API / Web Form]
+[Client / API / Web Form]
            │
            ▼
-[Controller Katmanı (UserController / AnnouncementController)]
+[Controller Layer (UserController / AnnouncementController)]
            │
            ▼
-[Model Katmanı (App\Models\User / App\Models\Announcement)]
+[Model Layer (App\Models\User / App\Models\Announcement)]
            │
  ┌─────────┴────────────────────────┐
- │ Aşama 1: Mevcut Uygulama          │ Aşama 2: Hedef Mimari
+ │ Phase 1: Current Implementation  │ Phase 2: Target Architecture
  ▼                                  ▼
 [Laravel Cache Subsystem]          [MySQL 8.0 Relational DB]
 (File / In-Memory Store)           (Eloquent ORM & Migrations)
@@ -40,22 +40,22 @@ Uygulama, geliştirme ve operasyonel esnekliği maksimize etmek amacıyla **iki 
 - Key: 'alumni_announcements'                events, job_postings...
 ```
 
-### 1.1. Aşama 1 (Mevcut Durum): Database-Independent & Cache-Backed Persistence
-- **Amaç:** Harici bir veritabanı bağlantısı veya migrasyon bağımlılığı olmadan, Docker konteynerlerinde ve yerel ortamlarda sıfır yapılandırmayla anında çalışabilirlik.
-- **Teknoloji:** Laravel Cache Subsystem (`Illuminate\Support\Facades\Cache`).
-- **Kayıt Anahtarları (Cache Keys):**
-  - `alumni_users`: Tüm mezun ve öğrenci kayıtlarını tutan liste.
-  - `alumni_announcements`: Tüm duyuruları ve durumlarını tutan liste.
-- **Yaşam Döngüsü & Saklama:** `Cache::forever()` ile uygulama çalıştığı sürece kalıcıdır. İstendiğinde API (`/api/users/reset`, `/api/announcements/reset`) veya model üzerinden fabrika ayarlarına sıfırlanabilir (`reset()`).
+### 1.1. Phase 1 (Current State): Database-Independent & Cache-Backed Persistence
+- **Purpose:** Immediate zero-configuration readiness across local workstations and Docker environments without requiring an active external database connection or pre-migration steps.
+- **Technology:** Laravel Cache Subsystem (`Illuminate\Support\Facades\Cache`).
+- **Storage Keys (Cache Keys):**
+  - `alumni_users`: Complete array collection of alumni, student, and administrator records.
+  - `alumni_announcements`: Complete array collection of announcements, categories, priorities, and statuses.
+- **Lifecycle & Retention:** Persisted with `Cache::forever()` throughout application execution. Can be reset to deterministic factory seed values at any time via API endpoints (`POST /api/users/reset`, `POST /api/announcements/reset`) or programmatically via model helpers (`reset()`).
 
-### 1.2. Aşama 2 (Hedef Mimari): MySQL 8.0 & Eloquent ORM
-- Modeller `ArrayAccess`, `Arrayable`, `Jsonable` ve `JsonSerializable` arayüzlerini uyguladığı için, MySQL tablolarına ve Eloquent ORM yapısına geçiş yapıldığında Controller ve View katmanlarında kod değişikliği gerekmeyecektir.
+### 1.2. Phase 2 (Target Architecture): MySQL 8.0 & Eloquent ORM
+- Because models implement standard contracts (`ArrayAccess`, `Arrayable`, `Jsonable`, and `JsonSerializable`), migrating to MySQL tables and Eloquent ORM requires zero breaking changes to Controller logic or View templates.
 
 ---
 
-## 2. Varlık-İlişki Diyagramı (ERD)
+## 2. Entity-Relationship Diagram (ERD)
 
-Aşağıdaki diyagramda mevcut aktif varlıklar (`USER`, `ANNOUNCEMENT`) ile sistemin planlanan modülleri arasındaki ilişkiler modellenmiştir:
+The following diagram models the relationships between the active domain entities (`USER`, `ANNOUNCEMENT`) and planned system modules:
 
 ```mermaid
 erDiagram
@@ -67,51 +67,51 @@ erDiagram
     USER ||--o{ MENTORSHIP : "acts as mentee"
 
     USER {
-        int id PK "Otomatik Artan Benzersiz Kimlik"
-        string name "Ad Soyad"
-        string email UK "Kurumsal / İletişim E-postası"
-        string role "Rol: student, alumni, admin"
-        string department "Fakülte / Bölüm"
-        int graduation_year "Mezuniyet Yılı"
-        string current_company "Çalıştığı Şirket"
-        string job_title "Unvan / Pozisyon"
-        string linkedin_url "LinkedIn Profil Linki"
-        json skills "Yetenekler & Uzmanlıklar Dizisi"
-        datetime created_at "Kayıt Tarihi"
-        datetime updated_at "Son Güncelleme Tarihi"
+        int id PK "Auto-increment Unique Identifier"
+        string name "Full Name"
+        string email UK "Institutional / Contact Email"
+        string role "Role: student, alumni, admin"
+        string department "Faculty / Department"
+        int graduation_year "Graduation Year"
+        string current_company "Current Employer"
+        string job_title "Job Title / Position"
+        string linkedin_url "LinkedIn Profile URL"
+        json skills "Technical & Professional Skills Array"
+        datetime created_at "Registration Timestamp"
+        datetime updated_at "Last Updated Timestamp"
     }
 
     ANNOUNCEMENT {
-        int id PK "Otomatik Artan Benzersiz Kimlik"
-        string title "Duyuru Başlığı"
-        text content "Detaylı Duyuru Metni"
-        string category "Kategori: event, career, mentorship, academic, general"
-        string author "Yayınlayan Birim / Kişi"
-        string target_audience "Hedef Kitle: all, alumni, students"
-        string priority "Öncelik: normal, important, urgent"
-        boolean is_active "Yayın Durumu (Aktif/Arşiv)"
-        boolean pinned "En Üstte Sabitleme Bayrağı"
-        datetime created_at "Yayınlanma Tarihi"
-        datetime updated_at "Güncellenme Tarihi"
+        int id PK "Auto-increment Unique Identifier"
+        string title "Announcement Title"
+        text content "Full Announcement Body"
+        string category "Category: event, career, mentorship, academic, general"
+        string author "Publishing Department / Person"
+        string target_audience "Target Audience: all, alumni, students"
+        string priority "Priority: normal, important, urgent"
+        boolean is_active "Publishing Status (Active/Archived)"
+        boolean pinned "Top Pinned Flag"
+        datetime created_at "Published Timestamp"
+        datetime updated_at "Updated Timestamp"
     }
 
     JOB_POSTING {
         int id PK
-        int user_id FK "İlanı Paylaşan Mezun"
-        string title "Pozisyon Adı"
-        string company "Şirket"
-        string location "Konum / Remote"
-        string employment_type "Tam Zamanlı, Staj, Yarı Zamanlı"
-        text description "İş Tanımı ve Kriterler"
-        datetime deadline "Son Başvuru Tarihi"
+        int user_id FK "Alumni Publisher"
+        string title "Job Title"
+        string company "Company Name"
+        string location "Location / Remote"
+        string employment_type "Full-Time, Internship, Part-Time"
+        text description "Job Description & Criteria"
+        datetime deadline "Application Deadline"
     }
 
     EVENT {
         int id PK
-        string title "Etkinlik Başlığı"
-        datetime event_date "Tarih ve Saat"
-        string location "Fiziksel Konum / Online Link"
-        int capacity "Kontenjan"
+        string title "Event Title"
+        datetime event_date "Date and Time"
+        string location "Physical Venue / Online Link"
+        int capacity "Capacity Limit"
     }
 
     EVENT_REGISTRATION {
@@ -119,95 +119,95 @@ erDiagram
         int user_id FK
         int event_id FK
         datetime registered_at
-        string status "Onaylandı, Beklemede, İptal"
+        string status "Confirmed, Waitlist, Cancelled"
     }
 
     MENTORSHIP {
         int id PK
-        int mentor_id FK "Mezun Mentor"
-        int mentee_id FK "Öğrenci Mentee"
-        string focus_area "Yazılım, Kariyer, Akademik"
-        string status "Aktif, Tamamlandı"
+        int mentor_id FK "Alumni Mentor"
+        int mentee_id FK "Student Mentee"
+        string focus_area "Software, Career, Academic"
+        string status "Active, Completed"
     }
 ```
 
 ---
 
-## 3. Detaylı Veri Sözlüğü (Data Dictionary)
+## 3. Detailed Data Dictionary
 
-### 3.1. User (Kullanıcı) Varlığı
-Kullanıcı modeli, üniversite mezunlarını, aktif öğrencileri ve yöneticileri temsil eder.
+### 3.1. User Entity
+The User model represents university alumni, current students, and system administrators.
 
-- **Model Sınıfı:** `App\Models\User`
-- **Cache Anahtarı:** `alumni_users`
-- **Hedef Veritabanı Tablosu:** `users`
+- **Model Class:** `App\Models\User`
+- **Cache Key:** `alumni_users`
+- **Target Database Table:** `users`
 
-| Alan Adı | Veri Tipi (PHP) | Hedef SQL Tipi | Boş Olabilir? | Varsayılan | İş Mantığı & Açıklama | Örnek Değer |
+| Field Name | Data Type (PHP) | Target SQL Type | Nullable? | Default | Business Rules & Description | Example Value |
 | :--- | :--- | :--- | :---: | :--- | :--- | :--- |
-| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ Hayır | Otomatik | Benzersiz kayıt tanımlayıcısı. | `1` |
-| `name` | `string` | `VARCHAR(191)` | ❌ Hayır | `'Dilara Mumcu'` | Kullanıcının adı ve soyadı. Formlarda zorunludur. | `'Dilara MUMCU'` |
-| `email` | `string` | `VARCHAR(191) UNIQUE` | ❌ Hayır | `'dilara@alumni.edu'` | İletişim e-posta adresi. Sistemde benzersiz olmalıdır. | `'dilara@ogr.iu.edu.tr'` |
-| `role` | `string` | `ENUM('student','alumni','admin')` | ❌ Hayır | `'alumni'` | Kullanıcının sistemdeki rolü. Yetkilendirmeleri belirler. | `'alumni'` |
-| `department` | `string` | `VARCHAR(191)` | ❌ Hayır | `'Computer Engineering'` | Mezun olunan veya okunan akademik bölüm. | `'Bilgisayar Mühendisliği'` |
-| `graduation_year` | `?int` | `SMALLINT UNSIGNED` | ⚠️ Evet | `2024` | Mezuniyet yılı. 1950 - 2035 aralığında tamsayı. | `2024` |
-| `current_company` | `?string` | `VARCHAR(191)` | ⚠️ Evet | `'Google'` | Mezunun şu anda çalıştığı şirket/kurum. | `'Google DeepMind'` |
-| `job_title` | `?string` | `VARCHAR(191)` | ⚠️ Evet | `'Software Engineer'` | Çalıştığı pozisyon ve unvan. | `'Senior AI Engineer'` |
-| `linkedin_url` | `?string` | `VARCHAR(255)` | ⚠️ Evet | `null` | LinkedIn profesyonel profil bağlantısı. | `'https://linkedin.com/in/dilaramumcu'` |
-| `skills` | `?array` | `JSON` | ⚠️ Evet | `['PHP','Laravel','Docker']` | Sahip olunan teknik ve sosyal beceriler dizisi. | `["PHP", "Laravel", "MySQL", "Docker"]` |
-| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ Hayır | `now()` | ISO 8601 formatında oluşturulma zaman damgası. | `'2024-06-15T10:00:00Z'` |
-| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ Hayır | `now()` | ISO 8601 formatında son güncelleme zaman damgası. | `'2026-10-07T11:00:00Z'` |
+| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique record identifier. | `1` |
+| `name` | `string` | `VARCHAR(191)` | ❌ No | `'Dilara Mumcu'` | User's full name. Required in all forms. | `'Dilara MUMCU'` |
+| `email` | `string` | `VARCHAR(191) UNIQUE` | ❌ No | `'dilara@alumni.edu'` | Primary contact email. Must be globally unique. | `'dilara@ogr.iu.edu.tr'` |
+| `role` | `string` | `ENUM('student','alumni','admin')` | ❌ No | `'alumni'` | User role governing permissions and visibility. | `'alumni'` |
+| `department` | `string` | `VARCHAR(191)` | ❌ No | `'Computer Engineering'` | Academic department or faculty attended. | `'Computer Engineering'` |
+| `graduation_year` | `?int` | `SMALLINT UNSIGNED` | ⚠️ Yes | `2024` | Graduation year. Valid range between 1950 and 2035. | `2024` |
+| `current_company` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Google'` | Current employer or affiliated institution. | `'Google DeepMind'` |
+| `job_title` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Software Engineer'` | Professional designation / job title. | `'Senior AI Engineer'` |
+| `linkedin_url` | `?string` | `VARCHAR(255)` | ⚠️ Yes | `null` | Public LinkedIn profile URL. | `'https://linkedin.com/in/dilaramumcu'` |
+| `skills` | `?array` | `JSON` | ⚠️ Yes | `['PHP','Laravel','Docker']` | Array of technical and professional skill endorsements. | `["PHP", "Laravel", "MySQL", "Docker"]` |
+| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | ISO 8601 record creation timestamp. | `'2024-06-15T10:00:00Z'` |
+| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | ISO 8601 last modification timestamp. | `'2026-10-07T11:00:00Z'` |
 
 ---
 
-### 3.2. Announcement (Duyuru) Varlığı
-Duyuru modeli; etkinlikler, staj/iş ilanları, mentorluk programları ve kurumsal bilgilendirmeleri temsil eder.
+### 3.2. Announcement Entity
+The Announcement model represents news broadcasts, events, career/internship openings, and mentorship recruitment notices.
 
-- **Model Sınıfı:** `App\Models\Announcement`
-- **Cache Anahtarı:** `alumni_announcements`
-- **Hedef Veritabanı Tablosu:** `announcements`
+- **Model Class:** `App\Models\Announcement`
+- **Cache Key:** `alumni_announcements`
+- **Target Database Table:** `announcements`
 
-| Alan Adı | Veri Tipi (PHP) | Hedef SQL Tipi | Boş Olabilir? | Varsayılan | İş Mantığı & Açıklama | Örnek Değer |
+| Field Name | Data Type (PHP) | Target SQL Type | Nullable? | Default | Business Rules & Description | Example Value |
 | :--- | :--- | :--- | :---: | :--- | :--- | :--- |
-| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ Hayır | Otomatik | Benzersiz duyuru numarası. | `1` |
-| `title` | `string` | `VARCHAR(255)` | ❌ Hayır | — | Duyurunun ana başlığı. Zorunlu alandır. | `'2026 Mezunlar Zirvesi'` |
-| `content` | `string` | `TEXT` | ❌ Hayır | — | Duyurunun ayrıntılı gövde metni. | `'Tüm mezunlarımız davetlidir...'` |
-| `category` | `string` | `ENUM('event','career','mentorship','academic','general')` | ❌ Hayır | `'general'` | Duyuru sınıflandırması. Filtreleme ve arayüz rozetlerinde kullanılır. | `'event'` |
-| `author` | `?string` | `VARCHAR(191)` | ⚠️ Evet | `'Mezunlar Koordinatörlüğü'` | Duyuruyu yayınlayan kişi, dernek veya üniversite birimi. | `'Kariyer Merkezi & Mezunlar Derneği'` |
-| `target_audience`| `string` | `ENUM('all','alumni','students')` | ❌ Hayır | `'all'` | Duyurunun hitap ettiği hedef kitle. | `'all'` |
-| `priority` | `string` | `ENUM('normal','important','urgent')` | ❌ Hayır | `'normal'` | Öncelik derecesi. Acil/kritik bildirimlerde arayüzde vurgulanır. | `'urgent'` |
-| `is_active` | `bool` | `BOOLEAN` | ❌ Hayır | `true` | Duyurunun yayında olup olmadığı (Arşivleme için). | `true` |
-| `pinned` | `bool` | `BOOLEAN` | ❌ Hayır | `false` | Duyurunun liste başında sabitlenip sabitlenmeyeceği. | `true` |
-| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ Hayır | `now()` | ISO 8601 yayınlanma zaman damgası. | `'2026-04-01T09:00:00Z'` |
-| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ Hayır | `now()` | ISO 8601 son düzenleme zaman damgası. | `'2026-04-01T09:00:00Z'` |
+| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique announcement identifier. | `1` |
+| `title` | `string` | `VARCHAR(255)` | ❌ No | — | Main announcement headline. Required. | `'2026 Alumni Summit'` |
+| `content` | `string` | `TEXT` | ❌ No | — | Detailed announcement body text. | `'All graduates and students are welcome...'` |
+| `category` | `string` | `ENUM('event','career','mentorship','academic','general')` | ❌ No | `'general'` | Category used for filtering and UI badge styling. | `'event'` |
+| `author` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Alumni Coordination Office'` | Department, association, or entity publishing the notice. | `'Career Center & Alumni Association'` |
+| `target_audience`| `string` | `ENUM('all','alumni','students')` | ❌ No | `'all'` | Target audience filter. | `'all'` |
+| `priority` | `string` | `ENUM('normal','important','urgent')` | ❌ No | `'normal'` | Urgency classification. Highlights urgent alerts in UI. | `'urgent'` |
+| `is_active` | `bool` | `BOOLEAN` | ❌ No | `true` | Visibility flag (used for archiving old notices). | `true` |
+| `pinned` | `bool` | `BOOLEAN` | ❌ No | `false` | Indicates whether the notice is pinned to top of lists. | `true` |
+| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | ISO 8601 publication timestamp. | `'2026-04-01T09:00:00Z'` |
+| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | ISO 8601 last updated timestamp. | `'2026-04-01T09:00:00Z'` |
 
 ---
 
-### 3.3. Gelecek / Planlanan Varlıklar
+### 3.3. Future / Planned Entities
 
-#### A. JobPosting (İş ve Staj İlanı)
-- **Tablo:** `job_postings`
-- **Alanlar:** `id`, `user_id` (FK), `title`, `company`, `location`, `employment_type` (full-time, part-time, internship), `description`, `application_url`, `deadline`, `created_at`, `updated_at`.
-- **İlişki:** Mezun bir kullanıcı (`User`), çalıştığı kurum adına birden fazla iş veya staj ilanı açabilir (`1:N`).
+#### A. JobPosting (Job & Internship Opportunities)
+- **Table:** `job_postings`
+- **Fields:** `id`, `user_id` (FK), `title`, `company`, `location`, `employment_type` (full-time, part-time, internship), `description`, `application_url`, `deadline`, `created_at`, `updated_at`.
+- **Relationship:** An alumni member (`User`) can publish multiple job or internship opportunities on behalf of their organization (`1:N`).
 
-#### B. Event & EventRegistration (Etkinlik ve Katılım)
-- **Tablolar:** `events`, `event_registrations`
-- **Alanlar (Event):** `id`, `title`, `description`, `event_date`, `location`, `capacity`, `created_at`.
-- **Alanlar (Registration):** `id`, `user_id` (FK), `event_id` (FK), `registered_at`, `status` (confirmed, waitlist, cancelled).
-- **İlişki:** Bir etkinliğe birden fazla kullanıcı kayıt olabilir (`N:M` ilişkisi `event_registrations` ara tablosu üzerinden sağlanır).
+#### B. Event & EventRegistration (Events & Attendance)
+- **Tables:** `events`, `event_registrations`
+- **Fields (Event):** `id`, `title`, `description`, `event_date`, `location`, `capacity`, `created_at`.
+- **Fields (Registration):** `id`, `user_id` (FK), `event_id` (FK), `registered_at`, `status` (confirmed, waitlist, cancelled).
+- **Relationship:** Multiple users can RSVP to an event (Many-to-Many `N:M` resolved via the `event_registrations` pivot table).
 
-#### C. Mentorship (Mentorluk Eşleşmesi)
-- **Tablo:** `mentorship_relationships`
-- **Alanlar:** `id`, `mentor_id` (FK -> users.id), `mentee_id` (FK -> users.id), `status` (pending, active, completed), `start_date`, `end_date`, `notes`.
-- **İlişki:** Mezun mentor ve öğrenci mentee arasında çift taraflı kullanıcı ilişkisi (`User -> User`).
+#### C. Mentorship (Mentorship Pairing)
+- **Table:** `mentorship_relationships`
+- **Fields:** `id`, `mentor_id` (FK -> users.id), `mentee_id` (FK -> users.id), `status` (pending, active, completed), `start_date`, `end_date`, `notes`.
+- **Relationship:** Dual user relationship between an alumni mentor and a student mentee (`User -> User`).
 
 ---
 
-## 4. Veri Erişim Katmanı (DAL) ve CRUD Mekaniği
+## 4. Data Access Layer (DAL) and CRUD Mechanics
 
-Modeller, veritabanı olmaksızın tam teşekküllü bir **Repository ve Data Mapper** davranışı sergiler:
+Without requiring an external database, the models provide complete **Repository and Data Mapper** functionality:
 
-### 4.1. CRUD Metot Standartları
-Her model sınıfı aşağıdaki standart metot imzasını destekler:
+### 4.1. CRUD Method Standards
+Each model class implements the following standard method signatures:
 
 ```php
 // CREATE
@@ -232,31 +232,31 @@ Model::deleteById(int|string $id): ?self;
 Model::reset(): array<self>;
 ```
 
-### 4.2. PUT ve PATCH Semantiği
-Veri güncellemelerinde RFC-7231 standartlarına tam uyum sağlanmıştır:
-- **PUT (Full Replacement):** Gönderilmeyen alanlar sıfırlanır (`null` veya varsayılan değere atanır).
-- **PATCH (Partial Update):** Yalnızca gönderilen anahtarlar güncellenir, gönderilmeyen mevcut alanlar korunur.
+### 4.2. PUT and PATCH Semantics
+Data updates strictly conform to RFC-7231 standards:
+- **PUT (Full Replacement):** Omitted fields are reset to null or their respective defaults.
+- **PATCH (Partial Update):** Only supplied keys are modified; omitted fields preserve their existing values.
 
 ---
 
-## 5. Veri Bütünlüğü, Tip Dönüşümleri ve Güvenlik
+## 5. Data Integrity, Type Casting, and Security
 
-### 5.1. Tip Dönüşümleri ve Dizi Ayrıştırma
-- **Yetenekler (Skills):** Web formlarından gelen virgülle ayrılmış dizgeler (`"PHP, Laravel, Docker"`), model katmanında otomatik olarak temizlenmiş bir diziye (`['PHP', 'Laravel', 'Docker']`) dönüştürülür.
-- **Boole Bayraklar (`is_active`, `pinned`):** `filter_var($val, FILTER_VALIDATE_BOOLEAN)` kullanılarak hem `'1'`, `'true'`, `1` hem de form checkbox durumları doğru boolean değere normalize edilir.
-- **Sayısal Alanlar (`graduation_year`, `id`):** `(int)` tip dönüşümü yapılarak tamsayı güvenliği sağlanır.
+### 5.1. Type Casting and Array Parsing
+- **Skills:** Comma-separated strings submitted via HTML forms (`"PHP, Laravel, Docker"`) are automatically converted into sanitized string arrays (`['PHP', 'Laravel', 'Docker']`) at the model layer.
+- **Boolean Flags (`is_active`, `pinned`):** Sanitized using `filter_var($val, FILTER_VALIDATE_BOOLEAN)` to handle `'1'`, `'true'`, `1`, and HTML form checkbox values uniformly.
+- **Numeric Fields (`graduation_year`, `id`):** Strongly cast using `(int)` to guarantee integer safety.
 
-### 5.2. Veri Güvenliği ve Temizleme
-- **Payload İzolasyonu:** Controller katmanında `$request->except(['_token', '_method'])` kullanılarak HTML form kontrol alanlarının veri modelini kirletmesi engellenir.
-- **CSRF Koruması & İstisnalar:** Web Blade formlarında `@csrf` zorunludur. Postman, cURL ve harici testlerin kesintisiz çalışabilmesi için `bootstrap/app.php` üzerinde `users/*` ve `announcements/*` istisna listesine alınmıştır.
+### 5.2. Data Security and Sanitization
+- **Payload Isolation:** Controller actions invoke `$request->except(['_token', '_method'])` to ensure internal form control fields do not contaminate model attributes.
+- **CSRF Protection & Exemptions:** Web Blade forms mandate `@csrf`. To enable seamless Postman, cURL, and automated testing, `users/*` and `announcements/*` routes are exempted from CSRF verification in `bootstrap/app.php`.
 
 ---
 
-## 6. İlişkisel Veritabanına (MySQL 8.0) Geçiş Yol Haritası
+## 6. Relational Database (MySQL 8.0) Migration Roadmap
 
-Mevcut modeller MySQL ve Eloquent ORM'ye geçiş için birebir uyumlu tasarlanmıştır.
+Existing models are architected to map 1:1 to MySQL tables and Eloquent ORM.
 
-### 6.1. Örnek Users Migrasyonu (`database/migrations/xxxx_create_users_table.php`)
+### 6.1. Sample Users Migration (`database/migrations/xxxx_create_users_table.php`)
 ```php
 Schema::create('users', function (Blueprint $table) {
     $table->id();
@@ -276,7 +276,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-### 6.2. Örnek Announcements Migrasyonu (`database/migrations/xxxx_create_announcements_table.php`)
+### 6.2. Sample Announcements Migration (`database/migrations/xxxx_create_announcements_table.php`)
 ```php
 Schema::create('announcements', function (Blueprint $table) {
     $table->id();
@@ -297,6 +297,6 @@ Schema::create('announcements', function (Blueprint $table) {
 
 ---
 
-> 🔗 **Bağlantılı Belgeler:**
-> - Sistem genel mimarisi ve MVC açıklamaları: [`README.md`](file:///C:/Users/PC/alumni/README.md)
-> - İnteraktif OpenAPI / Swagger spesifikasyonu: [`app/Http/SwaggerSpec.php`](file:///C:/Users/PC/alumni/app/Http/SwaggerSpec.php)
+> 🔗 **Related Documents:**
+> - System architecture and MVC overview: [`README.md`](README.md)
+> - Interactive OpenAPI / Swagger specification: [`app/Http/SwaggerSpec.php`](app/Http/SwaggerSpec.php)
