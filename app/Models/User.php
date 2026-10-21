@@ -95,6 +95,18 @@ class User extends Model
         return $this->hasMany(JobPosting::class);
     }
 
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    public function appliedJobs(): BelongsToMany
+    {
+        return $this->belongsToMany(JobPosting::class, 'applications')
+            ->withPivot('status', 'resume_url', 'cover_letter', 'applied_at')
+            ->withTimestamps();
+    }
+
     public function eventRegistrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
