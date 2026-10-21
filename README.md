@@ -204,7 +204,7 @@ For complete details regarding the system's data architecture, entity fields, ca
 👉 [**Data Design Documentation (`ddd.md`)**](ddd.md)
 
 ### 📌 What Does `ddd.md` Include?
-- **Entity-Relationship Diagram (ERD):** A Mermaid diagram visualizing relationships between `User`, `Announcement`, `JobPosting`, `Event`, and `Mentorship`.
+- **Entity-Relationship Diagram (ERD):** A Mermaid diagram visualizing relationships between `User`, `Announcement`, `JobPosting`, `Application`, `Event`, and `Mentorship`.
 - **Comprehensive Data Dictionary:** Detailed PHP data types, target MySQL schema types, constraints, and sample values for all model attributes.
 - **Two-Tier Persistence Strategy:** Current Cache/In-memory infrastructure (`alumni_users`, `alumni_announcements`) alongside the target MySQL 8.0 & Eloquent ORM migration roadmap.
 - **Data Integrity & Security:** CSRF exemptions, type casting, skills string-to-array parsing, and payload isolation.

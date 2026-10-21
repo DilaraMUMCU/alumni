@@ -11,7 +11,7 @@ This document provides a comprehensive specification of the data architecture, d
 3. [Detailed Data Dictionary](#3-detailed-data-dictionary)
    - [3.1. User Entity](#31-user-entity)
    - [3.2. Announcement Entity](#32-announcement-entity)
-   - [3.3. Future / Planned Entities (Job, Event, Mentorship)](#33-future--planned-entities)
+   - [3.3. Future / Planned Entities (JobPosting, Application, Event, Mentorship)](#33-future--planned-entities)
 4. [Data Access Layer (DAL) and CRUD Mechanics](#4-data-access-layer-dal-and-crud-mechanics)
 5. [Data Integrity, Type Casting, and Security](#5-data-integrity-type-casting-and-security)
 6. [Relational Database (MySQL 8.0) Migration Roadmap](#6-relational-database-mysql-80-migration-roadmap)
@@ -37,7 +37,8 @@ The application adopts a **two-tier data persistence strategy** to maximize deve
 [Laravel Cache Subsystem]          [MySQL 8.0 Relational DB]
 (File / In-Memory Store)           (Eloquent ORM & Migrations)
 - Key: 'alumni_users'              - Tables: users, announcements,
-- Key: 'alumni_announcements'                events, job_postings...
+- Key: 'alumni_announcements'                job_postings, applications,
+                                             events, mentorship...
 ```
 
 ### 1.1. Phase 1 (Current State): Database-Independent & Cache-Backed Persistence
@@ -60,7 +61,9 @@ The following diagram models the relationships between the active domain entitie
 ```mermaid
 erDiagram
     USER ||--o{ ANNOUNCEMENT : "publishes / targets"
-    USER ||--o{ JOB_POSTING : "shares / applies"
+    USER ||--o{ JOB_POSTING : "publishes"
+    USER ||--o{ APPLICATION : "submits"
+    JOB_POSTING ||--o{ APPLICATION : "receives"
     USER ||--o{ EVENT_REGISTRATION : "registers"
     EVENT ||--o{ EVENT_REGISTRATION : "has attendees"
     USER ||--o{ MENTORSHIP : "acts as mentor"
@@ -96,14 +99,29 @@ erDiagram
     }
 
     JOB_POSTING {
-        int id PK
+        int id PK "Auto-increment Unique Identifier"
         int user_id FK "Alumni Publisher"
         string title "Job Title"
         string company "Company Name"
         string location "Location / Remote"
         string employment_type "Full-Time, Internship, Part-Time"
         text description "Job Description & Criteria"
+        string application_url "External Application URL"
         datetime deadline "Application Deadline"
+        datetime created_at "Created Timestamp"
+        datetime updated_at "Updated Timestamp"
+    }
+
+    APPLICATION {
+        int id PK "Auto-increment Unique Identifier"
+        int job_posting_id FK "Target Job Posting"
+        int user_id FK "Applicant Candidate"
+        string resume_url "Resume / CV Document Link"
+        text cover_letter "Candidate Note / Cover Letter"
+        string status "Status: pending, reviewing, shortlisted, accepted, rejected"
+        datetime applied_at "Submission Timestamp"
+        datetime created_at "Created Timestamp"
+        datetime updated_at "Updated Timestamp"
     }
 
     EVENT {
@@ -186,16 +204,43 @@ The Announcement model represents news broadcasts, events, career/internship ope
 
 #### A. JobPosting (Job & Internship Opportunities)
 - **Table:** `job_postings`
-- **Fields:** `id`, `user_id` (FK), `title`, `company`, `location`, `employment_type` (full-time, part-time, internship), `description`, `application_url`, `deadline`, `created_at`, `updated_at`.
+- **Fields:** `id`, `user_id` (FK -> users.id), `title`, `company`, `location`, `employment_type` (full-time, part-time, internship), `description`, `application_url`, `deadline`, `created_at`, `updated_at`.
 - **Relationship:** An alumni member (`User`) can publish multiple job or internship opportunities on behalf of their organization (`1:N`).
 
-#### B. Event & EventRegistration (Events & Attendance)
+#### B. Application (Job & Internship Applications)
+The Application entity enables alumni and students to apply for published job postings, submitting contact resumes, portfolios, and cover letters while tracking review status.
+
+- **Model Class (Planned):** `App\Models\Application`
+- **Target Database Table:** `applications`
+- **Foreign Keys:**
+  - `job_posting_id`: `BIGINT UNSIGNED FK -> job_postings.id` (ON DELETE CASCADE)
+  - `user_id`: `BIGINT UNSIGNED FK -> users.id` (applicant candidate, ON DELETE CASCADE)
+- **Relationship:** A candidate (`User`) submits an application (`Application`) to a `JobPosting` (`N:1`). Each job posting receives multiple applications (`1:N`).
+
+| Field Name | Data Type (PHP) | Target SQL Type | Nullable? | Default | Business Rules & Description | Example Value |
+| :--- | :--- | :--- | :---: | :--- | :--- | :--- |
+| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique application record identifier. Primary Key. | `1` |
+| `job_posting_id` | `int` | `BIGINT UNSIGNED` | ❌ No | — | Foreign key referencing the target job posting (`job_postings.id`). | `10` |
+| `user_id` | `int` | `BIGINT UNSIGNED` | ❌ No | — | Foreign key referencing the applicant candidate (`users.id`). | `42` |
+| `resume_url` | `?string` | `VARCHAR(255)` | ⚠️ Yes | `null` | Direct URL link to applicant's external CV, portfolio, or uploaded PDF document. | `'https://storage.alumni.edu/cvs/dilara_resume.pdf'` |
+| `cover_letter` | `?string` | `TEXT` | ⚠️ Yes | `null` | Candidate's personal statement, intro message, or motivation letter. | `'I am excited to apply for the Senior AI Engineer role...'` |
+| `status` | `string` | `ENUM('pending','reviewing','shortlisted','accepted','rejected')` | ❌ No | `'pending'` | Current state in the hiring pipeline. Updated by posting author/admin. | `'reviewing'` |
+| `applied_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `CURRENT_TIMESTAMP` | Timestamp when the application was originally lodged. | `'2026-05-10T14:30:00Z'` |
+| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | Standard Eloquent creation timestamp. | `'2026-05-10T14:30:00Z'` |
+| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | Standard Eloquent last updated timestamp. | `'2026-05-12T09:15:00Z'` |
+
+- **Integrity Constraints & Indexing:**
+  - **Unique Index:** `UNIQUE(job_posting_id, user_id)` — Prevents duplicate active applications from the same user to the same job posting.
+  - **Foreign Key Constraints:** Cascade on delete (`ON DELETE CASCADE`) ensures applications are cleaned up if the job posting or user account is purged.
+  - **Indexes:** Secondary indexes on `(job_posting_id)`, `(user_id)`, and `(status)` to guarantee fast employer applicant filtering and candidate dashboard queries.
+
+#### C. Event & EventRegistration (Events & Attendance)
 - **Tables:** `events`, `event_registrations`
 - **Fields (Event):** `id`, `title`, `description`, `event_date`, `location`, `capacity`, `created_at`.
 - **Fields (Registration):** `id`, `user_id` (FK), `event_id` (FK), `registered_at`, `status` (confirmed, waitlist, cancelled).
 - **Relationship:** Multiple users can RSVP to an event (Many-to-Many `N:M` resolved via the `event_registrations` pivot table).
 
-#### C. Mentorship (Mentorship Pairing)
+#### D. Mentorship (Mentorship Pairing)
 - **Table:** `mentorship_relationships`
 - **Fields:** `id`, `mentor_id` (FK -> users.id), `mentee_id` (FK -> users.id), `status` (pending, active, completed), `start_date`, `end_date`, `notes`.
 - **Relationship:** Dual user relationship between an alumni mentor and a student mentee (`User -> User`).
@@ -292,6 +337,24 @@ Schema::create('announcements', function (Blueprint $table) {
 
     $table->index(['pinned', 'created_at']);
     $table->index('category');
+});
+```
+
+### 6.3. Sample Applications Migration (`database/migrations/xxxx_create_applications_table.php`)
+```php
+Schema::create('applications', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('job_posting_id')->constrained('job_postings')->onDelete('cascade');
+    $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+    $table->string('resume_url')->nullable();
+    $table->text('cover_letter')->nullable();
+    $table->enum('status', ['pending', 'reviewing', 'shortlisted', 'accepted', 'rejected'])->default('pending');
+    $table->timestamp('applied_at')->useCurrent();
+    $table->timestamps();
+
+    $table->unique(['job_posting_id', 'user_id']);
+    $table->index('status');
+    $table->index(['job_posting_id', 'status']);
 });
 ```
 
