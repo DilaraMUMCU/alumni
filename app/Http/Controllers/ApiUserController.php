@@ -156,6 +156,85 @@ class ApiUserController extends Controller
         ], 200);
     }
 
+    /* -------------------------------------------------------------------------- */
+    /*                              NESTED ENDPOINTS                              */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * Nested: List events a user is registered for (GET /api/users/{user}/events).
+     */
+    public function events($id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => "User with ID {$id} not found.",
+            ], 404);
+        }
+
+        $events = $user->events;
+
+        return response()->json([
+            'success'   => true,
+            'user_id'   => (int) $id,
+            'user_name' => $user->name,
+            'count'     => $events->count(),
+            'data'      => $events,
+        ], 200);
+    }
+
+    /**
+     * Nested: List mentorship relationships where user acts as mentor (GET /api/users/{user}/mentees).
+     */
+    public function mentees($id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => "User with ID {$id} not found.",
+            ], 404);
+        }
+
+        $relationships = $user->mentorRelationships()->with('mentee')->get();
+
+        return response()->json([
+            'success'   => true,
+            'user_id'   => (int) $id,
+            'user_name' => $user->name,
+            'count'     => $relationships->count(),
+            'data'      => $relationships,
+        ], 200);
+    }
+
+    /**
+     * Nested: List mentorship relationships where user is guided as mentee (GET /api/users/{user}/mentors).
+     */
+    public function mentors($id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => "User with ID {$id} not found.",
+            ], 404);
+        }
+
+        $relationships = $user->menteeRelationships()->with('mentor')->get();
+
+        return response()->json([
+            'success'   => true,
+            'user_id'   => (int) $id,
+            'user_name' => $user->name,
+            'count'     => $relationships->count(),
+            'data'      => $relationships,
+        ], 200);
+    }
+
     /**
      * Helper to extract request payload reliably across JSON, raw, and form data.
      *

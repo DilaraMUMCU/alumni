@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'users/*',
             'announcements',
             'announcements/*',
+            'job-postings',
+            'job-postings/*',
+            'applications',
+            'applications/*',
+            'events',
+            'events/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

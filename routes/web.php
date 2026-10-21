@@ -6,6 +6,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiUserController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ApiAnnouncementController;
+use App\Http\Controllers\ApiJobPostingController;
+use App\Http\Controllers\ApiApplicationController;
 use App\Http\SwaggerSpec;
 
 // 1. & 5. Adım: Base URL (/) -> Temporary Main Page
@@ -83,6 +85,41 @@ Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])->name
 Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
 Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
 Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+/* -------------------------------------------------------------------------- */
+/*       API Job Posting Routes (ApiJobPostingController - Direct & Nested)    */
+/* -------------------------------------------------------------------------- */
+Route::get('/api/job-postings', [ApiJobPostingController::class, 'index']);
+Route::post('/api/job-postings', [ApiJobPostingController::class, 'store']);
+Route::get('/api/job-postings/{id}', [ApiJobPostingController::class, 'show']);
+Route::put('/api/job-postings/{id}', [ApiJobPostingController::class, 'update']);
+Route::patch('/api/job-postings/{id}', [ApiJobPostingController::class, 'update']);
+Route::delete('/api/job-postings/{id}', [ApiJobPostingController::class, 'destroy']);
+
+// Nested: JobPosting -> Applications
+Route::get('/api/job-postings/{job_posting}/applications', [ApiApplicationController::class, 'byJobPosting']);
+Route::post('/api/job-postings/{job_posting}/applications', [ApiApplicationController::class, 'storeForJobPosting']);
+Route::get('/api/job-postings/{job_posting}/applications/{application}', [ApiApplicationController::class, 'showNested']);
+Route::patch('/api/job-postings/{job_posting}/applications/{application}/status', [ApiApplicationController::class, 'updateStatus']);
+
+/* -------------------------------------------------------------------------- */
+/*      API Application Routes (ApiApplicationController - Direct & Nested)   */
+/* -------------------------------------------------------------------------- */
+Route::get('/api/applications', [ApiApplicationController::class, 'index']);
+Route::post('/api/applications', [ApiApplicationController::class, 'store']);
+Route::get('/api/applications/{id}', [ApiApplicationController::class, 'show']);
+Route::put('/api/applications/{id}', [ApiApplicationController::class, 'update']);
+Route::patch('/api/applications/{id}', [ApiApplicationController::class, 'update']);
+Route::delete('/api/applications/{id}', [ApiApplicationController::class, 'destroy']);
+
+// Nested: User -> Sub-resources
+Route::get('/api/users/{user}/job-postings', [ApiJobPostingController::class, 'byUser']);
+Route::post('/api/users/{user}/job-postings', [ApiJobPostingController::class, 'storeForUser']);
+Route::get('/api/users/{user}/applications', [ApiApplicationController::class, 'byUser']);
+Route::get('/api/users/{user}/applied-jobs', [ApiApplicationController::class, 'appliedJobsByUser']);
+Route::get('/api/users/{user}/events', [ApiUserController::class, 'events']);
+Route::get('/api/users/{user}/mentees', [ApiUserController::class, 'mentees']);
+Route::get('/api/users/{user}/mentors', [ApiUserController::class, 'mentors']);
 
 /* -------------------------------------------------------------------------- */
 /*                       Swagger / OpenAPI Dokümantasyonu                     */
