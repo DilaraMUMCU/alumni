@@ -6,7 +6,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiUserController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ApiAnnouncementController;
+use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\ApiJobPostingController;
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ApiApplicationController;
 use App\Http\SwaggerSpec;
 
@@ -85,6 +87,27 @@ Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])->name
 Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
 Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
 Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+/* -------------------------------------------------------------------------- */
+/*       Web Job Posting Routes (JobPostingController - Web CRUD)             */
+/* -------------------------------------------------------------------------- */
+Route::get('/job-postings', [JobPostingController::class, 'index'])->name('job-postings.index');
+Route::get('/job-postings/create', [JobPostingController::class, 'create'])->name('job-postings.create');
+Route::post('/job-postings', [JobPostingController::class, 'store'])->name('job-postings.store');
+Route::get('/job-postings/{id}', [JobPostingController::class, 'show'])->name('job-postings.show');
+Route::get('/job-postings/{id}/edit', [JobPostingController::class, 'edit'])->name('job-postings.edit');
+Route::put('/job-postings/{id}', [JobPostingController::class, 'update'])->name('job-postings.update');
+Route::delete('/job-postings/{id}', [JobPostingController::class, 'destroy'])->name('job-postings.destroy');
+
+/* -------------------------------------------------------------------------- */
+/*       Web Application Routes (ApplicationController - Web CRUD)            */
+/* -------------------------------------------------------------------------- */
+Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
+Route::get('/applications/create', [ApplicationController::class, 'create'])->name('applications.create');
+Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
+Route::get('/applications/{id}', [ApplicationController::class, 'show'])->name('applications.show');
+Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus'])->name('applications.status');
+Route::delete('/applications/{id}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*       API Job Posting Routes (ApiJobPostingController - Direct & Nested)    */
