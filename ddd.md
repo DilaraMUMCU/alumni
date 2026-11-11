@@ -101,13 +101,13 @@ erDiagram
     JOB_POSTING {
         int id PK "Auto-increment Unique Identifier"
         int user_id FK "Alumni Publisher"
-        string title "Job Title"
-        string company "Company Name"
-        string location "Location / Remote"
-        string employment_type "Full-Time, Internship, Part-Time"
-        text description "Job Description & Criteria"
-        string application_url "External Application URL"
-        datetime deadline "Application Deadline"
+        string title "Job Title (Required, Max 120 chars)"
+        string company "Company Name (Required)"
+        string city "City / Location (Optional)"
+        string employment_type "Employment Type: full-time, part-time, internship (Required)"
+        text description "Job Description (Optional)"
+        string application_url "External Application URL (Optional)"
+        datetime deadline "Application Deadline (Required)"
         datetime created_at "Created Timestamp"
         datetime updated_at "Updated Timestamp"
     }
@@ -203,9 +203,40 @@ The Announcement model represents news broadcasts, events, career/internship ope
 ### 3.3. Future / Planned Entities
 
 #### A. JobPosting (Job & Internship Opportunities)
-- **Table:** `job_postings`
-- **Fields:** `id`, `user_id` (FK -> users.id), `title`, `company`, `location`, `employment_type` (full-time, part-time, internship), `description`, `application_url`, `deadline`, `created_at`, `updated_at`.
-- **Relationship:** An alumni member (`User`) can publish multiple job or internship opportunities on behalf of their organization (`1:N`).
+The JobPosting entity represents career, employment, and internship opportunities published by alumni or partner organizations.
+
+- **Model Class:** `App\Models\JobPosting`
+- **Target Database Table:** `job_postings`
+- **Foreign Keys:**
+  - `user_id`: `BIGINT UNSIGNED FK -> users.id` (Alumni publisher, ON DELETE CASCADE)
+- **Relationship:** An alumni member (`User`) can publish multiple job or internship opportunities on behalf of their organization (`1:N`). Each job posting receives multiple applications (`1:N`).
+
+| Field Name | Data Type (PHP) | Target SQL Type | Nullable? | Default | Business Rules & Description | Example Value |
+| :--- | :--- | :--- | :---: | :--- | :--- | :--- |
+| `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique job posting record identifier. Primary Key. | `1` |
+| `user_id` | `int` | `BIGINT UNSIGNED` | ❌ No | — | Foreign key referencing the publishing user (`users.id`). Required. | `5` |
+| `title` | `string` | `VARCHAR(120)` | ❌ No | — | Job posting headline / role title. **Required, maximum 120 characters (`max:120`)**. | `'Senior Backend Engineer'` |
+| `company` | `string` | `VARCHAR(191)` | ❌ No | — | Hiring company or organization name. **Required**. | `'Google'` |
+| `city` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `null` | City or geographic location of the position (`city` / `location`). **Optional (Nullable)**. | `'Istanbul'` |
+| `employment_type` | `string` | `ENUM('full-time','part-time','internship')` | ❌ No | `'full-time'` | Employment classification. **Required**. Must be one of `full-time`, `part-time`, or `internship`. | `'full-time'` |
+| `description` | `?string` | `TEXT` | ⚠️ Yes | `null` | Detailed role requirements, responsibilities, and qualifications. **Optional (Nullable)**. | `'Looking for an experienced engineer...'` |
+| `deadline` | `string` / `DateTime` | `DATETIME / TIMESTAMP` | ❌ No | — | Application cutoff date and time. **Required**. | `'2026-12-31 23:59:59'` |
+| `application_url` | `?string` | `VARCHAR(255)` | ⚠️ Yes | `null` | External career portal or application URL. **Optional (Nullable)**. | `'https://careers.google.com/jobs/123'` |
+| `created_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | Standard Eloquent creation timestamp. | `'2026-05-01T10:00:00Z'` |
+| `updated_at` | `string` | `DATETIME / TIMESTAMP` | ❌ No | `now()` | Standard Eloquent last updated timestamp. | `'2026-05-05T12:00:00Z'` |
+
+- **Integrity Constraints, Validation & Indexing:**
+  - **Validation Rules:**
+    - `title`: `required|string|max:120` (Must be present and not exceed 120 characters)
+    - `company`: `required|string|max:191` (Must be present)
+    - `city` (or `location`): `nullable|string|max:191` (Optional field)
+    - `employment_type`: `required|in:full-time,part-time,internship` (Must be present with valid enum value)
+    - `description`: `nullable|string` (Optional field)
+    - `deadline`: `required|date` (Must be present with a valid date/timestamp)
+    - `application_url`: `nullable|url|max:255` (Optional field)
+    - `user_id`: `required|exists:users,id`
+  - **Foreign Key Constraints:** Cascade on delete (`ON DELETE CASCADE`) ensures job postings and child applications are deleted when the publishing user is deleted.
+  - **Indexes:** Secondary indexes on `(company)`, `(employment_type)`, `(deadline)`, and composite index on `(user_id, created_at)`.
 
 #### B. Application (Job & Internship Applications)
 The Application entity enables alumni and students to apply for published job postings, submitting contact resumes, portfolios, and cover letters while tracking review status.
@@ -340,7 +371,27 @@ Schema::create('announcements', function (Blueprint $table) {
 });
 ```
 
-### 6.3. Sample Applications Migration (`database/migrations/xxxx_create_applications_table.php`)
+### 6.3. Sample Job Postings Migration (`database/migrations/xxxx_create_job_postings_table.php`)
+```php
+Schema::create('job_postings', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+    $table->string('title', 120); // Required, max 120 characters
+    $table->string('company'); // Required
+    $table->string('city')->nullable(); // Optional city / location
+    $table->enum('employment_type', ['full-time', 'part-time', 'internship'])->default('full-time'); // Required
+    $table->text('description')->nullable(); // Optional description
+    $table->string('application_url')->nullable(); // Optional application URL
+    $table->dateTime('deadline'); // Required deadline
+    $table->timestamps();
+
+    $table->index('company');
+    $table->index('employment_type');
+    $table->index('deadline');
+});
+```
+
+### 6.4. Sample Applications Migration (`database/migrations/xxxx_create_applications_table.php`)
 ```php
 Schema::create('applications', function (Blueprint $table) {
     $table->id();
