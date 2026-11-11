@@ -33,6 +33,13 @@ class LoggerMiddleware
 
         $this->writeToTerminal($logRow, $status);
 
+        // Ensure errors (status >= 400) are persisted in logs/error.logs
+        if ($status >= 400 && !$request->attributes->get('logged_to_error_log')) {
+            $type = $status >= 500 ? '5XX_SERVER_ERROR' : '4XX_CLIENT_ERROR';
+            $reason = "HTTP {$status} error response returned for {$method} {$route}";
+            ErrorLogWriter::write($type, $status, $method, $route, $reason, null, $durationMs);
+        }
+
         return $response;
     }
 

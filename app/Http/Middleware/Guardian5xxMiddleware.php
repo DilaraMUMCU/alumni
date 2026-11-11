@@ -113,6 +113,10 @@ class Guardian5xxMiddleware
         $method = strtoupper($request->method());
         $timestamp = date('Y-m-d H:i:s');
 
+        // Log to logs/error.logs
+        ErrorLogWriter::write('5XX_SERVER_ERROR', $statusCode, $method, $path, $reason, $exception);
+        $request->attributes->set('logged_to_error_log', true);
+
         // JSON response for API endpoints, AJAX, or clients expecting JSON
         if ($request->expectsJson() || $request->is('api/*')) {
             $payload = [

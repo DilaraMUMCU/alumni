@@ -90,6 +90,10 @@ class Guardian404Middleware
         $method = strtoupper($request->method());
         $timestamp = date('Y-m-d H:i:s');
 
+        // Log to logs/error.logs
+        ErrorLogWriter::write('404_NOT_FOUND', 404, $method, $path, $reason);
+        $request->attributes->set('logged_to_error_log', true);
+
         // JSON response for API endpoints, AJAX, or clients expecting JSON
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
