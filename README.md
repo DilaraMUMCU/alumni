@@ -106,18 +106,30 @@ The View layer is responsible for rendering content and presenting data to the u
   - `resources/views/swagger.blade.php`: Interactive API documentation interface embedding Swagger UI v5 via CDN, allowing browser-based endpoint exploration and execution ("Try it out").
   - `resources/views/users/`: Full User CRUD views (`index.blade.php`, `create.blade.php`, `show.blade.php`, `edit.blade.php`).
   - `resources/views/announcements/`: Full Announcement CRUD views (`index.blade.php` dashboard with statistics & quick add, `create.blade.php`, `show.blade.php`, `edit.blade.php`).
-- **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`).
+  - `resources/views/job_postings/`: Full Job Posting CRUD views (`index.blade.php` with search/filters, `create.blade.php`, `show.blade.php` with direct candidate apply form, `edit.blade.php`).
+  - `resources/views/applications/`: Full Application views (`index.blade.php` tracking candidate review statuses, `create.blade.php` job application form).
+  - `resources/views/errors/404.blade.php`: Modern generic 404 error page with error details, 5-second auto-redirect countdown, pause/resume control, and quick navigation.
+- **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`, `500 Server Error`).
 
-#### 🔹 Controller (C) — Request Handling & Business Logic
-The Controller layer processes incoming requests, coordinates domain models, and returns formatted responses.
+#### 🔹 Controller & Middleware (C) — Request Handling & Business Logic
+The Controller and Middleware layers process incoming requests, guard application lifecycle, coordinate domain models, and return formatted responses.
+- **Global Middleware Pipeline (`app/Http/Middleware/`):**
+  - `LoggerMiddleware.php`: Logs every incoming HTTP request and outgoing response to the console terminal in real-time (`[Time] Method Route Status Type Duration`).
+  - `Guardian5xxMiddleware.php` (5xx Guardian): Intercepts 5xx Server Errors, protects internal stack traces, provides human-readable reasons, and persists incident details.
+  - `Guardian404Middleware.php` (404 Guardian): Intercepts 404 Not Found errors, logs incidents, returns structured JSON for API callers, and redirects web browsers to the generic 404 page.
+  - `ErrorLogWriter.php`: Central helper persisting error records with timestamps, reasons, client IP, route, and exception details to `logs/error.logs`.
 - **REST API Controllers (`app/Http/Controllers/`):**
-  - `ApiUserController.php`: Implements RESTful JSON CRUD endpoints for users (`index`, `store`, `show`, `update`, `destroy`, `reset`).
-  - `ApiAnnouncementController.php`: Implements RESTful JSON CRUD endpoints for announcements (`index`, `store`, `show`, `update`, `destroy`, `reset`).
+  - `ApiUserController.php`: RESTful JSON CRUD endpoints for users (`index`, `store`, `show`, `update`, `destroy`, `reset`).
+  - `ApiAnnouncementController.php`: RESTful JSON CRUD endpoints for announcements (`index`, `store`, `show`, `update`, `destroy`, `reset`).
+  - `ApiJobPostingController.php`: RESTful JSON endpoints for job postings (direct & nested under `/api/users/{user}/job-postings`).
+  - `ApiApplicationController.php`: RESTful JSON endpoints for applications (direct & nested under `/api/job-postings/{job_posting}/applications`).
 - **Web Controllers (`app/Http/Controllers/`):**
   - `UserController.php`: Handles web user requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
   - `AnnouncementController.php`: Handles web announcement requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
+  - `JobPostingController.php`: Handles web job posting requests and view lifecycles (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`).
+  - `ApplicationController.php`: Handles web application requests and view lifecycles (`index`, `create`, `store`, `show`, `updateStatus`, `destroy`).
 - **HTTP Front Controller (`public/index.php`):** The unified entry point for all incoming web requests directed through Nginx.
-- **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware, routing, and CSRF token exemption rules for API routes (`api/*`) and web forms (`users/*`, `announcements/*`).
+- **Middleware & Kernel Configuration (`bootstrap/app.php`):** Configures application middleware pipeline (`LoggerMiddleware`, `Guardian5xxMiddleware`, `Guardian404Middleware`), global exception handlers, and CSRF token exemptions.
 
 ---
 
@@ -134,15 +146,27 @@ alumni/
 │   │   │   ├── UserController.php    # Web Controller with full CRUD functions
 │   │   │   ├── ApiUserController.php # REST API Controller with full CRUD functions
 │   │   │   ├── AnnouncementController.php    # Web Announcement Controller with full CRUD functions
-│   │   │   └── ApiAnnouncementController.php # REST API Announcement Controller with full CRUD
+│   │   │   ├── ApiAnnouncementController.php # REST API Announcement Controller with full CRUD
+│   │   │   ├── JobPostingController.php      # Web Job Posting Controller (CRUD + filters)
+│   │   │   ├── ApiJobPostingController.php   # REST API Job Posting Controller (direct + nested)
+│   │   │   ├── ApplicationController.php     # Web Application Controller (CRUD + status update)
+│   │   │   └── ApiApplicationController.php  # REST API Application Controller (direct + nested)
+│   │   ├── Middleware/               # [Middleware Layer] Global request & error guardians
+│   │   │   ├── LoggerMiddleware.php          # Terminal request logger (method, route, status, duration)
+│   │   │   ├── Guardian404Middleware.php     # 404 Guardian (reasons, error logging, web redirect)
+│   │   │   ├── Guardian5xxMiddleware.php     # 5xx Guardian (reasons, error logging, stack trace protection)
+│   │   │   └── ErrorLogWriter.php            # Dedicated error record writer to logs/error.logs
 │   │   └── SwaggerSpec.php           # [Model/Spec] Centralized OpenAPI 3.0 specification definition
 │   ├── Models/                       # [Model Layer] Domain data models
 │   │   ├── User.php                  # Database-independent User model with full CRUD functions
-│   │   └── Announcement.php          # Database-independent Announcement model with full CRUD
+│   │   ├── Announcement.php          # Database-independent Announcement model with full CRUD
+│   │   ├── JobPosting.php            # Job Posting model with validation & relationships
+│   │   ├── Application.php           # Application model with candidate hiring statuses
+│   │   └── Event.php                 # Event model & attendance tracking
 │   └── Providers/                    # Service providers bootstrapping core components
 │
 ├── bootstrap/                        # Framework startup and bootstrapping
-│   ├── app.php                       # [Controller Pipeline] Application initialization & middleware
+│   ├── app.php                       # [Controller Pipeline] Middleware pipeline & exception handlers
 │   └── cache/                        # Cached package and service provider manifests
 │
 ├── config/                           # Application configuration files
@@ -157,6 +181,10 @@ alumni/
 │   └── php/
 │       └── Dockerfile                # Custom PHP 8.2-FPM container image definition
 │
+├── logs/                             # Dedicated persistent error logging directory
+│   ├── .gitkeep                      # Git directory tracker
+│   └── error.logs                    # Real-time persisted error log records (4xx, 5xx, reasons)
+│
 ├── public/                           # Web server document root (publicly exposed)
 │   └── index.php                     # [Front Controller] Initial entry point for all requests
 │
@@ -170,29 +198,109 @@ alumni/
 │       │   ├── create.blade.php      # Dedicated user creation view (GET /users/create)
 │       │   ├── show.blade.php        # Dedicated user profile view (GET /users/{id})
 │       │   └── edit.blade.php        # Dedicated user edit form view (GET /users/{id}/edit & PUT /users/{id})
-│       └── announcements/            # [Announcement View Layer]
-│           ├── index.blade.php       # Announcement management dashboard & list (GET /announcements)
-│           ├── create.blade.php      # Dedicated announcement creation view (GET /announcements/create)
-│           ├── show.blade.php        # Detailed announcement view (GET /announcements/{id})
-│           └── edit.blade.php        # Dedicated announcement edit view (GET /announcements/{id}/edit)
+│       ├── announcements/            # [Announcement View Layer]
+│       │   ├── index.blade.php       # Announcement management dashboard & list (GET /announcements)
+│       │   ├── create.blade.php      # Dedicated announcement creation view (GET /announcements/create)
+│       │   ├── show.blade.php        # Detailed announcement view (GET /announcements/{id})
+│       │   └── edit.blade.php        # Dedicated announcement edit view (GET /announcements/{id}/edit)
+│       ├── job_postings/             # [Job Posting View Layer]
+│       │   ├── index.blade.php       # Job postings directory with search/filters (GET /job-postings)
+│       │   ├── create.blade.php      # Dedicated job creation view (GET /job-postings/create)
+│       │   ├── show.blade.php        # Detailed job view & candidate apply form (GET /job-postings/{id})
+│       │   └── edit.blade.php        # Dedicated job edit view (GET /job-postings/{id}/edit)
+│       ├── applications/             # [Application View Layer]
+│       │   ├── index.blade.php       # Candidate applications tracking dashboard (GET /applications)
+│       │   └── create.blade.php      # Standalone application form (GET /applications/create)
+│       └── errors/                   # [Error View Layer]
+│           └── 404.blade.php         # Generic 404 error page with auto-redirect countdown
 │
 ├── routes/                           # Application route definitions
-│   ├── api.php                       # [API Router] RESTful API endpoints (Users & Announcements)
+│   ├── api.php                       # [API Router] RESTful API endpoints (direct & nested routes)
 │   ├── console.php                   # Artisan CLI command routes
-│   └── web.php                       # [Web Router] Web routes & pages (Users & Announcements)
+│   └── web.php                       # [Web Router] Web routes, pages, /404 route & fallback redirection
 │
 ├── storage/                          # Generated files, logs, and framework cache
 │   ├── framework/                    # Compiled Blade templates, cache stores, and sessions
 │   └── logs/                         # Runtime log files (laravel.log)
 │
 ├── .env / .env.example               # Environment variables configuration
-├── .gitignore                        # Git version control ignore rules
+├── .gitignore                        # Git version control ignore rules (ignores dynamic logs/*)
 ├── artisan                           # Laravel Artisan CLI executable
 ├── composer.json / composer.lock     # PHP dependencies, autoloading, and package lock
 ├── ddd.md                            # [Data Layer] Data Design Documentation (DDD)
-├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB)
+├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB, Cache)
 └── README.md                         # Project documentation and developer reference
 ```
+
+---
+
+## 🛡️ Middleware Architecture, Error Guardians & Logging
+
+The platform features an enterprise-grade global middleware pipeline that monitors all traffic, guards against unhandled exceptions, and persists error telemetry.
+
+```mermaid
+flowchart LR
+    Request["Incoming HTTP Request"] --> Logger["1. LoggerMiddleware\n(Live Terminal Log)"]
+    Logger --> Guardian5xx["2. Guardian5xxMiddleware\n(5xx Guardian)"]
+    Guardian5xx --> Guardian404["3. Guardian404Middleware\n(404 Guardian)"]
+    Guardian404 --> Controller["Controller / Route Handler"]
+    
+    Controller -->|404 Not Found| Guardian404
+    Controller -->|5xx Server Error| Guardian5xx
+    
+    Guardian404 -->|Log Error| ErrorWriter["ErrorLogWriter\n(logs/error.logs)"]
+    Guardian5xx -->|Log Error| ErrorWriter
+    Logger -->|Unhandled 4xx/5xx| ErrorWriter
+
+    Guardian404 -->|Web Request| Redirect404["Redirect 302 -> /404\n(Generic 404 Blade Page)"]
+    Guardian404 -->|API Request| Json404["JSON 404\n({ status: 404, reason: ... })"]
+    
+    Redirect404 --> Countdown["5-Second Auto-Redirect\n-> Homepage (/)"]
+```
+
+### 1. Logger Middleware (`LoggerMiddleware.php`)
+- Prepended globally to intercept every incoming request.
+- Streams real-time, ANSI-colorized operational metrics directly to the console terminal:
+  ```text
+  [2026-11-11 10:45:00] GET    /api/users        200 OK  application/json  15ms
+  [2026-11-11 10:45:05] POST   /job-postings     302 FND text/html         28ms
+  [2026-11-11 10:45:10] GET    /api/users/99999  404 NF  application/json  12ms
+  ```
+
+### 2. 404 Guardian Middleware (`Guardian404Middleware.php`)
+- Intercepts all `NotFoundHttpException`, `ModelNotFoundException`, and `404` status codes.
+- Resolves a contextual, human-readable **reason** for why the request failed.
+- **Dual-Mode Response:**
+  - **API / JSON Requests (`/api/*` or `Accept: application/json`):** Returns clean JSON payload `{ "success": false, "status": 404, "error": "Not Found", "reason": "...", "path": "...", "guardian": "404 Guardian Active" }`.
+  - **Web Browser Requests:** Redirects (302) to `/404` with the reason and attempted path in query/session.
+- All 404 occurrences are persistently recorded in `logs/error.logs`.
+
+### 3. 5xx Guardian Middleware (`Guardian5xxMiddleware.php`)
+- Intercepts uncaught exceptions and `500..599` HTTP status errors.
+- Resolves root causes (e.g., database timeout, query error, null reference) and outputs an informative explanation while preventing stack trace leaks in production.
+- Logs exception class, message, and file/line source to `logs/error.logs`.
+
+### 4. Persistent Error Telemetry (`logs/error.logs`)
+- Dedicated file-based persistence for all 4xx/5xx errors located in `logs/error.logs`.
+- Built-in deduplication ensures an error intercepted by both middleware and exception handler is recorded only once per request.
+- **Log Format Example:**
+  ```text
+  [2026-11-11 08:08:26] [404_NOT_FOUND 404] GET /api/gecersiz-api-sayfa (IP: 172.19.0.1)
+    Reason : The API endpoint 'GET /api/gecersiz-api-sayfa' does not exist. Please check /api/swagger for valid endpoints.
+  --------------------------------------------------------------------------------
+  [2026-11-11 07:50:03] [5XX_SERVER_ERROR 500] GET /api/test-500 (IP: 172.19.0.1)
+    Reason : Database query timed out during transaction execution.
+    Source : /var/www/routes/api.php:138
+    Class  : RuntimeException
+  --------------------------------------------------------------------------------
+  ```
+
+### 5. Generic 404 Error Page (`resources/views/errors/404.blade.php`)
+- **Theme Matching:** Styled in dark slate aesthetic consistent with the Alumni ATS design system.
+- **Error Inspector:** Displays the exact invalid path, HTTP method, and reason.
+- **Auto-Redirect Countdown:** 5-second countdown with an animated progress bar that automatically returns the user to the homepage (`/`).
+- **User Control:** "⏸️ Durdur / ▶️ Devam Et" button allows pausing the redirect to examine details.
+- **Direct Navigation:** Quick links to Home, Job Postings, Announcements, Users, and Swagger API.
 
 
 ---

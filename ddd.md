@@ -324,7 +324,14 @@ Data updates strictly conform to RFC-7231 standards:
 
 ### 5.2. Data Security and Sanitization
 - **Payload Isolation:** Controller actions invoke `$request->except(['_token', '_method'])` to ensure internal form control fields do not contaminate model attributes.
-- **CSRF Protection & Exemptions:** Web Blade forms mandate `@csrf`. To enable seamless Postman, cURL, and automated testing, `users/*` and `announcements/*` routes are exempted from CSRF verification in `bootstrap/app.php`.
+- **CSRF Protection & Exemptions:** Web Blade forms mandate `@csrf`. To enable seamless Postman, cURL, and automated testing, `users/*`, `announcements/*`, `job-postings/*`, and `applications/*` routes are exempted from CSRF verification in `bootstrap/app.php`.
+
+### 5.3. Exception Handling, Error Guardians & Audit Telemetry
+To ensure reliability and prevent uncaught domain errors from disrupting user experience:
+- **404 Guardian (`Guardian404Middleware`):** Catches missing domain models (`ModelNotFoundException`) and invalid URLs (`NotFoundHttpException`). Resolves human-readable failure reasons, redirects browser requests to `/404` with state details, and returns JSON error schemas for API callers.
+- **5xx Guardian (`Guardian5xxMiddleware`):** Catches server exceptions (`5xx`), hides internal server stack traces from public disclosure, and provides contextual problem descriptions.
+- **Error Log Telemetry (`logs/error.logs`):** Automatically logs all 4xx/5xx errors via `ErrorLogWriter` with timestamp, status, method, route, IP, execution duration, descriptive reason, and exception class/trace coordinates. Deduplication flags prevent redundant log entries within the same request lifecycle.
+- **Generic 404 Presentation (`resources/views/errors/404.blade.php`):** Implements an accessible fallback UI displaying error diagnostics, a 5-second auto-redirect countdown returning the user safely to `/`, and a pause control.
 
 ---
 
