@@ -171,3 +171,8 @@ Route::get('/api/swagger', function (Request $request) {
         'Content-Type' => 'application/json; charset=utf-8'
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 });
+
+// 5xx Guardian Test Web Route
+Route::get('/test-500', function () {
+    throw new \RuntimeException('Kritik sistem bileşeni yanıt vermedi: Veritabanı havuzu tükendi.');
+});

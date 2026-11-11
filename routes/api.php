@@ -130,3 +130,10 @@ Route::prefix('/events/{event}')->group(function () {
         ], 200);
     })->name('api.events.registrations.index');
 });
+
+/* -------------------------------------------------------------------------- */
+/*  D. 5xx Guardian Test Route (Simulated 500 Server Error)                   */
+/* -------------------------------------------------------------------------- */
+Route::get('/test-500', function () {
+    throw new \RuntimeException('Database query timed out during transaction execution.');
+});
