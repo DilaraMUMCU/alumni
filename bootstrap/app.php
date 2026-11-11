@@ -4,6 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\LoggerMiddleware;
+use App\Http\Middleware\Guardian404Middleware;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,8 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Run first on all requests to log to terminal
+        // 1. Logger Middleware (runs first on all requests to log to terminal)
         $middleware->prepend(LoggerMiddleware::class);
+
+        // 2. 404 Guardian Middleware (intercepts and returns 404 errors with reasons)
+        $middleware->append(Guardian404Middleware::class);
 
         $middleware->validateCsrfTokens(except: [
             'api/*',
@@ -31,5 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Ensure any uncaught NotFoundHttpException is also caught by 404 Guardian
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            $reason = $e->getMessage() ?: "The requested route '{$request->method()} /" . ltrim($request->path(), '/') . "' does not exist on this system.";
+            return Guardian404Middleware::render404($request, $reason);
+        });
     })->create();
