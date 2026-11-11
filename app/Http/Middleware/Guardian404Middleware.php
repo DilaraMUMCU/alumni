@@ -35,6 +35,11 @@ class Guardian404Middleware
             return self::render404($request, $reason);
         }
 
+        // If the request is already for /404, pass through directly to avoid redirect loop
+        if ($request->is('404')) {
+            return $response;
+        }
+
         // Intercept existing 404 responses returned by controllers or abort(404)
         if ($response->getStatusCode() === 404) {
             return $this->enrich404Response($request, $response);
@@ -111,7 +116,24 @@ class Guardian404Middleware
             ]);
         }
 
-        // Web / HTML response for browsers
+        // Web / HTML response for browsers:
+        // If not already on /404, redirect invalid request to generic 404 page
+        if (!$request->is('404')) {
+            $redirectUrl = url('/404') . '?' . http_build_query([
+                'invalid_path' => $path,
+                'reason'       => $reason,
+            ]);
+
+            $redirect = redirect($redirectUrl);
+            if ($request->hasSession()) {
+                $redirect->with('reason', $reason)
+                         ->with('invalid_path', $path)
+                         ->with('method', $method);
+            }
+            return $redirect;
+        }
+
+        // Web / HTML response for /404 route
         if (view()->exists('errors.404')) {
             return response()->view('errors.404', [
                 'reason'    => $reason,

@@ -11,6 +11,8 @@ use App\Http\Controllers\ApiJobPostingController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ApiApplicationController;
 use App\Http\SwaggerSpec;
+use App\Http\Middleware\Guardian404Middleware;
+use App\Http\Middleware\ErrorLogWriter;
 
 // 1. & 5. Adım: Base URL (/) -> Temporary Main Page
 Route::get('/', function () {
@@ -175,4 +177,41 @@ Route::get('/api/swagger', function (Request $request) {
 // 5xx Guardian Test Web Route
 Route::get('/test-500', function () {
     throw new \RuntimeException('Kritik sistem bileşeni yanıt vermedi: Veritabanı havuzu tükendi.');
+});
+
+/* -------------------------------------------------------------------------- */
+/*             Generic 404 Error Page & Fallback Redirection                  */
+/* -------------------------------------------------------------------------- */
+// Generic 404 Error Page Route
+Route::get('/404', function (Request $request) {
+    $request->attributes->set('logged_to_error_log', true);
+    $reason = $request->query('reason') ?? session('reason') ?? 'Aradığınız sayfa veya kaynak sunucuda bulunamadı.';
+    $path = $request->query('invalid_path') ?? session('invalid_path') ?? '/' . ltrim($request->path(), '/');
+    $method = $request->query('method') ?? session('method') ?? 'GET';
+    $timestamp = date('Y-m-d H:i:s');
+
+    return response()->view('errors.404', [
+        'reason'    => $reason,
+        'path'      => $path,
+        'method'    => $method,
+        'timestamp' => $timestamp,
+    ], 404, [
+        'Content-Type'   => 'text/html; charset=utf-8',
+        'X-Guardian-404' => 'Protected',
+    ]);
+})->name('errors.404');
+
+// Fallback Route: Intercepts all unmatched web requests and redirects to /404
+Route::fallback(function (Request $request) {
+    $path = '/' . ltrim($request->path(), '/');
+    $method = strtoupper($request->method());
+
+    // API or JSON requests must receive structured JSON, not redirects
+    if ($request->is('api/*') || $request->expectsJson()) {
+        $reason = "The API endpoint '{$method} {$path}' does not exist. Please check /api/swagger for valid endpoints.";
+        return Guardian404Middleware::render404($request, $reason);
+    }
+
+    $reason = "The requested page '{$method} {$path}' was not found on this server. Please verify the URL or return to the main dashboard.";
+    return Guardian404Middleware::render404($request, $reason);
 });
