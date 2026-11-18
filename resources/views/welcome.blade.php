@@ -1,5 +1,24 @@
 ﻿@extends('layouts.app')
 
+@php
+    try {
+        $stats = $stats ?? [
+            'users_count'         => \App\Models\User::count(),
+            'announcements_count' => \App\Models\Announcement::count(),
+            'job_postings_count'  => \App\Models\JobPosting::count(),
+            'applications_count'  => \App\Models\Application::count(),
+        ];
+        $latestJobs = $latestJobs ?? \App\Models\JobPosting::with('applications')->latest()->take(4)->get();
+        $latestAnnouncements = $latestAnnouncements ?? \App\Models\Announcement::where('is_active', true)->latest()->take(3)->get();
+        $spotlightUsers = $spotlightUsers ?? \App\Models\User::latest()->take(4)->get();
+    } catch (\Throwable $e) {
+        $stats = $stats ?? ['users_count' => 0, 'announcements_count' => 0, 'job_postings_count' => 0, 'applications_count' => 0];
+        $latestJobs = $latestJobs ?? collect();
+        $latestAnnouncements = $latestAnnouncements ?? collect();
+        $spotlightUsers = $spotlightUsers ?? collect();
+    }
+@endphp
+
 @section('title', 'İstanbul Üniversitesi — Mezun ve Kariyer İletişim Ağı')
 @section('meta_description', '1453\'ten günümüze yarım binyılı aşan akademik mirasla İstanbul Üniversitesi mezunları ve öğrencileri arasında kesintisiz profesyonel köprü.')
 
