@@ -226,6 +226,7 @@ alumni/
 ├── .env / .env.example               # Environment variables configuration
 ├── .gitignore                        # Git version control ignore rules (ignores dynamic logs/*)
 ├── artisan                           # Laravel Artisan CLI executable
+├── brand.md                          # [Brand & UI/UX] Istanbul University brand identity & design system
 ├── composer.json / composer.lock     # PHP dependencies, autoloading, and package lock
 ├── ddd.md                            # [Data Layer] Data Design Documentation (DDD)
 ├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB, Cache)
@@ -316,6 +317,23 @@ For complete details regarding the system's data architecture, entity fields, ca
 - **Comprehensive Data Dictionary:** Detailed PHP data types, target MySQL schema types, constraints, and sample values for all model attributes.
 - **Two-Tier Persistence Strategy:** Current Cache/In-memory infrastructure (`alumni_users`, `alumni_announcements`) alongside the target MySQL 8.0 & Eloquent ORM migration roadmap.
 - **Data Integrity & Security:** CSRF exemptions, type casting, skills string-to-array parsing, and payload isolation.
+
+
+---
+
+## 🎨 Brand Identity & Web Design System (Istanbul University Guidelines)
+
+The visual design language, user experience (UX) principles, and web identity of the Alumni Tracking System are built upon the prestigious heritage of **Istanbul University** (est. 1453), optimized for high accessibility and screen readability (WCAG 2.1 AA/AAA):
+
+👉 [**Brand Identity & Web Design System Guidelines (`brand.md`)**](brand.md)
+
+### 📌 What Does `brand.md` Include?
+- **Name and Promise:** Official naming, digital abbreviations, and institutional mission ("1453'ten Geleceğe Kesintisiz Bağlantı").
+- **Color Palette & Accessibility:** Istanbul University Crimson Burgundy (`#8A1538`), Deep Heritage Navy (`#0B1B3D`), University Gold (`#D4AF37`), alongside high-contrast functional and neutral surface tones.
+- **Type & Typography:** Humanist sans-serif standards (`Plus Jakarta Sans` / `Inter`), academic display accents, and hierarchical scale.
+- **Shape & Component Geometry:** 8-point spacing grid, corner radius hierarchy, and modern glassmorphic depth.
+- **Voice & Tone:** Institutional, supportive, inclusive, and actionable copywriting rules (Do's and Don'ts).
+- **Mark & Emblem:** Historical Beyazıt Gate symbolism, emblem clear-space constraints, and misuse guidelines.
 
 
 ---
