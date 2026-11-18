@@ -229,6 +229,7 @@ alumni/
 ├── brand.md                          # [Brand & UI/UX] Istanbul University brand identity & design system
 ├── composer.json / composer.lock     # PHP dependencies, autoloading, and package lock
 ├── ddd.md                            # [Data Layer] Data Design Documentation (DDD)
+├── DESIGN.md                         # [UI/UX Design System] Refero benchmarks, tokens, component specs
 ├── docker-compose.yml                # Multi-container orchestration (App, Web Server, DB, Cache)
 └── README.md                         # Project documentation and developer reference
 ```
@@ -334,6 +335,22 @@ The visual design language, user experience (UX) principles, and web identity of
 - **Shape & Component Geometry:** 8-point spacing grid, corner radius hierarchy, and modern glassmorphic depth.
 - **Voice & Tone:** Institutional, supportive, inclusive, and actionable copywriting rules (Do's and Don'ts).
 - **Mark & Emblem:** Historical Beyazıt Gate symbolism, emblem clear-space constraints, and misuse guidelines.
+
+
+---
+
+## 🏛️ UI/UX Design System & Refero Benchmarks (`DESIGN.md`)
+
+For the comprehensive design token architecture, component specifications, and concrete guidelines synthesized from top-tier digital products ([Craft Docs](https://styles.refero.design/style/9f228e72-997a-4410-9190-68359028e3d0), [Superr](https://styles.refero.design/style/cfd0fec1-f25a-4b9b-9bd0-d5b66960f2f2), and [Officevibe](https://styles.refero.design/style/ced1c98f-d489-48f7-a01f-1fa59a07b706)):
+
+👉 [**UI/UX Design System Specification (`DESIGN.md`)**](DESIGN.md)
+
+### 📌 What Does `DESIGN.md` Include?
+- **Refero Benchmark Synthesis:** Tactile warm canvas, literary editorial serif with italic voice cuts, multi-stage diffuse shadows, and full pill button ergonomics.
+- **Design Tokens:** Exact CSS custom properties for surfaces, borders, typography scale, multi-layered shadows, and radii.
+- **Component Specs:** Floating glass navigation, editorial hero treatment, interactive pill buttons, and elevated card patterns.
+- **Strict Guidelines (Do's & Don'ts):** Actionable typography rules, color discipline (single chromatic punctuation per view), and spacing standards.
+- **Implementation Presets:** Ready-to-use raw CSS and `tailwind.config.js` presets.
 
 
 ---
