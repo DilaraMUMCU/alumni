@@ -4,7 +4,7 @@
 > **Design References & Benchmark Systems:**
 > 1. [Craft Docs Design System](https://styles.refero.design/style/9f228e72-997a-4410-9190-68359028e3d0) — *Warm tactile canvas, literary crafted editorial typography, multi-layered diffuse drop shadows, generous vertical whitespace.*
 > 2. [Superr Design System](https://styles.refero.design/style/cfd0fec1-f25a-4b9b-9bd0-d5b66960f2f2) — *Cream paper surface, human cocoa ink, punchy marker accents, tactile 20px pill buttons, 4px baseline spacing grid.*
-> 3. [Officevibe Design System](https://styles.refero.design/style/ced1c98f-d489-48f7-a01f-1fa59a07b706) — *Editorial Roman Serif with italic voice cuts, electric cobalt chromatic punctuation, deep ink navy, 100px full pill interactive controls, 80px+ section breathing room.*
+> 3. [Officevibe Design System](https://styles.refero.design/style/ced1c98f-d489-48f7-a01f-1fa59a07b706) — *Editorial Roman Serif with italic voice cuts, academic sapphire chromatic punctuation, deep ink navy, 100px full pill interactive controls, 80px+ section breathing room.*
 
 ---
 
@@ -40,8 +40,8 @@ The Alumni Tracking System synthesizes three world-class design systems curated 
 ├────────────────────┼────────────────────┼──────────────────────────────┤
 │ • Warm canvas tone │ • Cream paper base │ • Editorial Serif headlines  │
 │   (#FFF3E7/#FBF9F5)│   (#FDFBF9)        │   with italic voice cuts     │
-│ • Deep multi-layer │ • 20px pill tags   │ • Electric Cobalt & Crimson  │
-│   ambient shadows  │   and buttons      │   chromatic punctuation      │
+│ • Deep multi-layer │ • 20px pill tags   │ • Academic Sapphire &        │
+│   ambient shadows  │   and buttons      │   Crimson punctuation        │
 │ • Rich serif title │ • Marker Amber     │ • 100px pill buttons         │
 │   negative tracking│   highlights       │ • Ink Navy (#0C1754/#0B1B3D) │
 │ • Generous 96px+   │ • 4px micro        │ • 16px radius cards with     │
@@ -60,7 +60,7 @@ The Alumni Tracking System synthesizes three world-class design systems curated 
 ### Core Design Pillars:
 1. **The Tactile Canvas over Pure White:** Avoid stark `#FFFFFF` canvases. Use warm, natural paper tones (`#FBF9F5` in light mode, `#0B1120` / `#070D1B` in dark mode) to minimize eye fatigue during extended browsing.
 2. **Editorial Dignity with Human Warmth:** Pair stately serif headlines (featuring tight negative tracking and italic expression cuts) with ultra-legible humanist sans-serif for UI controls, data grids, and body text.
-3. **Single Chromatic Punctuation per View:** Draw inspiration from Officevibe: allow a single high-energy hue (İÜ Crimson `#8A1538` or Electric Cobalt `#2545FF`) to dominate the primary action, keeping the remainder of the page grounded in calm neutrals.
+3. **Single Chromatic Punctuation per View:** Draw inspiration from Officevibe: allow a single dignified, high-contrast hue (İÜ Crimson `#8A1538` or Academic Sapphire `#1D4ED8`) to dominate the primary action, keeping the remainder of the page grounded in calm neutrals.
 4. **Soft Multi-Stage Shadows over Hard Borders:** Layer multiple diffuse shadow steps (ambient + direct + contact) so cards feel naturally suspended above the canvas.
 
 ---
@@ -91,7 +91,7 @@ The Alumni Tracking System synthesizes three world-class design systems curated 
 | Token Name | HEX | Purpose / Usage | Reference Inspiration |
 | :--- | :---: | :--- | :--- |
 | `--color-iu-crimson` | `#8A1538` | Primary institutional action button, brand badge | *İstanbul Üniversitesi Heritage Crimson* |
-| `--color-electric-blue`| `#2545FF` | Active hyperlinks, interactive focus rings, Swagger | *Officevibe (`--color-electric-cobalt: #2545FF`)* |
+| `--color-academic-sapphire`| `#1D4ED8` | Active hyperlinks, interactive focus rings, Swagger, verification | *Akademi & Boğaziçi Safiri (Yüksek kontrastlı, gözü yormayan asil kurumsal mavi)* |
 | `--color-heritage-gold`| `#D4AF37` | Honors, verified alumni badges, ranking stickers | *İÜ Beyazıt Heritage Gold* |
 | `--color-marker-amber` | `#FF6F1E` | Urgent announcements, deadline countdown chips | *Superr (`--color-marker-orange: #FF6F1E`)* |
 | `--color-mint-success` | `#10B981` | Job accepted, application submitted, active status | *Craft Docs (`--color-mint`) & Superr* |
@@ -205,7 +205,7 @@ The layout is built upon an **8px vertical rhythm with a 4px micro-increment**:
 
 ### 3.3. Tactile Pill Buttons & Micro-Interactions
 * **Primary Button:**
-  * Background: Solid İÜ Crimson (`#8A1538`) or Electric Cobalt (`#2545FF`).
+  * Background: Solid İÜ Crimson (`#8A1538`) or Academic Sapphire (`#1D4ED8`).
   * Shape: Full pill (`border-radius: 100px`).
   * Padding: `12px 26px` (touch-target minimum 44px height).
   * Hover: `transform: translateY(-2px); box-shadow: 0 8px 20px rgba(138, 21, 56, 0.35);`.
@@ -225,7 +225,7 @@ The layout is built upon an **8px vertical rhythm with a 4px micro-increment**:
 
 ### 3.5. Form Controls, Search & Filter Inputs
 * **Background:** Soft Cream Tint (`#FDFBF9` / `#0B1B3D`).
-* **Border:** `1.5px solid #E2DCD5`, focusing to `2px solid #8A1538` or `#2545FF` with `0 0 0 4px rgba(37, 69, 255, 0.15)` focus ring.
+* **Border:** `1.5px solid #E2DCD5`, focusing to `2px solid #8A1538` or `#1D4ED8` with `0 0 0 4px rgba(29, 78, 216, 0.15)` focus ring.
 * **Shape:** `--radius-input: 12px`.
 * **Typography:** `14px - 15px` Sans-Serif with high-contrast placeholder `#94A3B8`.
 
@@ -248,7 +248,7 @@ Directly synthesized from the three Refero design specifications:
 1. **DON'T use serif typography for UI controls, buttons, form labels, or body text smaller than 22px.** Keep all functional elements in ultra-crisp Sans-Serif.
 2. **DON'T use pure pitch black (`#000000`) for text or borders.** Always use softened Deep Ink Navy (`#0C1754`) or Charcoal (`#171717`).
 3. **DON'T introduce cool blue-gray borders.** Stick strictly to warm cream dividers (`#EBE3D7` / `#F0E9E1`).
-4. **DON'T scatter multiple bright accent colors in one section.** Reserve high-energy chromatic colors (Electric Cobalt or İÜ Crimson) for the single most important action per view.
+4. **DON'T scatter multiple bright accent colors in one section.** Reserve primary chromatic colors (Academic Sapphire `#1D4ED8` or İÜ Crimson `#8A1538`) for the single most important action per view. Never use aggressive electric or neon tones.
 5. **DON'T use sharp 90-degree corners on clickable elements.** Avoid robotic sharp boxes; maintain human, tactile curves.
 6. **DON'T use hard, single-source drop shadows.** They look dated and harsh against editorial layouts.
 
@@ -278,7 +278,7 @@ Directly synthesized from the three Refero design specifications:
 
   /* Chromatic Punctuation */
   --color-iu-crimson: #8A1538;
-  --color-electric-blue: #2545FF;
+  --color-academic-sapphire: #1D4ED8;
   --color-heritage-gold: #D4AF37;
   --color-marker-amber: #FF6F1E;
   --color-mint-success: #10B981;
@@ -330,7 +330,7 @@ module.exports = {
           crimson: '#8A1538',
           gold: '#D4AF37',
         },
-        electric: '#2545FF',
+        sapphire: '#1D4ED8',
         marker: '#FF6F1E',
         cream: '#EBE3D7',
       },
