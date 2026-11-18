@@ -13,10 +13,36 @@ use App\Http\Controllers\ApiApplicationController;
 use App\Http\SwaggerSpec;
 use App\Http\Middleware\Guardian404Middleware;
 use App\Http\Middleware\ErrorLogWriter;
+use App\Models\User;
+use App\Models\Announcement;
+use App\Models\JobPosting;
+use App\Models\Application;
 
-// 1. & 5. Adım: Base URL (/) -> Temporary Main Page
+// 1. & 5. Adım: Base URL (/) -> Modern Alumni Homepage
 Route::get('/', function () {
-    return view('welcome');
+    try {
+        $stats = [
+            'users_count'         => User::count(),
+            'announcements_count' => Announcement::count(),
+            'job_postings_count'  => JobPosting::count(),
+            'applications_count'  => Application::count(),
+        ];
+        $latestJobs = JobPosting::latest()->take(3)->get();
+        $latestAnnouncements = Announcement::where('is_active', true)->latest()->take(3)->get();
+        $spotlightUsers = User::latest()->take(4)->get();
+    } catch (\Throwable $e) {
+        $stats = [
+            'users_count'         => 0,
+            'announcements_count' => 0,
+            'job_postings_count'  => 0,
+            'applications_count'  => 0,
+        ];
+        $latestJobs = collect();
+        $latestAnnouncements = collect();
+        $spotlightUsers = collect();
+    }
+
+    return view('welcome', compact('stats', 'latestJobs', 'latestAnnouncements', 'spotlightUsers'));
 });
 
 // 2. Adım: Sabit hello rotası
