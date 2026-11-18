@@ -1,503 +1,698 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alumni - Active Routes & API</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 32px 16px;
-        }
-        .container {
-            max-width: 880px;
-            width: 100%;
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(12px);
-            text-align: center;
-        }
-        .badge {
-            display: inline-block;
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            border: 1px solid rgba(96, 165, 250, 0.3);
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            background: linear-gradient(to right, #ffffff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p.subtitle {
-            font-size: 17px;
-            color: #94a3b8;
-            margin-bottom: 28px;
-        }
-        .routes-section {
-            text-align: left;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin-bottom: 24px;
-        }
-        .routes-title {
-            font-size: 13px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
-        .route-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: background 0.2s;
-            border-radius: 6px;
-        }
-        .route-item:last-child {
-            border-bottom: none;
-        }
-        .route-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .route-badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin-right: 12px;
-            display: inline-block;
-        }
-        .badge-get {
-            background: #10b981;
-            color: #064e3b;
-        }
-        .badge-post {
-            background: #f59e0b;
-            color: #78350f;
-        }
-        .badge-put {
-            background: #8b5cf6;
-            color: #2e1065;
-        }
-        .badge-patch {
-            background: #06b6d4;
-            color: #083344;
-        }
-        .badge-delete {
-            background: #ef4444;
-            color: #450a0a;
-        }
-        .route-link {
-            color: #38bdf8;
-            text-decoration: none;
-            font-family: monospace;
-            font-size: 14px;
-            flex-grow: 1;
-        }
-        .route-link:hover {
-            text-decoration: underline;
-        }
-        .route-desc {
-            color: #64748b;
-            font-size: 13px;
-        }
-        .test-card {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: left;
-            margin-bottom: 24px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .btn {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .btn:hover {
-            opacity: 0.9;
-        }
-        .btn-get {
-            background: #10b981;
-            color: #064e3b;
-        }
-        .btn-post {
-            background: #f59e0b;
-            color: #78350f;
-        }
-        .btn-put {
-            background: #a855f7;
-            color: #ffffff;
-        }
-        .btn-patch {
-            background: #06b6d4;
-            color: #083344;
-        }
-        .btn-delete {
-            background: #ef4444;
-            color: #ffffff;
-        }
-        .btn-reset {
-            background: #475569;
-            color: #f1f5f9;
-        }
-        pre.response-box {
-            background: #020617;
-            color: #a7f3d0;
-            padding: 14px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 13px;
-            margin-top: 14px;
-            overflow-x: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 280px;
-            display: none;
-        }
-        .footer {
-            font-size: 13px;
-            color: #64748b;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="badge">Laravel 11 � RESTful CRUD</div>
-        <h1>Alumni Tracking System</h1>
-        <p class="subtitle">Complete RESTful Resource Management (GET, POST, PUT, PATCH, DELETE)</p>
+﻿@extends('layouts.app')
 
-        <!-- Live Database Connection Status Card -->
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; text-align: left;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; display: inline-block;"></span>
-                    <strong style="color: #6ee7b7; font-size: 15px;">🗄️ Database: MySQL 8.0 Connected (alumni)</strong>
+@section('title', 'İstanbul Üniversitesi — Mezun ve Kariyer İletişim Ağı')
+@section('meta_description', '1453\'ten günümüze yarım binyılı aşan akademik mirasla İstanbul Üniversitesi mezunları ve öğrencileri arasında kesintisiz profesyonel köprü.')
+
+@push('styles')
+<style>
+    /* Hero Section Styling */
+    .hero-section {
+        padding: 40px 0 60px 0;
+        text-align: center;
+        position: relative;
+    }
+
+    .hero-badge-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        padding: 6px 16px;
+        border-radius: var(--radius-pill);
+        box-shadow: var(--shadow-subtle);
+        margin-bottom: 24px;
+        animation: fadeIn 0.6s ease;
+    }
+
+    .hero-badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--iu-crimson);
+        box-shadow: 0 0 0 3px var(--iu-crimson-soft);
+    }
+
+    .hero-badge-text {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--iu-navy);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .hero-title {
+        font-family: var(--font-serif);
+        font-size: 48px;
+        line-height: 1.18;
+        color: var(--iu-navy);
+        max-width: 900px;
+        margin: 0 auto 20px auto;
+        letter-spacing: -0.025em;
+    }
+
+    .hero-title em {
+        font-style: italic;
+        color: var(--iu-crimson);
+        font-weight: 400;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--ink-secondary);
+        max-width: 720px;
+        margin: 0 auto 36px auto;
+        font-weight: 400;
+    }
+
+    .hero-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 50px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 32px;
+        }
+        .hero-subtitle {
+            font-size: 15px;
+        }
+    }
+
+    /* Stats Grid */
+    .stats-card-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 70px;
+    }
+
+    @media (max-width: 992px) {
+        .stats-card-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .stats-card-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-box {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        padding: 24px;
+        box-shadow: var(--shadow-subtle);
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-card);
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-icon-crimson { background: var(--iu-crimson-soft); color: var(--iu-crimson); }
+    .stat-icon-sapphire { background: var(--academic-sapphire-soft); color: var(--academic-sapphire); }
+    .stat-icon-gold { background: var(--iu-gold-soft); color: #B8860B; }
+    .stat-icon-emerald { background: var(--mint-success-soft); color: #059669; }
+
+    .stat-num {
+        font-family: var(--font-serif);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--iu-navy);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: var(--ink-secondary);
+        font-weight: 500;
+    }
+
+    /* Section Headers */
+    .section-header-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .section-tag {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--iu-crimson);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .section-heading {
+        font-family: var(--font-serif);
+        font-size: 28px;
+        color: var(--iu-navy);
+        font-weight: 600;
+    }
+
+    /* 4 Module Features Grid */
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 80px;
+    }
+
+    @media (max-width: 992px) {
+        .modules-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .modules-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .module-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        padding: 28px;
+        box-shadow: var(--shadow-card);
+        display: flex;
+        flex-direction: column;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .module-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: rgba(138, 21, 56, 0.3);
+    }
+
+    .module-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        font-size: 22px;
+    }
+
+    .module-card-title {
+        font-family: var(--font-serif);
+        font-size: 19px;
+        color: var(--iu-navy);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .module-card-desc {
+        font-size: 13.5px;
+        color: var(--ink-secondary);
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex: 1;
+    }
+
+    .module-card-link {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--iu-crimson);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Opportunities & Announcements Dual Grid */
+    .dual-showcase-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 32px;
+        margin-bottom: 80px;
+    }
+
+    @media (max-width: 992px) {
+        .dual-showcase-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .item-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .job-item-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .job-item-card:hover {
+        border-color: var(--academic-sapphire-border);
+        box-shadow: var(--shadow-card);
+        transform: translateX(4px);
+    }
+
+    .announcement-item-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: var(--shadow-subtle);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: block;
+    }
+
+    .announcement-item-card:hover {
+        border-color: var(--iu-crimson-border);
+        box-shadow: var(--shadow-card);
+        transform: translateX(4px);
+    }
+
+    /* Spotlight Alumni Grid */
+    .alumni-spotlight-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 80px;
+    }
+
+    @media (max-width: 992px) {
+        .alumni-spotlight-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .alumni-spotlight-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .alumni-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        padding: 24px;
+        text-align: center;
+        box-shadow: var(--shadow-card);
+        transition: all 0.2s ease;
+    }
+
+    .alumni-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    .alumni-avatar-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--iu-navy) 0%, #1a3675 100%);
+        color: #FFFFFF;
+        font-family: var(--font-serif);
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+        border: 3px solid #FFFFFF;
+        box-shadow: 0 4px 12px rgba(11, 27, 61, 0.15);
+    }
+
+    /* Architecture Callout Banner */
+    .architecture-banner {
+        background: linear-gradient(135deg, var(--iu-navy) 0%, #070D1B 100%);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-radius: var(--radius-hero);
+        padding: 44px;
+        color: #FFFFFF;
+        box-shadow: var(--shadow-card);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .architecture-banner h3 {
+        color: #FFFFFF;
+        font-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    .architecture-banner p {
+        color: #94A3B8;
+        font-size: 14px;
+        max-width: 600px;
+        line-height: 1.6;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container">
+
+    <!-- 1. Editorial Hero Section -->
+    <section class="hero-section">
+        <div class="hero-badge-container">
+            <span class="hero-badge-dot"></span>
+            <span class="hero-badge-text">İstanbul Üniversitesi • 1453'ten Geleceğe</span>
+        </div>
+
+        <h1 class="hero-title">
+            Köklü bir geçmişten, <em>parlak bir kariyere</em> uzanan köprü.
+        </h1>
+
+        <p class="hero-subtitle">
+            Yarım binyıllık akademik mirasın gücüyle; mezunlarımızı, akademisyenlerimizi ve geleceğin lider öğrencilerini tek bir profesyonel ekosistemde buluşturuyoruz.
+        </p>
+
+        <div class="hero-actions">
+            <a href="/users/create" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                <span>Mezun Ağına Katıl</span>
+            </a>
+            <a href="/job-postings" class="btn btn-sapphire btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                <span>Kariyer Fırsatları</span>
+            </a>
+            <a href="/about" class="btn btn-secondary btn-lg">
+                <span>Tarihçe & Hakkımızda</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- 2. Live Platform Statistics -->
+    <section class="stats-card-container">
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-crimson">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div>
+                <div class="stat-num">{{ $stats['users_count'] ?? 0 }}</div>
+                <div class="stat-label">Kayıtlı Mezun & Öğrenci</div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-sapphire">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            </div>
+            <div>
+                <div class="stat-num">{{ $stats['job_postings_count'] ?? 0 }}</div>
+                <div class="stat-label">Aktif İş & Staj İlanı</div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-emerald">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div>
+                <div class="stat-num">{{ $stats['applications_count'] ?? 0 }}</div>
+                <div class="stat-label">Aday Başvurusu</div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon stat-icon-gold">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </div>
+            <div>
+                <div class="stat-num">{{ $stats['announcements_count'] ?? 0 }}</div>
+                <div class="stat-label">Kurumsal Duyuru</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Core Modules Grid -->
+    <section style="margin-bottom: 70px;">
+        <div class="section-header-row">
+            <div>
+                <span class="section-tag">Platform Modülleri</span>
+                <h2 class="section-heading">Mezun Ekosistemi Hizmetleri</h2>
+            </div>
+            <a href="/about" class="btn btn-secondary btn-sm">Sistem Mimarisi ↗</a>
+        </div>
+
+        <div class="modules-grid">
+            <a href="/users" class="module-card">
+                <div class="module-card-icon" style="background: var(--iu-crimson-soft); color: var(--iu-crimson);">
+                    🎓
                 </div>
-                <span style="font-size: 12px; color: #a7f3d0; background: rgba(16, 185, 129, 0.2); padding: 3px 10px; border-radius: 9999px;">
-                    Eloquent ORM Active
+                <h3 class="module-card-title">Mezun Rehberi</h3>
+                <p class="module-card-desc">
+                    Fakültelerden mezun binlerce meslektaşınızı keşfedin, sektör ve departman filtreleriyle mentorluk ve iş birliği bağları kurun.
+                </p>
+                <div class="module-card-link">
+                    <span>Rehberi İncele</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </a>
+
+            <a href="/job-postings" class="module-card">
+                <div class="module-card-icon" style="background: var(--academic-sapphire-soft); color: var(--academic-sapphire);">
+                    💼
+                </div>
+                <h3 class="module-card-title">Kariyer Kapısı</h3>
+                <p class="module-card-desc">
+                    Mezun şirketleri ve kurumsal ortaklar tarafından açılan tam zamanlı pozisyonlar, yarı zamanlı işler ve staj ilanlarına doğrudan ulaşın.
+                </p>
+                <div class="module-card-link" style="color: var(--academic-sapphire);">
+                    <span>İlanları Keşfet</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </a>
+
+            <a href="/applications" class="module-card">
+                <div class="module-card-icon" style="background: var(--mint-success-soft); color: #059669;">
+                    📑
+                </div>
+                <h3 class="module-card-title">Başvuru Takibi</h3>
+                <p class="module-card-desc">
+                    Başvuru yaptığınız ilanların değerlendirme süreçlerini, kısa liste ve kabul durumlarını şeffaf biçimde tek panelden yönetin.
+                </p>
+                <div class="module-card-link" style="color: #059669;">
+                    <span>Başvuru Paneli</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </a>
+
+            <a href="/announcements" class="module-card">
+                <div class="module-card-icon" style="background: var(--iu-gold-soft); color: #B8860B;">
+                    📢
+                </div>
+                <h3 class="module-card-title">Üniversite Duyuruları</h3>
+                <p class="module-card-desc">
+                    Rektörlük ve fakültelerimizden mezuniyet buluşmaları, akademik konferanslar ve kariyer zirvelerine dair resmi haberleri anlık takip edin.
+                </p>
+                <div class="module-card-link" style="color: #B8860B;">
+                    <span>Duyuruları Gör</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 4. Dual Showcase: Latest Job Opportunities & Recent Announcements -->
+    <section class="dual-showcase-grid">
+        <!-- Col 1: Latest Opportunities -->
+        <div>
+            <div class="section-header-row" style="margin-bottom: 20px;">
+                <div>
+                    <span class="section-tag">Kariyer Fırsatları</span>
+                    <h2 class="section-heading" style="font-size: 22px;">Son Yayınlanan İlanlar</h2>
+                </div>
+                <a href="/job-postings" class="btn btn-secondary btn-sm">Tüm İlanlar ({{ $stats['job_postings_count'] ?? 0 }})</a>
+            </div>
+
+            <div class="item-list-container">
+                @forelse ($latestJobs as $job)
+                    <a href="/job-postings/{{ $job->id }}" class="job-item-card">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: var(--canvas-tint); border: 1px solid var(--border-cream); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--iu-navy); font-size: 16px;">
+                                {{ mb_substr($job->company ?? 'İÜ', 0, 1) }}
+                            </div>
+                            <div>
+                                <h4 style="font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--iu-navy); margin-bottom: 2px;">
+                                    {{ $job->title }}
+                                </h4>
+                                <div style="font-size: 12.5px; color: var(--ink-secondary); display: flex; gap: 12px; align-items: center;">
+                                    <span>🏢 {{ $job->company }}</span>
+                                    <span>📍 {{ $job->location }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="badge-pill {{ $job->employment_type === 'internship' ? 'badge-amber' : ($job->employment_type === 'part-time' ? 'badge-sapphire' : 'badge-crimson') }}">
+                                {{ $job->employment_type_label ?? $job->employment_type }}
+                            </span>
+                            <span class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;">Başvur ↗</span>
+                        </div>
+                    </a>
+                @empty
+                    <div class="card" style="text-align: center; padding: 32px; color: var(--ink-secondary);">
+                        Henüz aktif bir kariyer ilanı bulunmamaktadır.
+                        <div style="margin-top: 12px;">
+                            <a href="/job-postings/create" class="btn btn-primary btn-sm">+ İlk İlanı Yayınlayın</a>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Col 2: Recent Announcements -->
+        <div>
+            <div class="section-header-row" style="margin-bottom: 20px;">
+                <div>
+                    <span class="section-tag">Resmi İletişim</span>
+                    <h2 class="section-heading" style="font-size: 22px;">Önemli Duyurular</h2>
+                </div>
+                <a href="/announcements" class="btn btn-secondary btn-sm">Tümü ({{ $stats['announcements_count'] ?? 0 }})</a>
+            </div>
+
+            <div class="item-list-container">
+                @forelse ($latestAnnouncements as $announcement)
+                    <a href="/announcements/{{ $announcement->id }}" class="announcement-item-card">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span class="badge-pill badge-gold">
+                                {{ $announcement->category ?? 'Genel' }}
+                            </span>
+                            <span style="font-size: 11.5px; color: var(--ink-secondary);">
+                                {{ $announcement->created_at ? \Carbon\Carbon::parse($announcement->created_at)->format('d.m.Y') : 'Güncel' }}
+                            </span>
+                        </div>
+                        <h4 style="font-family: var(--font-serif); font-size: 16px; color: var(--iu-navy); margin-bottom: 6px; font-weight: 600;">
+                            {{ $announcement->title }}
+                        </h4>
+                        <p style="font-size: 13px; color: var(--ink-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ strip_tags($announcement->content) }}
+                        </p>
+                    </a>
+                @empty
+                    <div class="card" style="text-align: center; padding: 32px; color: var(--ink-secondary);">
+                        Henüz yayınlanmış bir duyuru bulunmamaktadır.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Spotlight Alumni Section -->
+    <section style="margin-bottom: 80px;">
+        <div class="section-header-row">
+            <div>
+                <span class="section-tag">Kariyer İlhamı</span>
+                <h2 class="section-heading">Öne Çıkan Mezunlarımız</h2>
+            </div>
+            <a href="/users" class="btn btn-secondary btn-sm">Tüm Mezun Dizini ↗</a>
+        </div>
+
+        <div class="alumni-spotlight-grid">
+            @forelse ($spotlightUsers as $user)
+                <div class="alumni-card">
+                    <div class="alumni-avatar-circle">
+                        {{ mb_substr($user->name, 0, 1) }}
+                    </div>
+                    <h4 style="font-family: var(--font-sans); font-size: 16px; font-weight: 700; color: var(--iu-navy); margin-bottom: 4px;">
+                        {{ $user->name }}
+                    </h4>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--iu-crimson); margin-bottom: 4px;">
+                        {{ $user->job_title ?? 'Mezun' }}
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--ink-secondary); margin-bottom: 12px;">
+                        {{ $user->current_company ?? $user->department }}
+                    </div>
+                    @if ($user->graduation_year)
+                        <span class="badge-pill badge-neutral" style="font-size: 11px;">
+                            🎓 {{ $user->graduation_year }} Mezunu
+                        </span>
+                    @endif
+                    <div style="margin-top: 16px;">
+                        <a href="/users/{{ $user->id }}" class="btn btn-secondary btn-sm" style="width: 100%;">Profili İncele</a>
+                    </div>
+                </div>
+            @empty
+                <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 32px; color: var(--ink-secondary);">
+                    Henüz kayıtlı mezun profili bulunmamaktadır.
+                </div>
+            @endforelse
+        </div>
+    </section>
+
+    <!-- 6. Academic Architecture Banner -->
+    <section class="architecture-banner">
+        <div>
+            <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <span class="badge-pill badge-gold" style="background: rgba(212, 175, 55, 0.2); color: var(--iu-gold); border-color: rgba(212, 175, 55, 0.4);">
+                    RESTful API & Swagger 3.0
+                </span>
+                <span class="badge-pill" style="background: rgba(255, 255, 255, 0.1); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    MySQL 8.0 & Docker
                 </span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">users</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #38bdf8;">{{ \App\Models\User::count() }}</div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">announcements</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #facc15;">{{ \App\Models\Announcement::count() }}</div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">job_postings</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #34d399;">{{ \App\Models\JobPosting::count() }}</div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">events</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #c084fc;">{{ \App\Models\Event::count() }}</div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">registrations</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #f472b6;">{{ \App\Models\EventRegistration::count() }}</div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); text-align: center;">
-                    <div style="font-size: 11px; color: #94a3b8;">mentorships</div>
-                    <div style="font-size: 18px; font-weight: 700; color: #fb923c;">{{ \App\Models\MentorshipRelationship::count() }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="routes-section">
-            <div class="routes-title">Aktif Rotalar (Active Routes)</div>
-            <div class="route-item" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); margin-bottom: 8px;">
-                <div>
-                    <span class="route-badge" style="background: #38bdf8; color: #082f49; font-weight: 800;">DOCS</span>
-                    <a class="route-link" style="color: #38bdf8; font-weight: 700;" href="/api/swagger">/api/swagger</a>
-                </div>
-                <span class="route-desc" style="color: #bae6fd; font-weight: 600;">⚡ İnteraktif Swagger UI Dokümantasyonu</span>
-            </div>
-            <div class="route-item" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); margin-bottom: 8px;">
-                <div>
-                    <span class="route-badge" style="background: #a855f7; color: #ffffff; font-weight: 800;">VIEW</span>
-                    <a class="route-link" style="color: #c084fc; font-weight: 700;" href="/users">/users</a>
-                </div>
-                <span class="route-desc" style="color: #e9d5ff; font-weight: 600;">👥 Web Arayüzü: Kullanıcı Listesi & Ekleme Formu (View Layer)</span>
-            </div>
-            <div class="route-item" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); margin-bottom: 8px;">
-                <div>
-                    <span class="route-badge" style="background: #eab308; color: #713f12; font-weight: 800;">VIEW</span>
-                    <a class="route-link" style="color: #fde047; font-weight: 700;" href="/announcements">/announcements</a>
-                </div>
-                <span class="route-desc" style="color: #fef08a; font-weight: 600;">📢 Web Arayüzü: Duyurular Yönetimi & Ekleme Formu (View Layer)</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-get">GET</span>
-                    <a class="route-link" href="/">/</a>
-                </div>
-                <span class="route-desc">Temporary Main Page</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-get">GET</span>
-                    <a class="route-link" href="/about">/about</a>
-                </div>
-                <span class="route-desc">Temporary About Page</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-get">GET</span>
-                    <a class="route-link" href="/api/health">/api/health</a>
-                </div>
-                <span class="route-desc">JSON: Health Check</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-get">GET</span>
-                    <a class="route-link" href="/api/users">/api/users</a>
-                </div>
-                <span class="route-desc">JSON: List All Users</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-get">GET</span>
-                    <a class="route-link" href="/api/users/1">/api/users/{id}</a>
-                </div>
-                <span class="route-desc">JSON: Show Single User</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-post">POST</span>
-                    <span class="route-link" style="color: #fbbf24;">/api/users</span>
-                </div>
-                <span class="route-desc">JSON: Create User</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-put">PUT</span>
-                    <span class="route-link" style="color: #c084fc;">/api/users/{id}</span>
-                </div>
-                <span class="route-desc">JSON: Full Update</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-patch">PATCH</span>
-                    <span class="route-link" style="color: #67e8f9;">/api/users/{id}</span>
-                </div>
-                <span class="route-desc">JSON: Partial Update</span>
-            </div>
-            <div class="route-item">
-                <div>
-                    <span class="route-badge badge-delete">DELETE</span>
-                    <span class="route-link" style="color: #f87171;">/api/users/{id}</span>
-                </div>
-                <span class="route-desc">JSON: Delete User</span>
-            </div>
-        </div>
-
-        <div class="test-card">
-            <span style="font-weight: 600; font-size: 14px; color: #fca5a5;">🗄️ RESTful API Canlı MySQL Test Konsolu</span>
-            <p style="font-size: 13px; color: #94a3b8; margin: 8px 0 12px 0;">
-                Tüm CRUD işlemlerini doğrudan MySQL 8.0 veritabanına bağlı olarak canlı test edebilirsiniz:
+            <h3>Geliştiriciler ve Araştırmacılar İçin Açık Standartlar</h3>
+            <p>
+                Platformumuz, modern yazılım mimarisi ilkelerine uygun olarak tasarlanmıştır. Tüm mezun, iş ilanı ve duyuru verilerine OpenAPI 3.0 uyumlu Swagger dokümantasyonu üzerinden güvenle erişebilirsiniz.
             </p>
-            <div class="btn-group">
-                <button class="btn btn-get" onclick="fetchGetUsers()">1. GET (Listele)</button>
-                <button class="btn btn-post" onclick="sendPostRequest()">2. POST (Ekle)</button>
-                <button class="btn btn-put" onclick="sendPutRequest(1)">3. PUT (Tam G�ncelle)</button>
-                <button class="btn btn-patch" onclick="sendPatchRequest(1)">4. PATCH (K�smi G�ncelle)</button>
-                <button class="btn btn-delete" onclick="sendDeleteRequest(3)">5. DELETE (ID: 3 Sil)</button>
-                <button class="btn btn-reset" onclick="resetUsers()">S�f�rla</button>
-            </div>
-            <pre id="responseOutput" class="response-box"></pre>
         </div>
-
-        <div class="footer">
-            Alumni Tracking & Community Networking System � Powered by Docker & Nginx
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/api/swagger" class="btn btn-gold btn-lg">
+                <span>Swagger UI'ı Aç ↗</span>
+            </a>
+            <a href="/DESIGN.md" target="_blank" class="btn btn-secondary btn-lg" style="background: rgba(255, 255, 255, 0.1); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.25);">
+                <span>DESIGN.md İncele</span>
+            </a>
         </div>
-    </div>
+    </section>
 
-    <script>
-        const output = document.getElementById('responseOutput');
-
-        async function fetchGetUsers() {
-            output.style.display = 'block';
-            output.textContent = 'GET /api/users iste�i g�nderiliyor...';
-
-            try {
-                const response = await fetch('/api/users', {
-                    headers: { 'Accept': 'application/json' }
-                });
-                const data = await response.json();
-                output.textContent = '?? GET /api/users (Toplam ' + data.count + ' kullan�c�):\n\n' + JSON.stringify(data, null, 2);
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-
-        async function sendPostRequest() {
-            output.style.display = 'block';
-            output.textContent = 'POST /api/users iste�i g�nderiliyor...';
-
-            const randomNames = ['Zeynep Kaya', 'Burak �zt�rk', 'Ay�e �elik', 'Mehmet Aksoy'];
-            const chosenName = randomNames[Math.floor(Math.random() * randomNames.length)];
-
-            try {
-                const response = await fetch('/api/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: chosenName,
-                        email: chosenName.toLowerCase().replace(/[^a-z]/g, '') + '@alumni.edu',
-                        role: 'alumni',
-                        department: 'Software Engineering',
-                        graduation_year: 2025,
-                        current_company: 'Trendyol',
-                        job_title: 'Full Stack Developer',
-                        linkedin_url: 'https://linkedin.com/in/' + chosenName.toLowerCase().replace(/[^a-z]/g, ''),
-                        skills: ['PHP', 'Laravel', 'Vue.js', 'PostgreSQL']
-                    })
-                });
-
-                const data = await response.json();
-                output.textContent = '? POST BA�ARILI (HTTP ' + response.status + ' Created)\n\n' +
-                                     'Eklenen Kullan�c�:\n' + JSON.stringify(data.data, null, 2);
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-
-        async function sendPutRequest(id) {
-            output.style.display = 'block';
-            output.textContent = 'PUT /api/users/' + id + ' (Tam G�ncelleme) iste�i g�nderiliyor...';
-
-            try {
-                const response = await fetch('/api/users/' + id, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: 'Dilara Mumcu',
-                        email: 'dilara@alumni.edu',
-                        role: 'alumni',
-                        department: 'Computer Engineering',
-                        graduation_year: 2024,
-                        current_company: 'Google DeepMind',
-                        job_title: 'Lead Software Architect',
-                        linkedin_url: 'https://linkedin.com/in/dilaramumcu',
-                        skills: ['PHP', 'Laravel', 'Docker', 'AI Engineering']
-                    })
-                });
-
-                const data = await response.json();
-                output.textContent = '?? PUT BA�ARILI (HTTP ' + response.status + ' OK)\n\n' +
-                                     'G�ncellenen Kullan�c�:\n' + JSON.stringify(data, null, 2);
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-
-        async function sendPatchRequest(id) {
-            output.style.display = 'block';
-            output.textContent = 'PATCH /api/users/' + id + ' iste�i g�nderiliyor...';
-
-            try {
-                const response = await fetch('/api/users/' + id, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        current_company: 'OpenAI Research',
-                        job_title: 'AI Systems Architect'
-                    })
-                });
-
-                const data = await response.json();
-                output.textContent = '? PATCH BA�ARILI (HTTP ' + response.status + ' OK)\n\n' +
-                                     'G�ncellenen Kullan�c�:\n' + JSON.stringify(data, null, 2);
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-
-        async function sendDeleteRequest(id) {
-            output.style.display = 'block';
-            output.textContent = 'DELETE /api/users/' + id + ' iste�i g�nderiliyor...';
-
-            try {
-                const response = await fetch('/api/users/' + id, {
-                    method: 'DELETE',
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                const data = await response.json();
-                output.textContent = '??? DELETE BA�ARILI (HTTP ' + response.status + ' OK)\n\n' +
-                                     'Silinen Kullan�c�:\n' + JSON.stringify(data.deleted_user, null, 2) +
-                                     '\n\n?? �imdi "1. GET" butonuna basarak ID: ' + id + ' kullan�c�s�n�n listeden ��kt���n� teyit edebilirsiniz!';
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-
-        async function resetUsers() {
-            output.style.display = 'block';
-            output.textContent = 'Liste s�f�rlan�yor...';
-
-            try {
-                const response = await fetch('/api/users/reset', {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json' }
-                });
-                const data = await response.json();
-                output.textContent = '?? Liste ba�lang�� haline s�f�rland�:\n\n' + JSON.stringify(data, null, 2);
-            } catch (err) {
-                output.textContent = 'Hata: ' + err.message;
-            }
-        }
-    </script>
-</body>
-</html>
+</div>
+@endsection

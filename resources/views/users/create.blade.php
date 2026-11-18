@@ -1,261 +1,97 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni Kullanıcı Oluştur - Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+@section('title', 'Yeni Mezun / Öğrenci Kaydı — İstanbul Üniversitesi')
+@section('meta_description', 'İstanbul Üniversitesi Mezun ve Kariyer Portalı yeni profil oluşturma formu.')
 
-        .container {
-            max-width: 680px;
-            width: 100%;
-        }
+@section('content')
+<div class="container" style="max-width: 720px;">
 
-        .top-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-        }
-
-        .btn-back {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-back:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 36px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-header {
-            margin-bottom: 28px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 20px;
-        }
-
-        .card-header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-
-        .card-header p {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 12px 16px;
-            color: #ffffff;
-            font-size: 15px;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        select.form-control option {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
-        .form-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 28px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .btn-cancel {
-            color: #94a3b8;
-            text-decoration: none;
-            padding: 12px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
-
-        .btn-cancel:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-            border: none;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            padding: 12px 28px;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(56, 189, 248, 0.45);
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div class="top-nav">
-            <a href="/users" class="btn-back">⬅️ Kullanıcı Listesine Dön</a>
-            <span style="color: #64748b; font-size: 13px;">View: users.create (GET /users/create)</span>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h1>➕ Yeni Kullanıcı Kaydı</h1>
-                <p>Alumni veya öğrenci profil bilgilerini doldurarak sisteme yeni kullanıcı ekleyin.</p>
-            </div>
-
-            <form action="/users" method="POST">
-                @csrf
-
-                <div class="form-group">
-                    <label for="name">Ad Soyad *</label>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="Örn: Dilara MUMCU" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">E-posta Adresi *</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Örn: dilara@ogr.iu.edu.tr" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="role">Kullanıcı Rolü</label>
-                        <select id="role" name="role" class="form-control">
-                            <option value="student">Öğrenci (Student)</option>
-                            <option value="alumni" selected>Mezun (Alumni)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="graduation_year">Mezuniyet Yılı</label>
-                        <input type="number" id="graduation_year" name="graduation_year" class="form-control" placeholder="2024" value="2024">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="department">Bölüm / Fakülte</label>
-                    <input type="text" id="department" name="department" class="form-control" placeholder="Örn: MIS / Bilgisayar Mühendisliği" value="Computer Engineering">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="current_company">Çalıştığı Şirket</label>
-                        <input type="text" id="current_company" name="current_company" class="form-control" placeholder="Örn: Google / Samsung">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="job_title">Unvan / Görev</label>
-                        <input type="text" id="job_title" name="job_title" class="form-control" placeholder="Örn: Senior Software Engineer">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="skills">Yetenekler (Virgülle ayırın)</label>
-                    <input type="text" id="skills" name="skills" class="form-control" placeholder="PHP, Laravel, Docker, MySQL, Python">
-                </div>
-
-                <div class="form-group">
-                    <label for="linkedin_url">LinkedIn Profil Linki</label>
-                    <input type="url" id="linkedin_url" name="linkedin_url" class="form-control" placeholder="https://linkedin.com/in/...">
-                </div>
-
-                <div class="form-actions">
-                    <a href="/users" class="btn-cancel">İptal</a>
-                    <button type="submit" class="btn-submit">
-                        💾 Kullanıcıyı Oluştur (POST /users)
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- Top Breadcrumb -->
+    <div style="margin-bottom: 24px;">
+        <a href="/users" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Mezun Rehberine Dön</span>
+        </a>
     </div>
 
-</body>
-</html>
+    <!-- Registration Card -->
+    <div class="card" style="padding: 36px;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-cream); padding-bottom: 20px; margin-bottom: 24px;">
+            <div>
+                <span class="badge-pill badge-crimson" style="margin-bottom: 6px;">Kayıt İşlemleri</span>
+                <h1 class="card-title" style="font-size: 26px;">Yeni Mezun veya Öğrenci Profili</h1>
+                <p class="card-subtitle">İstanbul Üniversitesi topluluğuna katılmak veya yeni profil tanımlamak için aşağıdaki bilgileri doldurun.</p>
+            </div>
+        </div>
+
+        <form action="/users" method="POST">
+            @csrf
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="name">Ad Soyad <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Örn: Dr. Ahmet Yılmaz" required value="{{ old('name') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">E-posta Adresi <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Örn: ahmet@istanbul.edu.tr" required value="{{ old('email') }}">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="role">Üyelik Rolü <span class="required">*</span></label>
+                    <select id="role" name="role" class="form-select" required>
+                        <option value="alumni" {{ old('role') === 'alumni' ? 'selected' : '' }}>🎓 Mezun</option>
+                        <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>📚 Öğrenci</option>
+                        <option value="academician" {{ old('role') === 'academician' ? 'selected' : '' }}>🏛️ Akademisyen</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="graduation_year">Mezuniyet Yılı</label>
+                    <input type="number" id="graduation_year" name="graduation_year" class="form-control" placeholder="2022" min="1950" max="2035" value="{{ old('graduation_year') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="department">Bölüm / Fakülte</label>
+                <input type="text" id="department" name="department" class="form-control" placeholder="Örn: Hukuk Fakültesi / Bilgisayar Mühendisliği" value="{{ old('department') }}">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="job_title">Mevcut Ünvan / Pozisyon</label>
+                    <input type="text" id="job_title" name="job_title" class="form-control" placeholder="Örn: Avukat / Yazılım Mühendisi" value="{{ old('job_title') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="current_company">Çalıştığı Kurum / Şirket</label>
+                    <input type="text" id="current_company" name="current_company" class="form-control" placeholder="Örn: TÜBİTAK / Google" value="{{ old('current_company') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="linkedin_url">LinkedIn Profil Bağlantısı</label>
+                <input type="url" id="linkedin_url" name="linkedin_url" class="form-control" placeholder="https://linkedin.com/in/kullaniciadi" value="{{ old('linkedin_url') }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="skills">Yetenekler & Uzmanlık Alanları</label>
+                <input type="text" id="skills" name="skills" class="form-control" placeholder="Hukuk, Bilişim Hukuku, Tahkim veya Python, Cloud, AI" value="{{ old('skills') }}">
+                <div class="form-help">Yetenekleri aralarına virgül koyarak yazabilirsiniz.</div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-cream);">
+                <a href="/users" class="btn btn-secondary">İptal</a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Profili Oluştur ve Kaydet</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+@endsection

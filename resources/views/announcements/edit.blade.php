@@ -1,301 +1,115 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duyuruyu Düzenle - #{{ $announcement['id'] }} {{ $announcement['title'] ?? '' }} - Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+@php
+    $aId = is_array($announcement) ? ($announcement['id'] ?? '') : $announcement->id;
+    $aTitle = is_array($announcement) ? ($announcement['title'] ?? '') : $announcement->title;
+    $aCategory = is_array($announcement) ? ($announcement['category'] ?? 'Genel') : ($announcement->category ?? 'Genel');
+    $aContent = is_array($announcement) ? ($announcement['content'] ?? '') : $announcement->content;
+    $aAuthor = is_array($announcement) ? ($announcement['author'] ?? 'Rektörlük') : ($announcement->author ?? 'Rektörlük');
+    $aTarget = is_array($announcement) ? ($announcement['target_audience'] ?? 'Tümü') : ($announcement->target_audience ?? 'Tümü');
+    $aPriority = is_array($announcement) ? ($announcement['priority'] ?? 'Normal') : ($announcement->priority ?? 'Normal');
+    $aPinned = is_array($announcement) ? (!empty($announcement['pinned'])) : (!empty($announcement->pinned));
+    $aActive = is_array($announcement) ? (!empty($announcement['is_active'])) : (!empty($announcement->is_active));
+@endphp
 
-        .container {
-            max-width: 720px;
-            width: 100%;
-        }
+@section('title', "{$aTitle} Düzenle — Duyurular | İstanbul Üniversitesi")
+@section('meta_description', "İstanbul Üniversitesi duyuru güncelleme formu.")
 
-        .top-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+@section('content')
+<div class="container" style="max-width: 760px;">
 
-        .btn-back {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+    <!-- Top Breadcrumb -->
+    <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <a href="/announcements/{{ $aId }}" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Duyuruya Dön</span>
+        </a>
 
-        .btn-back:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 36px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-header {
-            margin-bottom: 28px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 20px;
-        }
-
-        .card-header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-
-        .badge-id {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            padding: 3px 10px;
-            border-radius: 9999px;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 12px 16px;
-            color: #ffffff;
-            font-size: 15px;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 140px;
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        select.form-control option {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            color: #cbd5e1;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .checkbox-label input {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-            accent-color: #38bdf8;
-        }
-
-        .form-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 28px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .btn-cancel {
-            color: #94a3b8;
-            text-decoration: none;
-            padding: 12px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
-
-        .btn-cancel:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
-            border: none;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            padding: 12px 28px;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(234, 179, 8, 0.3);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(234, 179, 8, 0.45);
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div class="top-nav">
-            <div style="display: flex; gap: 8px;">
-                <a href="/announcements" class="btn-back">⬅️ Duyurular Listesi</a>
-                <a href="/announcements/{{ $announcement['id'] }}" class="btn-back">👁️ Duyuru Detayı</a>
-            </div>
-            <span style="color: #64748b; font-size: 13px;">View: announcements.edit (GET /announcements/{{ $announcement['id'] }}/edit)</span>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h1>
-                    <span>✏️ Duyuru Bilgilerini Güncelle</span>
-                    <span class="badge-id">#{{ $announcement['id'] }}</span>
-                </h1>
-                <p>Duyuru içeriğini veya öncelik durumunu düzenleyin. Değişiklikler anında yansıtılacaktır.</p>
-            </div>
-
-            <!-- Web Formu PUT Metodu ile AnnouncementController@update Rotasına Gönderir -->
-            <form action="/announcements/{{ $announcement['id'] }}" method="POST">
-                @csrf
-                @method('PUT')
-
-                <div class="form-group">
-                    <label for="title">Duyuru Başlığı *</label>
-                    <input type="text" id="title" name="title" class="form-control" value="{{ $announcement['title'] ?? '' }}" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="category">Kategori</label>
-                        <select id="category" name="category" class="form-control">
-                            <option value="general" {{ ($announcement['category'] ?? '') === 'general' ? 'selected' : '' }}>Genel Duyuru</option>
-                            <option value="event" {{ ($announcement['category'] ?? '') === 'event' ? 'selected' : '' }}>Etkinlik & Buluşma</option>
-                            <option value="career" {{ ($announcement['category'] ?? '') === 'career' ? 'selected' : '' }}>Kariyer & Staj</option>
-                            <option value="mentorship" {{ ($announcement['category'] ?? '') === 'mentorship' ? 'selected' : '' }}>Mentorluk</option>
-                            <option value="academic" {{ ($announcement['category'] ?? '') === 'academic' ? 'selected' : '' }}>Akademik</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="priority">Öncelik Derecesi</label>
-                        <select id="priority" name="priority" class="form-control">
-                            <option value="normal" {{ ($announcement['priority'] ?? '') === 'normal' ? 'selected' : '' }}>Normal</option>
-                            <option value="important" {{ ($announcement['priority'] ?? '') === 'important' ? 'selected' : '' }}>Önemli</option>
-                            <option value="urgent" {{ ($announcement['priority'] ?? '') === 'urgent' ? 'selected' : '' }}>Acil / Kritik</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="author">Yayınlayan Birim / Kişi</label>
-                        <input type="text" id="author" name="author" class="form-control" value="{{ $announcement['author'] ?? '' }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="target_audience">Hedef Kitle</label>
-                        <select id="target_audience" name="target_audience" class="form-control">
-                            <option value="all" {{ ($announcement['target_audience'] ?? '') === 'all' ? 'selected' : '' }}>Tüm Topluluk (Öğrenci & Mezun)</option>
-                            <option value="alumni" {{ ($announcement['target_audience'] ?? '') === 'alumni' ? 'selected' : '' }}>Yalnızca Mezunlar</option>
-                            <option value="students" {{ ($announcement['target_audience'] ?? '') === 'students' ? 'selected' : '' }}>Yalnızca Öğrenciler</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="content">Duyuru Tam Metni *</label>
-                    <textarea id="content" name="content" class="form-control" required>{{ $announcement['content'] ?? '' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="pinned" value="1" {{ !empty($announcement['pinned']) ? 'checked' : '' }}>
-                        <span>📌 Bu duyuruyu en üstte sabitle (Pinned Announcement)</span>
-                    </label>
-                </div>
-
-                <div class="form-actions">
-                    <a href="/announcements/{{ $announcement['id'] }}" class="btn-cancel">İptal</a>
-                    <button type="submit" class="btn-submit">
-                        💾 Değişiklikleri Kaydet (PUT)
-                    </button>
-                </div>
-            </form>
-        </div>
+        <span class="badge-pill badge-neutral">Duyuru #{{ $aId }}</span>
     </div>
 
-</body>
-</html>
+    <!-- Edit Card -->
+    <div class="card" style="padding: 36px;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-cream); padding-bottom: 20px; margin-bottom: 24px;">
+            <div>
+                <span class="badge-pill badge-gold" style="margin-bottom: 6px;">Duyuru Güncelleme</span>
+                <h1 class="card-title" style="font-size: 26px;">{{ $aTitle }}</h1>
+                <p class="card-subtitle">Duyuru başlığını, kategorisini veya içeriğini güncelleyin.</p>
+            </div>
+        </div>
+
+        <form action="/announcements/{{ $aId }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label class="form-label" for="title">Duyuru Başlığı <span class="required">*</span></label>
+                <input type="text" id="title" name="title" class="form-control" required value="{{ old('title', $aTitle) }}">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="category">Kategori <span class="required">*</span></label>
+                    <select id="category" name="category" class="form-select" required>
+                        <option value="Etkinlik" {{ old('category', $aCategory) === 'Etkinlik' ? 'selected' : '' }}>🎉 Etkinlik</option>
+                        <option value="Kariyer" {{ old('category', $aCategory) === 'Kariyer' ? 'selected' : '' }}>💼 Kariyer</option>
+                        <option value="Akademik" {{ old('category', $aCategory) === 'Akademik' ? 'selected' : '' }}>🏛️ Akademik</option>
+                        <option value="Genel" {{ old('category', $aCategory) === 'Genel' ? 'selected' : '' }}>📢 Genel</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="priority">Öncelik Derecesi</label>
+                    <select id="priority" name="priority" class="form-select">
+                        <option value="Normal" {{ old('priority', $aPriority) === 'Normal' ? 'selected' : '' }}>Normal</option>
+                        <option value="Yüksek" {{ old('priority', $aPriority) === 'Yüksek' ? 'selected' : '' }}>Yüksek</option>
+                        <option value="Acil" {{ old('priority', $aPriority) === 'Acil' ? 'selected' : '' }}>Acil</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label" for="author">Yayınlayan Birim / Fakülte <span class="required">*</span></label>
+                    <input type="text" id="author" name="author" class="form-control" required value="{{ old('author', $aAuthor) }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="target_audience">Hedef Kitle</label>
+                    <select id="target_audience" name="target_audience" class="form-select">
+                        <option value="Tümü" {{ old('target_audience', $aTarget) === 'Tümü' ? 'selected' : '' }}>Tümü</option>
+                        <option value="Mezunlar" {{ old('target_audience', $aTarget) === 'Mezunlar' ? 'selected' : '' }}>Yalnızca Mezunlar</option>
+                        <option value="Öğrenciler" {{ old('target_audience', $aTarget) === 'Öğrenciler' ? 'selected' : '' }}>Yalnızca Öğrenciler</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="content">Duyuru Tam Metni <span class="required">*</span></label>
+                <textarea id="content" name="content" class="form-control" rows="7" required>{{ old('content', $aContent) }}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 24px; margin-bottom: 24px; padding: 14px 18px; background: var(--canvas-tint); border-radius: 12px; border: 1px solid var(--border-cream);">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" name="pinned" value="1" {{ old('pinned', $aPinned) ? 'checked' : '' }}>
+                    <span>📌 Ana Sayfa & Listede Başa Sabitle</span>
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $aActive) ? 'checked' : '' }}>
+                    <span>Yayında (Aktif)</span>
+                </label>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid var(--border-cream);">
+                <a href="/announcements/{{ $aId }}" class="btn btn-secondary">İptal</a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span>Değişiklikleri Kaydet</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+@endsection

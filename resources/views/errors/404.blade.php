@@ -1,496 +1,211 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Sayfa Bulunamadı | Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-        }
+@section('title', '404 — Sayfa Bulunamadı | İstanbul Üniversitesi')
+@section('meta_description', 'İstenen kaynak veya sayfa bulunamadı. Guardian 404 koruma kalkanı.')
 
-        .navbar {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto 32px auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 16px 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+@push('styles')
+<style>
+    .guardian-container {
+        max-width: 760px;
+        margin: 20px auto 40px auto;
+        text-align: center;
+    }
 
-        .navbar-brand {
-            font-size: 20px;
-            font-weight: 700;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
+    .guardian-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-hero);
+        padding: 44px 36px;
+        box-shadow: var(--shadow-card);
+    }
 
-        .navbar-links {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+    .guardian-emblem-badge {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--iu-crimson) 0%, var(--iu-crimson-hover) 100%);
+        color: #FFFFFF;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        border: 3px solid var(--iu-gold);
+        box-shadow: 0 8px 24px rgba(138, 21, 56, 0.25);
+    }
 
-        .navbar-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
+    .guardian-code {
+        font-family: var(--font-serif);
+        font-size: 64px;
+        font-weight: 700;
+        color: var(--iu-crimson);
+        line-height: 1;
+        letter-spacing: -2px;
+        margin-bottom: 6px;
+    }
 
-        .navbar-links a:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
-        }
+    .diagnostic-panel {
+        background: var(--canvas-tint);
+        border: 1px solid var(--border-cream);
+        border-radius: 14px;
+        padding: 20px;
+        text-align: left;
+        margin: 24px 0;
+        font-family: var(--font-mono);
+        font-size: 13px;
+    }
 
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 0 40px 0;
-        }
+    .diagnostic-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(12, 23, 84, 0.06);
+    }
 
-        .error-card {
-            max-width: 760px;
-            width: 100%;
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            border-radius: 24px;
-            padding: 44px 36px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.12);
-            backdrop-filter: blur(16px);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .diagnostic-row:last-child {
+        border-bottom: none;
+    }
 
-        .error-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #ef4444);
-            background-size: 200% 100%;
-            animation: gradientMove 4s linear infinite;
-        }
+    .diagnostic-label {
+        color: var(--ink-secondary);
+        font-weight: 600;
+    }
 
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
-        }
+    .diagnostic-val {
+        color: var(--iu-navy);
+        font-weight: 600;
+        word-break: break-all;
+    }
 
-        .guardian-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            color: #f87171;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 16px;
-            border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 20px;
-        }
+    /* Countdown bar */
+    .countdown-bar-container {
+        background: rgba(12, 23, 84, 0.08);
+        height: 6px;
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+        margin: 20px 0;
+    }
 
-        .error-code {
-            font-size: 84px;
-            font-weight: 900;
-            letter-spacing: -3px;
-            line-height: 1;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, #ef4444 0%, #fca5a5 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
-        }
+    .countdown-bar-fill {
+        background: linear-gradient(90deg, var(--iu-crimson), var(--iu-gold));
+        height: 100%;
+        width: 100%;
+        transition: width 1s linear;
+    }
+</style>
+@endpush
 
-        .error-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 12px;
-        }
+@section('content')
+<div class="container guardian-container">
 
-        .error-subtitle {
-            font-size: 15px;
-            color: #94a3b8;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        .details-box {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-left: 4px solid #ef4444;
-            border-radius: 12px;
-            padding: 18px 22px;
-            text-align: left;
-            margin-bottom: 28px;
-            font-size: 14px;
-        }
-
-        .details-row {
-            display: flex;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .details-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .details-label {
-            width: 140px;
-            flex-shrink: 0;
-            color: #94a3b8;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .details-value {
-            color: #f1f5f9;
-            word-break: break-all;
-            flex: 1;
-        }
-
-        .details-value code {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: #38bdf8;
-            font-family: monospace;
-            font-size: 13px;
-        }
-
-        .redirect-banner {
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-radius: 14px;
-            padding: 16px 20px;
-            margin-bottom: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .redirect-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 14px;
-            color: #bae6fd;
-        }
-
-        .redirect-info strong {
-            color: #38bdf8;
-            font-size: 16px;
-        }
-
-        .redirect-progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-
-        .redirect-progress-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #0284c7, #38bdf8);
-            border-radius: 9999px;
-            transition: width 0.1s linear;
-        }
-
-        .pause-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #e2e8f0;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .pause-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
-        }
-
-        .btn-primary:hover {
-            opacity: 0.95;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.6);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #cbd5e1;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.14);
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-
-        .quick-links {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 20px;
-            font-size: 13px;
-        }
-
-        .quick-links span {
-            color: #64748b;
-        }
-
-        .quick-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .quick-links a:hover {
-            color: #38bdf8;
-            text-decoration: underline;
-        }
-
-        .footer-note {
-            text-align: center;
-            color: #64748b;
-            font-size: 13px;
-            margin-top: 24px;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Üst Menü / Navbar -->
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            <span>🎓</span>
-            <span>Alumni Tracking System</span>
-        </a>
-        <div class="navbar-links">
-            <a href="/">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Mezunlar</a>
-            <a href="/announcements">📢 Duyurular</a>
-            <a href="/job-postings">💼 İş İlanları</a>
-            <a href="/applications">📄 Başvurular</a>
-            <a href="/api/swagger" target="_blank">📜 Swagger API</a>
+    <div class="guardian-card">
+        <!-- University Heritage Seal -->
+        <div class="guardian-emblem-badge">
+            <span style="font-family: var(--font-serif); font-size: 26px; font-weight: 700; line-height: 1;">İÜ</span>
+            <span style="font-size: 10px; font-weight: 800; color: var(--iu-gold); line-height: 1; margin-top: 2px;">1453</span>
         </div>
-    </nav>
 
-    <!-- Ana Hata Kartı -->
-    <main class="main-wrapper">
-        <div class="error-card">
-            <div class="guardian-badge">🛡️ 404 Guardian Protected</div>
-            
-            <div class="error-code">404</div>
-            <h1 class="error-title">Aradığınız Sayfa veya Kaynak Bulunamadı</h1>
-            <p class="error-subtitle">
-                Ulaşmaya çalıştığınız geçersiz adres sunucumuzda tanımlı değil veya taşınmış olabilir.
-            </p>
+        <div class="guardian-code">404</div>
 
-            <!-- Hata Detayları -->
-            <div class="details-box">
-                <div class="details-row">
-                    <span class="details-label">Geçersiz İstek:</span>
-                    <span class="details-value">
-                        <code>{{ $method ?? 'GET' }}</code>
-                        <code>{{ $path ?? request()->path() }}</code>
-                    </span>
-                </div>
-                <div class="details-row">
-                    <span class="details-label">Açıklama:</span>
-                    <span class="details-value">
-                        {{ $reason ?? 'İstenen kaynak bulunamadı. Lütfen URL adresinizi kontrol edin veya ana sayfaya dönün.' }}
-                    </span>
-                </div>
-                <div class="details-row">
-                    <span class="details-label">Hata Zamanı:</span>
-                    <span class="details-value">
-                        {{ $timestamp ?? date('Y-m-d H:i:s') }}
-                    </span>
-                </div>
+        <h1 style="font-size: 28px; color: var(--iu-navy); margin-bottom: 8px;">
+            Aradığınız Kaynak <em>Bulunamadı</em>
+        </h1>
+
+        <p style="color: var(--ink-secondary); max-width: 580px; margin: 0 auto 16px auto; font-size: 14.5px;">
+            Talep ettiğiniz web sayfası veya kaynak sunucuda mevcut değil. Güvenlik ve rota bütünlüğü için Guardian kalkanı devreye girdi.
+        </p>
+
+        <!-- Redirect Countdown Progress Bar -->
+        <div style="max-width: 480px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--ink-secondary); font-weight: 600;">
+                <span>Ana Sayfaya Otomatik Yönlendirme:</span>
+                <span id="countdownText" style="color: var(--iu-crimson); font-weight: 700;">5 saniye</span>
             </div>
-
-            <!-- Otomatik Yönlendirme Alanı -->
-            <div class="redirect-banner">
-                <div class="redirect-info">
-                    <span id="countdown-text">
-                        ⏱️ Bu geçersiz istek nedeniyle <strong id="countdown">5</strong> saniye içinde ana sayfaya yönlendirileceksiniz...
-                    </span>
-                    <button type="button" id="pause-btn" class="pause-btn" onclick="toggleRedirect()">
-                        ⏸️ Durdur
-                    </button>
-                </div>
-                <div class="redirect-progress-bar">
-                    <div id="progress-fill" class="redirect-progress-fill"></div>
-                </div>
+            <div class="countdown-bar-container">
+                <div class="countdown-bar-fill" id="countdownFill"></div>
             </div>
-
-            <!-- Aksiyon Butonları -->
-            <div class="actions">
-                <a href="/" class="btn btn-primary">
-                    <span>🏠 Hemen Ana Sayfaya Dön</span>
-                </a>
-                <a href="/job-postings" class="btn btn-secondary">
-                    <span>💼 İş İlanları</span>
-                </a>
-                <a href="/announcements" class="btn btn-secondary">
-                    <span>📢 Duyurular</span>
-                </a>
-                <a href="/users" class="btn btn-secondary">
-                    <span>👥 Kullanıcılar</span>
-                </a>
-            </div>
-
-            <!-- Hızlı Bağlantılar -->
-            <div class="quick-links">
-                <span>Hızlı Geçiş:</span>
-                <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
-                <a href="/api/health" target="_blank">🩺 Health Check</a>
-                <a href="/about">ℹ️ Hakkında</a>
+            <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
+                <button type="button" id="pauseBtn" class="btn btn-secondary btn-sm" style="font-size: 11.5px; padding: 4px 12px;">
+                    ⏸️ Geri Sayımı Durdur
+                </button>
             </div>
         </div>
-    </main>
 
-    <div class="footer-note">
-        Alumni Tracking System &copy; {{ date('Y') }} &bull; Güvenli Hata Yönetimi &bull; 404 Guardian
+        <!-- Diagnostic Inspector Panel -->
+        <div class="diagnostic-panel">
+            <div class="diagnostic-row">
+                <span class="diagnostic-label">Talep Edilen Yol (Path):</span>
+                <span class="diagnostic-val" style="color: var(--iu-crimson);">{{ $path ?? request()->getRequestUri() }}</span>
+            </div>
+            <div class="diagnostic-row">
+                <span class="diagnostic-label">HTTP Metodu:</span>
+                <span class="diagnostic-val">{{ $method ?? request()->method() }}</span>
+            </div>
+            <div class="diagnostic-row">
+                <span class="diagnostic-label">Hata Zamanı:</span>
+                <span class="diagnostic-val">{{ $timestamp ?? date('Y-m-d H:i:s') }}</span>
+            </div>
+            <div class="diagnostic-row">
+                <span class="diagnostic-label">Sistem Bildirimi:</span>
+                <span class="diagnostic-val" style="font-family: var(--font-sans); font-size: 12px;">{{ $reason ?? 'Kaynak sunucuda bulunamadı.' }}</span>
+            </div>
+        </div>
+
+        <!-- Safe Navigation Pills -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 24px;">
+            <a href="/" class="btn btn-primary btn-lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Hemen Ana Sayfaya Dön</span>
+            </a>
+            <a href="/users" class="btn btn-secondary">
+                🎓 Mezun Dizini
+            </a>
+            <a href="/job-postings" class="btn btn-secondary">
+                💼 Kariyer İlanları
+            </a>
+            <a href="/announcements" class="btn btn-secondary">
+                📢 Duyurular
+            </a>
+        </div>
     </div>
 
-    <!-- Otomatik Yönlendirme Sayacı Betiği -->
-    <script>
-        (function() {
-            let totalSeconds = 5;
-            let remainingSeconds = totalSeconds;
-            let isPaused = false;
-            const targetUrl = "/";
+</div>
 
-            const countdownElem = document.getElementById("countdown");
-            const progressFill = document.getElementById("progress-fill");
-            const pauseBtn = document.getElementById("pause-btn");
-            const countdownText = document.getElementById("countdown-text");
+@push('scripts')
+<script>
+    let timeLeft = 5;
+    let isPaused = false;
+    const countdownText = document.getElementById('countdownText');
+    const countdownFill = document.getElementById('countdownFill');
+    const pauseBtn = document.getElementById('pauseBtn');
 
-            const intervalMs = 100; // Her 100ms'de barı güncelle
-            const totalSteps = (totalSeconds * 1000) / intervalMs;
-            let currentStep = 0;
+    const timer = setInterval(() => {
+        if (!isPaused) {
+            timeLeft--;
+            if (countdownText) countdownText.textContent = `${timeLeft} saniye`;
+            if (countdownFill) countdownFill.style.width = `${(timeLeft / 5) * 100}%`;
 
-            const timer = setInterval(function() {
-                if (isPaused) return;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                window.location.href = '/';
+            }
+        }
+    }, 1000);
 
-                currentStep++;
-                const percentage = Math.max(0, 100 - (currentStep / totalSteps * 100));
-                if (progressFill) {
-                    progressFill.style.width = percentage + "%";
-                }
-
-                const newRemaining = Math.ceil((totalSteps - currentStep) * (intervalMs / 1000));
-                if (newRemaining !== remainingSeconds) {
-                    remainingSeconds = Math.max(0, newRemaining);
-                    if (countdownElem) {
-                        countdownElem.innerText = remainingSeconds;
-                    }
-                }
-
-                if (currentStep >= totalSteps) {
-                    clearInterval(timer);
-                    window.location.href = targetUrl;
-                }
-            }, intervalMs);
-
-            window.toggleRedirect = function() {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    pauseBtn.innerHTML = "▶️ Devam Et";
-                    pauseBtn.style.background = "rgba(56, 189, 248, 0.2)";
-                    pauseBtn.style.color = "#38bdf8";
-                    if (countdownText) {
-                        countdownText.innerHTML = "⏸️ Otomatik yönlendirme duraklatıldı. İstediğiniz bağlantıya tıklayabilirsiniz.";
-                    }
-                } else {
-                    pauseBtn.innerHTML = "⏸️ Durdur";
-                    pauseBtn.style.background = "rgba(255, 255, 255, 0.08)";
-                    pauseBtn.style.color = "#e2e8f0";
-                    if (countdownText) {
-                        countdownText.innerHTML = '⏱️ Bu geçersiz istek nedeniyle <strong id="countdown">' + remainingSeconds + '</strong> saniye içinde ana sayfaya yönlendirileceksiniz...';
-                    }
-                }
-            };
-        })();
-    </script>
-</body>
-</html>
+    if (pauseBtn) {
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            if (isPaused) {
+                pauseBtn.innerHTML = '▶️ Devam Ettir';
+                pauseBtn.classList.add('btn-primary');
+                pauseBtn.classList.remove('btn-secondary');
+            } else {
+                pauseBtn.innerHTML = '⏸️ Geri Sayımı Durdur';
+                pauseBtn.classList.remove('btn-primary');
+                pauseBtn.classList.add('btn-secondary');
+            }
+        });
+    }
+</script>
+@endpush
+@endsection

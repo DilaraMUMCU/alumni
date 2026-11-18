@@ -1,267 +1,100 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İlanı Düzenle: {{ $job->title }} - Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-        }
+@section('title', "{$job->title} İlanını Düzenle — Kariyer Kapısı")
+@section('meta_description', "İstanbul Üniversitesi Kariyer Kapısı {$job->title} ilanı güncelleme formu.")
 
-        .navbar {
-            max-width: 900px;
-            margin: 0 auto 28px auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 16px 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+@section('content')
+<div class="container" style="max-width: 780px;">
 
-        .navbar-brand {
-            font-size: 20px;
-            font-weight: 700;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .navbar-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .navbar-links a:hover {
-            color: #ffffff;
-            background: rgba(56, 189, 248, 0.2);
-        }
-
-        .form-card {
-            max-width: 900px;
-            margin: 0 auto;
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 32px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-        }
-
-        .card-header {
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 16px;
-        }
-
-        .card-header h2 {
-            font-size: 22px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
-            margin-bottom: 8px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            color: #f8fafc;
-            padding: 12px 16px;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        select.form-control option {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
-        textarea.form-control {
-            min-height: 140px;
-            resize: vertical;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-            border: none;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            padding: 14px 28px;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(56, 189, 248, 0.45);
-        }
-
-        .btn-cancel {
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            padding: 14px 20px;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-cancel:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .form-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            🎓 Alumni Tracking System
+    <!-- Top Breadcrumb -->
+    <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <a href="/job-postings/{{ $job->id }}" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>İlana Dön</span>
         </a>
-        <div class="navbar-links">
-            <a href="/job-postings/{{ $job->id }}">⬅️ İlan Detayına Dön</a>
-            <a href="/job-postings">💼 Tüm İlanlar</a>
-        </div>
-    </nav>
 
-    <div class="form-card">
-        <div class="card-header">
-            <h2>✏️ İlanı Düzenle: {{ $job->title }}</h2>
+        <span class="badge-pill badge-neutral">İlan #{{ $job->id }}</span>
+    </div>
+
+    <!-- Edit Card -->
+    <div class="card" style="padding: 36px;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-cream); padding-bottom: 20px; margin-bottom: 24px;">
+            <div>
+                <span class="badge-pill badge-sapphire" style="margin-bottom: 6px;">İlan Düzenleme</span>
+                <h1 class="card-title" style="font-size: 26px;">{{ $job->title }}</h1>
+                <p class="card-subtitle">{{ $job->company }} bünyesindeki pozisyon detaylarını güncelleyin.</p>
+            </div>
         </div>
 
         <form action="/job-postings/{{ $job->id }}" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="user_id">İlan Sahibi (Mezun / Şirket Temsilcisi) <span class="required">*</span></label>
+                <select id="user_id" name="user_id" class="form-select" required>
+                    @foreach ($users as $u)
+                        <option value="{{ $u->id }}" {{ old('user_id', $job->user_id) == $u->id ? 'selected' : '' }}>
+                            {{ $u->name }} ({{ $u->current_company ?: $u->department }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px;">
                 <div class="form-group">
-                    <label for="user_id">Yayınlayan Mezun *</label>
-                    <select name="user_id" id="user_id" class="form-control" required>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('user_id', $job->user_id) == $user->id ? 'selected' : '' }}>
-                                {{ $user->name }} - {{ $user->current_company ?? $user->department }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label class="form-label" for="title">Pozisyon / İlan Başlığı <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" class="form-control" required value="{{ old('title', $job->title) }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="employment_type">Çalışma Tipi *</label>
-                    <select name="employment_type" id="employment_type" class="form-control" required>
-                        <option value="full-time" {{ old('employment_type', $job->employment_type) == 'full-time' ? 'selected' : '' }}>Tam Zamanlı (Full-Time)</option>
-                        <option value="internship" {{ old('employment_type', $job->employment_type) == 'internship' ? 'selected' : '' }}>Staj (Internship)</option>
-                        <option value="part-time" {{ old('employment_type', $job->employment_type) == 'part-time' ? 'selected' : '' }}>Yarı Zamanlı (Part-Time)</option>
+                    <label class="form-label" for="employment_type">Çalışma Şekli <span class="required">*</span></label>
+                    <select id="employment_type" name="employment_type" class="form-select" required>
+                        <option value="full-time" {{ old('employment_type', $job->employment_type) === 'full-time' ? 'selected' : '' }}>💼 Tam Zamanlı</option>
+                        <option value="internship" {{ old('employment_type', $job->employment_type) === 'internship' ? 'selected' : '' }}>🌱 Stajyer</option>
+                        <option value="part-time" {{ old('employment_type', $job->employment_type) === 'part-time' ? 'selected' : '' }}>⏱️ Yarı Zamanlı</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-row">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
-                    <label for="title">İlan Başlığı *</label>
-                    <input type="text" name="title" id="title" class="form-control" value="{{ old('title', $job->title) }}" required>
+                    <label class="form-label" for="company">Kurum / Şirket Adı <span class="required">*</span></label>
+                    <input type="text" id="company" name="company" class="form-control" required value="{{ old('company', $job->company) }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="company">Şirket *</label>
-                    <input type="text" name="company" id="company" class="form-control" value="{{ old('company', $job->company) }}" required>
+                    <label class="form-label" for="location">Çalışma Konumu / Lokasyon <span class="required">*</span></label>
+                    <input type="text" id="location" name="location" class="form-control" required value="{{ old('location', $job->location) }}">
                 </div>
             </div>
 
-            <div class="form-row">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div class="form-group">
-                    <label for="location">Lokasyon *</label>
-                    <input type="text" name="location" id="location" class="form-control" value="{{ old('location', $job->location) }}" required>
+                    <label class="form-label" for="deadline">Son Başvuru Tarihi</label>
+                    <input type="date" id="deadline" name="deadline" class="form-control" value="{{ old('deadline', $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('Y-m-d') : '') }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="deadline">Son Başvuru Tarihi</label>
-                    <input type="date" name="deadline" id="deadline" class="form-control" value="{{ old('deadline', $job->deadline ? \Carbon\Carbon::parse($job->deadline)->format('Y-m-d') : '') }}">
+                    <label class="form-label" for="application_url">Harici Başvuru URL'i (Varsa)</label>
+                    <input type="url" id="application_url" name="application_url" class="form-control" value="{{ old('application_url', $job->application_url) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="application_url">Harici Başvuru URL</label>
-                <input type="url" name="application_url" id="application_url" class="form-control" value="{{ old('application_url', $job->application_url) }}">
+                <label class="form-label" for="description">İş Tanımı ve Aranan Nitelikler <span class="required">*</span></label>
+                <textarea id="description" name="description" class="form-control" rows="6" required>{{ old('description', $job->description) }}</textarea>
             </div>
 
-            <div class="form-group">
-                <label for="description">İlan Tanımı & Nitelikler *</label>
-                <textarea name="description" id="description" class="form-control" required>{{ old('description', $job->description) }}</textarea>
-            </div>
-
-            <div class="form-actions">
-                <a href="/job-postings/{{ $job->id }}" class="btn-cancel">İptal</a>
-                <button type="submit" class="btn-submit">💾 Değişiklikleri Kaydet</button>
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-cream);">
+                <a href="/job-postings/{{ $job->id }}" class="btn btn-secondary">İptal</a>
+                <button type="submit" class="btn btn-sapphire btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span>Değişiklikleri Kaydet</span>
+                </button>
             </div>
         </form>
     </div>
 
-</body>
-</html>
+</div>
+@endsection

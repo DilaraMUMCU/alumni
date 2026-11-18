@@ -1,730 +1,310 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duyuru Yönetimi - Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-        }
+@section('title', 'Kurumsal Duyurular — İstanbul Üniversitesi')
+@section('meta_description', 'İstanbul Üniversitesi Rektörlüğü ve fakültelerimizden mezuniyet, kariyer ve etkinlik duyuruları.')
 
-        .navbar {
-            max-width: 1250px;
-            margin: 0 auto 28px auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 16px 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+@push('styles')
+<style>
+    .announcements-hero {
+        margin-bottom: 32px;
+    }
 
-        .navbar-brand {
-            font-size: 20px;
-            font-weight: 700;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
+    .announcements-layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 32px;
+        align-items: flex-start;
+    }
 
-        .navbar-links {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .navbar-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .navbar-links a:hover, .navbar-links a.active {
-            color: #ffffff;
-            background: rgba(56, 189, 248, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-        }
-
-        .stats-grid {
-            max-width: 1250px;
-            margin: 0 auto 28px auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .stat-card {
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 18px 22px;
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stat-card .stat-info h3 {
-            font-size: 13px;
-            font-weight: 600;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .stat-card .stat-info .stat-num {
-            font-size: 26px;
-            font-weight: 800;
-            color: #ffffff;
-        }
-
-        .stat-icon {
-            font-size: 32px;
-            opacity: 0.85;
-        }
-
-        .main-container {
-            max-width: 1250px;
-            margin: 0 auto;
-            display: grid;
+    @media (max-width: 992px) {
+        .announcements-layout {
             grid-template-columns: 1fr;
-            gap: 32px;
         }
+    }
 
-        @media (min-width: 1024px) {
-            .main-container {
-                grid-template-columns: 420px 1fr;
-            }
-        }
+    .announcement-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        padding: 24px;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 20px;
+        transition: all 0.25s ease;
+        position: relative;
+    }
 
-        .alert {
-            grid-column: 1 / -1;
-            padding: 16px 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 15px;
-            font-weight: 500;
-        }
+    .announcement-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: rgba(138, 21, 56, 0.3);
+    }
 
-        .alert-success {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: #4ade80;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
-        }
+    .announcement-card.is-pinned {
+        border-left: 4px solid var(--iu-gold);
+    }
 
-        .alert-error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #f87171;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
-        }
+    .announcement-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
 
-        .card {
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            height: fit-content;
-        }
+    .announcement-title {
+        font-family: var(--font-serif);
+        font-size: 20px;
+        color: var(--iu-navy);
+        line-height: 1.3;
+        margin-bottom: 8px;
+    }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+    .announcement-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12.5px;
+        color: var(--ink-secondary);
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
 
-        .card-header h2 {
-            font-size: 19px;
-            font-weight: 700;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .announcement-content-excerpt {
+        font-size: 14px;
+        color: var(--ink-charcoal);
+        line-height: 1.6;
+        margin-bottom: 16px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+@endpush
 
-        .count-badge {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 13px;
-            font-weight: 600;
-        }
+@section('content')
+<div class="container">
 
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 12px 14px;
-            color: #ffffff;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 95px;
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        select.form-control option {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #cbd5e1;
-            cursor: pointer;
-            margin-top: 6px;
-        }
-
-        .checkbox-label input {
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-            accent-color: #38bdf8;
-        }
-
-        .btn-submit {
-            width: 100%;
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-            border: none;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 700;
-            padding: 14px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
-            transition: all 0.2s ease;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(56, 189, 248, 0.45);
-        }
-
-        /* Announcement List Cards */
-        .announcement-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .announcement-card {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 20px;
-            transition: all 0.25s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        .announcement-card.is-pinned {
-            border-color: rgba(234, 179, 8, 0.4);
-            background: rgba(234, 179, 8, 0.04);
-        }
-
-        .announcement-card:hover {
-            border-color: rgba(56, 189, 248, 0.4);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-            background: rgba(15, 23, 42, 0.75);
-        }
-
-        .card-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .badge-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-pinned {
-            background: rgba(234, 179, 8, 0.2);
-            color: #facc15;
-            border: 1px solid rgba(234, 179, 8, 0.4);
-        }
-
-        .badge-category-event {
-            background: rgba(168, 85, 247, 0.2);
-            color: #c084fc;
-            border: 1px solid rgba(192, 132, 252, 0.3);
-        }
-
-        .badge-category-career {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            border: 1px solid rgba(74, 222, 128, 0.3);
-        }
-
-        .badge-category-mentorship {
-            background: rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-
-        .badge-category-general {
-            background: rgba(148, 163, 184, 0.2);
-            color: #cbd5e1;
-            border: 1px solid rgba(148, 163, 184, 0.3);
-        }
-
-        .badge-priority-urgent {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .badge-priority-important {
-            background: rgba(249, 115, 22, 0.2);
-            color: #fb923c;
-            border: 1px solid rgba(249, 115, 22, 0.3);
-        }
-
-        .badge-priority-normal {
-            background: rgba(100, 116, 139, 0.2);
-            color: #94a3b8;
-            border: 1px solid rgba(100, 116, 139, 0.3);
-        }
-
-        .announcement-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: #ffffff;
-            line-height: 1.4;
-        }
-
-        .announcement-excerpt {
-            color: #94a3b8;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .announcement-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #64748b;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .announcement-meta strong {
-            color: #cbd5e1;
-        }
-
-        .announcement-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .action-btn {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-view {
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-        .btn-view:hover {
-            background: rgba(56, 189, 248, 0.3);
-            color: #ffffff;
-        }
-
-        .btn-edit {
-            background: rgba(234, 179, 8, 0.15);
-            color: #facc15;
-            border: 1px solid rgba(234, 179, 8, 0.3);
-        }
-        .btn-edit:hover {
-            background: rgba(234, 179, 8, 0.3);
-            color: #ffffff;
-        }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .btn-delete:hover {
-            background: rgba(239, 68, 68, 0.3);
-            color: #ffffff;
-        }
-
-        .db-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            color: #6ee7b7;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .db-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #10b981;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Üst Navigasyon Menüsü -->
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            🎓 Alumni Tracking System
-        </a>
-        <div class="navbar-links">
-            <a href="/">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Kullanıcılar</a>
-            <a href="/announcements" class="active">📢 Duyurular (/announcements)</a>
-            <a href="/announcements/create">➕ Yeni Duyuru</a>
-            <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
-            <div class="db-status-badge">
-                <span class="db-dot"></span> 🗄️ MySQL 8.0: Connected (alumni.announcements)
+    <!-- Hero Header -->
+    <div class="announcements-hero">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <span class="badge-pill badge-gold" style="margin-bottom: 8px;">Kurumsal İletişim</span>
+                <h1 style="font-size: 36px; color: var(--iu-navy); margin-bottom: 8px;">
+                    Üniversite & Fakülte <em>Duyuruları</em>
+                </h1>
+                <p style="color: var(--ink-secondary); max-width: 700px;">
+                    Rektörlük, mezunlar ofisi ve fakültelerimizden etkinlik, kariyer zirveleri ve akademik duyurular.
+                </p>
             </div>
-        </div>
-    </nav>
 
-    <!-- İstatistik Kartları -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-info">
-                <h3>Toplam Duyuru</h3>
-                <div class="stat-num">{{ count($announcements) }}</div>
-            </div>
-            <div class="stat-icon">📢</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
-                <h3>Sabitlenenler</h3>
-                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => !empty($a['pinned']))->count() }}</div>
-            </div>
-            <div class="stat-icon">📌</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
-                <h3>Kariyer & Staj</h3>
-                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => ($a['category'] ?? '') === 'career')->count() }}</div>
-            </div>
-            <div class="stat-icon">💼</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-info">
-                <h3>Etkinlikler</h3>
-                <div class="stat-num">{{ collect($announcements)->filter(fn($a) => ($a['category'] ?? '') === 'event')->count() }}</div>
-            </div>
-            <div class="stat-icon">🎯</div>
+            <a href="/announcements/create" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Yeni Duyuru Yayınla</span>
+            </a>
         </div>
     </div>
 
-    <div class="main-container">
+    <!-- Layout: Left Creation Card + Right List -->
+    <div class="announcements-layout">
 
-        <!-- Başarı / Hata Bildirimleri -->
-        @if (session('success'))
-            <div class="alert alert-success">
-                <span>✅</span>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-error">
-                <span>⚠️</span>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
-        <!-- SOL KOLON: Yeni Duyuru Ekleme Formu (POST /announcements) -->
-        <div class="card">
-            <div class="card-header">
-                <h2>➕ Yeni Duyuru Yayınla</h2>
-                <span class="count-badge">POST /announcements</span>
+        <!-- Left Column: Quick Announcement Creator -->
+        <aside class="card" style="padding: 24px; position: sticky; top: 100px;">
+            <div class="card-header" style="margin-bottom: 16px;">
+                <div>
+                    <span class="badge-pill badge-crimson" style="font-size: 10.5px;">Hızlı Yayın</span>
+                    <h3 class="card-title" style="font-size: 18px; margin-top: 4px;">Duyuru Paylaş</h3>
+                </div>
             </div>
 
             <form action="/announcements" method="POST">
                 @csrf
 
                 <div class="form-group">
-                    <label for="title">Duyuru Başlığı *</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="Örn: 2026 Mezunlar Zirvesi Kayıtları" required>
+                    <label class="form-label" for="title">Duyuru Başlığı <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="Örn: 2026 Mezuniyet Töreni" required value="{{ old('title') }}">
                 </div>
 
-                <div class="form-row">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
-                        <label for="category">Kategori</label>
-                        <select id="category" name="category" class="form-control">
-                            <option value="general">Genel Duyuru</option>
-                            <option value="event" selected>Etkinlik & Buluşma</option>
-                            <option value="career">Kariyer & Staj</option>
-                            <option value="mentorship">Mentorluk</option>
-                            <option value="academic">Akademik</option>
+                        <label class="form-label" for="category">Kategori <span class="required">*</span></label>
+                        <select id="category" name="category" class="form-select" required>
+                            <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>🎉 Etkinlik</option>
+                            <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>💼 Kariyer</option>
+                            <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>🏛️ Akademik</option>
+                            <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>📢 Genel</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="priority">Öncelik</label>
-                        <select id="priority" name="priority" class="form-control">
-                            <option value="normal" selected>Normal</option>
-                            <option value="important">Önemli</option>
-                            <option value="urgent">Acil / Kritik</option>
+                        <label class="form-label" for="priority">Öncelik</label>
+                        <select id="priority" name="priority" class="form-select">
+                            <option value="Normal">Normal</option>
+                            <option value="Yüksek">Yüksek</option>
+                            <option value="Acil">Acil</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="form-row">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group">
-                        <label for="author">Yayınlayan Birim/Kişi</label>
-                        <input type="text" id="author" name="author" class="form-control" placeholder="Örn: Kariyer Merkezi" value="Mezunlar Koordinatörlüğü">
+                        <label class="form-label" for="author">Yayınlayan Birim</label>
+                        <input type="text" id="author" name="author" class="form-control" placeholder="Örn: Rektörlük" value="{{ old('author') }}">
                     </div>
 
                     <div class="form-group">
-                        <label for="target_audience">Hedef Kitle</label>
-                        <select id="target_audience" name="target_audience" class="form-control">
-                            <option value="all" selected>Tüm Topluluk</option>
-                            <option value="alumni">Yalnızca Mezunlar</option>
-                            <option value="students">Yalnızca Öğrenciler</option>
+                        <label class="form-label" for="target_audience">Hedef Kitle</label>
+                        <select id="target_audience" name="target_audience" class="form-select">
+                            <option value="Tümü">Tümü</option>
+                            <option value="Mezunlar">Mezunlar</option>
+                            <option value="Öğrenciler">Öğrenciler</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="content">Duyuru İçeriği *</label>
-                    <textarea id="content" name="content" class="form-control" placeholder="Duyurunun tüm detaylarını buraya yazın..." required></textarea>
+                    <label class="form-label" for="content">Duyuru İçeriği <span class="required">*</span></label>
+                    <textarea id="content" name="content" class="form-control" rows="4" placeholder="Duyuru metnini giriniz..." required>{{ old('content') }}</textarea>
                 </div>
 
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="pinned" value="1">
-                        <span>📌 Bu duyuruyu en üstte sabitle (Pinned)</span>
+                <div style="margin-bottom: 18px; display: flex; gap: 16px;">
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" name="pinned" value="1" {{ old('pinned') ? 'checked' : '' }}>
+                        <span>📌 Başa Sabitle</span>
+                    </label>
+
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" name="is_active" value="1" checked>
+                        <span>Aktif Yayın</span>
                     </label>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    📢 Duyuruyu Yayınla (POST)
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Duyuruyu Yayınla</span>
                 </button>
             </form>
-        </div>
+        </aside>
 
-        <!-- SAĞ KOLON: Yayınlanan Duyurular Listesi (GET /announcements) -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📋 Yayınlanan Duyurular Rehberi</h2>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <a href="/announcements/create" class="action-btn btn-view" style="font-size: 13px; padding: 6px 14px;">➕ Yeni Sayfada Ekle</a>
-                    <span class="count-badge">{{ count($announcements) }} Duyuru</span>
-                </div>
+        <!-- Right Column: Announcements List -->
+        <div>
+            <!-- Filter Pills -->
+            <div class="filter-pills-bar">
+                <button class="filter-pill active" onclick="filterAnnouncements('all')">
+                    Tüm Duyurular ({{ count($announcements) }})
+                </button>
+                <button class="filter-pill" onclick="filterAnnouncements('Etkinlik')">🎉 Etkinlik</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Kariyer')">💼 Kariyer</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Akademik')">🏛️ Akademik</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Genel')">📢 Genel</button>
             </div>
 
-            <div class="announcement-list">
-                @forelse ($announcements as $announcement)
-                    <div class="announcement-card {{ !empty($announcement['pinned']) ? 'is-pinned' : '' }}">
-                        <div class="card-top">
-                            <div class="badge-group">
-                                @if (!empty($announcement['pinned']))
-                                    <span class="badge badge-pinned">📌 Sabitlendi</span>
+            <!-- List -->
+            <div id="announcementsList">
+                @forelse ($announcements as $ann)
+                    @php
+                        $aId = is_array($ann) ? ($ann['id'] ?? '') : $ann->id;
+                        $aTitle = is_array($ann) ? ($ann['title'] ?? '') : $ann->title;
+                        $aCategory = is_array($ann) ? ($ann['category'] ?? 'Genel') : ($ann->category ?? 'Genel');
+                        $aContent = is_array($ann) ? ($ann['content'] ?? '') : $ann->content;
+                        $aAuthor = is_array($ann) ? ($ann['author'] ?? 'Rektörlük') : ($ann->author ?? 'Rektörlük');
+                        $aTarget = is_array($ann) ? ($ann['target_audience'] ?? 'Tümü') : ($ann->target_audience ?? 'Tümü');
+                        $aPriority = is_array($ann) ? ($ann['priority'] ?? 'Normal') : ($ann->priority ?? 'Normal');
+                        $aPinned = is_array($ann) ? (!empty($ann['pinned'])) : (!empty($ann->pinned));
+                        $aDate = is_array($ann) ? ($ann['created_at'] ?? '') : ($ann->created_at ?? '');
+                    @endphp
+
+                    <article class="announcement-card {{ $aPinned ? 'is-pinned' : '' }} ann-item" data-category="{{ $aCategory }}">
+                        <div class="announcement-header">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                @if ($aPinned)
+                                    <span class="badge-pill badge-gold" style="font-size: 10px;">
+                                        📌 SABİTLENDİ
+                                    </span>
                                 @endif
-
-                                @php
-                                    $cat = $announcement['category'] ?? 'general';
-                                    $catClass = match($cat) {
-                                        'event' => 'badge-category-event',
-                                        'career' => 'badge-category-career',
-                                        'mentorship' => 'badge-category-mentorship',
-                                        default => 'badge-category-general',
-                                    };
-                                    $catName = match($cat) {
-                                        'event' => 'Etkinlik',
-                                        'career' => 'Kariyer & Staj',
-                                        'mentorship' => 'Mentorluk',
-                                        'academic' => 'Akademik',
-                                        default => 'Genel',
-                                    };
-                                    $priority = $announcement['priority'] ?? 'normal';
-                                    $priorityClass = match($priority) {
-                                        'urgent' => 'badge-priority-urgent',
-                                        'important' => 'badge-priority-important',
-                                        default => 'badge-priority-normal',
-                                    };
-                                    $priorityName = match($priority) {
-                                        'urgent' => 'Acil',
-                                        'important' => 'Önemli',
-                                        default => 'Normal',
-                                    };
-                                @endphp
-
-                                <span class="badge {{ $catClass }}">{{ $catName }}</span>
-                                <span class="badge {{ $priorityClass }}">{{ $priorityName }}</span>
+                                <span class="badge-pill badge-crimson" style="font-size: 10.5px;">
+                                    {{ $aCategory }}
+                                </span>
+                                @if ($aPriority === 'Acil' || $aPriority === 'Yüksek')
+                                    <span class="badge-pill badge-danger" style="font-size: 10px;">
+                                        ⚠️ {{ $aPriority }}
+                                    </span>
+                                @endif
+                                <span class="badge-pill badge-neutral" style="font-size: 10.5px;">
+                                    👥 Hedef: {{ $aTarget }}
+                                </span>
                             </div>
 
-                            <span style="font-size: 12px; color: #64748b;">
-                                #{{ $announcement['id'] }}
-                            </span>
+                            <div style="font-size: 12px; color: var(--ink-secondary);">
+                                {{ $aDate ? \Carbon\Carbon::parse($aDate)->format('d.m.Y H:i') : '' }}
+                            </div>
                         </div>
 
-                        <div class="announcement-title">
-                            {{ $announcement['title'] ?? 'İsimsiz Duyuru' }}
-                        </div>
-
-                        <div class="announcement-excerpt">
-                            {{ \Illuminate\Support\Str::limit($announcement['content'] ?? '', 170) }}
-                        </div>
+                        <h2 class="announcement-title">
+                            <a href="/announcements/{{ $aId }}" style="color: inherit;">
+                                {{ $aTitle }}
+                            </a>
+                        </h2>
 
                         <div class="announcement-meta">
-                            <div>
-                                👤 <strong>{{ $announcement['author'] ?? 'Bilinmiyor' }}</strong> 
-                                &bull; 🎯 {{ match($announcement['target_audience'] ?? 'all') { 'alumni' => 'Mezunlar', 'students' => 'Öğrenciler', default => 'Herkes' } }}
-                                &bull; 🗓️ {{ !empty($announcement['created_at']) ? substr($announcement['created_at'], 0, 10) : '' }}
-                            </div>
+                            <span>🏛️ {{ $aAuthor }}</span>
+                        </div>
 
-                            <div class="announcement-actions">
-                                <a href="/announcements/{{ $announcement['id'] }}" class="action-btn btn-view">
-                                    👁️ Detay (GET)
+                        <div class="announcement-content-excerpt">
+                            {{ strip_tags($aContent) }}
+                        </div>
+
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid rgba(12, 23, 84, 0.06);">
+                            <a href="/announcements/{{ $aId }}" class="btn btn-secondary btn-sm">
+                                Devamını Oku ↗
+                            </a>
+
+                            <div style="display: flex; gap: 6px;">
+                                <a href="/announcements/{{ $aId }}/edit" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" title="Düzenle">
+                                    ✏️
                                 </a>
-                                <a href="/announcements/{{ $announcement['id'] }}/edit" class="action-btn btn-edit">
-                                    ✏️ Düzenle (GET)
-                                </a>
-                                <form action="/announcements/{{ $announcement['id'] }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu duyuruyu silmek istediğinize emin misiniz?');">
+                                <form action="/announcements/{{ $aId }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu duyuru kalıcı olarak silinsin mi?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="action-btn btn-delete">
-                                        🗑️ Sil (DELETE)
+                                    <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px;" title="Sil">
+                                        🗑️
                                     </button>
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 @empty
-                    <p style="color: #94a3b8; text-align: center; padding: 32px;">Henüz yayınlanmış bir duyuru bulunmamaktadır.</p>
+                    <div class="card" style="text-align: center; padding: 48px; color: var(--ink-secondary);">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📢</div>
+                        <h4 style="font-size: 18px; color: var(--iu-navy); margin-bottom: 6px;">Duyuru Bulunamadı</h4>
+                        <p style="font-size: 13.5px;">Soldaki formu kullanarak üniversitemiz için ilk duyuruyu yayınlayabilirsiniz.</p>
+                    </div>
                 @endforelse
             </div>
         </div>
 
     </div>
 
-</body>
-</html>
+</div>
+
+@push('scripts')
+<script>
+    function filterAnnouncements(category) {
+        // Toggle pill active classes
+        const pills = document.querySelectorAll('.filter-pill');
+        pills.forEach(p => p.classList.remove('active'));
+        event.target.classList.add('active');
+
+        const items = document.querySelectorAll('.ann-item');
+        items.forEach(item => {
+            if (category === 'all' || item.getAttribute('data-category') === category) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+</script>
+@endpush
+@endsection

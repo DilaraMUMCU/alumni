@@ -1,477 +1,284 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İş Başvuruları Yönetimi - Alumni Tracking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+@extends('layouts.app')
 
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            padding: 24px;
-        }
+@section('title', 'Kariyer Başvuruları Takip Paneli — İstanbul Üniversitesi')
+@section('meta_description', 'İstanbul Üniversitesi Kariyer Kapısı aday iş ve staj başvuruları değerlendirme ve takip paneli.')
 
-        .navbar {
-            max-width: 1300px;
-            margin: 0 auto 28px auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 16px 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+@push('styles')
+<style>
+    .apps-hero {
+        margin-bottom: 32px;
+    }
 
-        .navbar-brand {
-            font-size: 20px;
-            font-weight: 700;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
+    .apps-controls-panel {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        padding: 24px;
+        box-shadow: var(--shadow-subtle);
+        margin-bottom: 28px;
+    }
 
-        .navbar-links {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+    .apps-table-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border-cream);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+    }
 
-        .navbar-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            transition: all 0.2s ease;
-        }
+    .table-responsive {
+        overflow-x: auto;
+    }
 
-        .navbar-links a:hover, .navbar-links a.active {
-            color: #ffffff;
-            background: rgba(56, 189, 248, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-        }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 13.5px;
+    }
 
-        .db-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            color: #6ee7b7;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 600;
-        }
+    .custom-table th {
+        background: var(--canvas-tint);
+        color: var(--iu-navy);
+        font-weight: 700;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border-cream);
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
 
-        .db-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #10b981;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
+    .custom-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(12, 23, 84, 0.06);
+        color: var(--ink-charcoal);
+        vertical-align: middle;
+    }
 
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
+    .custom-table tr:hover td {
+        background: #FDFBF8;
+    }
 
-        .main-container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
+    .custom-table tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+@endpush
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
+@section('content')
+<div class="container">
 
-        .stat-card {
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 16px 20px;
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stat-info h4 {
-            font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .stat-info .stat-number {
-            font-size: 24px;
-            font-weight: 800;
-            color: #f8fafc;
-        }
-
-        .stat-icon {
-            font-size: 28px;
-            opacity: 0.85;
-        }
-
-        .alert {
-            padding: 14px 20px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert-success {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: #4ade80;
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #f87171;
-        }
-
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 16px 20px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .filter-form {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            flex: 1;
-        }
-
-        .select-filter {
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            color: #f8fafc;
-            padding: 10px 14px;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .btn-filter {
-            background: rgba(56, 189, 248, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            color: #38bdf8;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-filter:hover {
-            background: rgba(56, 189, 248, 0.35);
-        }
-
-        .btn-create {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-            transition: all 0.2s ease;
-        }
-
-        .btn-create:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        th {
-            background: rgba(15, 23, 42, 0.7);
-            color: #94a3b8;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: 600;
-            padding: 14px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        td {
-            padding: 14px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            color: #cbd5e1;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .status-select {
-            background: #1e293b;
-            color: #f8fafc;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 12px;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            🎓 Alumni Tracking System
-        </a>
-        <div class="navbar-links">
-            <a href="/">🏠 Ana Sayfa</a>
-            <a href="/users">👥 Mezunlar & Öğrenciler</a>
-            <a href="/announcements">📢 Duyurular</a>
-            <a href="/job-postings">💼 İş & Staj İlanları</a>
-            <a href="/applications" class="active">📄 Başvurular</a>
-            <a href="/applications/create">➕ Yeni Başvuru</a>
-            <a href="/api/swagger" target="_blank">📜 Swagger UI</a>
-            <div class="db-status-badge">
-                <span class="db-dot"></span> 🗄️ MySQL 8.0: Connected (alumni.applications)
+    <!-- Hero Header -->
+    <div class="apps-hero">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <span class="badge-pill badge-mint" style="background: var(--mint-success-soft); color: #065F46; border: 1px solid var(--mint-success-border); margin-bottom: 8px;">
+                    Kariyer Pipeline
+                </span>
+                <h1 style="font-size: 36px; color: var(--iu-navy); margin-bottom: 8px;">
+                    Aday Başvuru <em>Takip Paneli</em>
+                </h1>
+                <p style="color: var(--ink-secondary); max-width: 700px;">
+                    Açılan pozisyonlara gelen aday başvurularını inceleyin, değerlendirme durumlarını yönetin ve iletişimi sürdürün.
+                </p>
             </div>
+
+            <a href="/applications/create" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Yeni Başvuru Gönder</span>
+            </a>
         </div>
-    </nav>
+    </div>
 
-    <div class="main-container">
-
-        @if(session('success'))
-            <div class="alert alert-success">✅ {{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-error">❌ {{ session('error') }}</div>
-        @endif
-
-        <!-- İstatistik KPI Kartları -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Toplam Başvuru</h4>
-                    <div class="stat-number">{{ $applications->count() }}</div>
-                </div>
-                <div class="stat-icon">📄</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Beklemede</h4>
-                    <div class="stat-number" style="color: #fbbf24;">{{ $applications->where('status', 'pending')->count() }}</div>
-                </div>
-                <div class="stat-icon">⏳</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>İnceleniyor</h4>
-                    <div class="stat-number" style="color: #38bdf8;">{{ $applications->where('status', 'reviewing')->count() }}</div>
-                </div>
-                <div class="stat-icon">🔍</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Kısa Liste</h4>
-                    <div class="stat-number" style="color: #c084fc;">{{ $applications->where('status', 'shortlisted')->count() }}</div>
-                </div>
-                <div class="stat-icon">⭐</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-info">
-                    <h4>Kabul Edildi</h4>
-                    <div class="stat-number" style="color: #34d399;">{{ $applications->where('status', 'accepted')->count() }}</div>
-                </div>
-                <div class="stat-icon">✅</div>
-            </div>
+    <!-- Status Filter Pills & Dropdown Controls -->
+    <div class="apps-controls-panel">
+        <div class="filter-pills-bar" style="margin-bottom: 18px;">
+            <a href="/applications" class="filter-pill {{ !request('status') ? 'active' : '' }}">
+                <span>Tüm Başvurular ({{ count($applications) }})</span>
+            </a>
+            <a href="/applications?status=pending" class="filter-pill {{ request('status') === 'pending' ? 'active' : '' }}">
+                <span>⏳ Beklemede</span>
+            </a>
+            <a href="/applications?status=reviewing" class="filter-pill {{ request('status') === 'reviewing' ? 'active' : '' }}">
+                <span>🔍 İnceleniyor</span>
+            </a>
+            <a href="/applications?status=shortlisted" class="filter-pill {{ request('status') === 'shortlisted' ? 'active' : '' }}">
+                <span>⭐ Kısa Liste</span>
+            </a>
+            <a href="/applications?status=accepted" class="filter-pill {{ request('status') === 'accepted' ? 'active' : '' }}">
+                <span>✅ Kabul</span>
+            </a>
+            <a href="/applications?status=rejected" class="filter-pill {{ request('status') === 'rejected' ? 'active' : '' }}">
+                <span>❌ Reddedildi</span>
+            </a>
         </div>
 
-        <!-- Filtre ve Yeni Başvuru Toolbar -->
-        <div class="toolbar">
-            <form action="/applications" method="GET" class="filter-form">
-                <select name="status" class="select-filter">
-                    <option value="">Tüm Durumlar</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Beklemede</option>
-                    <option value="reviewing" {{ request('status') == 'reviewing' ? 'selected' : '' }}>🔍 İnceleniyor</option>
-                    <option value="shortlisted" {{ request('status') == 'shortlisted' ? 'selected' : '' }}>⭐ Kısa Liste</option>
-                    <option value="accepted" {{ request('status') == 'accepted' ? 'selected' : '' }}>✅ Kabul Edildi</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Reddedildi</option>
-                </select>
+        <form action="/applications" method="GET" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            @if (request('status'))
+                <input type="hidden" name="status" value="{{ request('status') }}">
+            @endif
 
-                <select name="job_posting_id" class="select-filter">
-                    <option value="">Tüm İlanlar</option>
-                    @foreach($jobPostings as $job)
-                        <option value="{{ $job->id }}" {{ request('job_posting_id') == $job->id ? 'selected' : '' }}>
-                            {{ $job->title }} ({{ $job->company }})
+            <div style="flex: 1; min-width: 220px;">
+                <select name="job_posting_id" class="form-select" onchange="this.form.submit();">
+                    <option value="">Tüm İlanlara Göre Filtrele...</option>
+                    @foreach ($jobPostings as $jp)
+                        <option value="{{ $jp->id }}" {{ request('job_posting_id') == $jp->id ? 'selected' : '' }}>
+                            {{ $jp->title }} ({{ $jp->company }})
                         </option>
                     @endforeach
                 </select>
+            </div>
 
-                <button type="submit" class="btn-filter">Filtrele</button>
-                @if(request()->has('status') || request()->has('job_posting_id'))
-                    <a href="/applications" style="color: #94a3b8; font-size: 13px; text-decoration: none;">Temizle</a>
-                @endif
-            </form>
+            <div style="flex: 1; min-width: 220px;">
+                <select name="user_id" class="form-select" onchange="this.form.submit();">
+                    <option value="">Adaya Göre Filtrele...</option>
+                    @foreach ($users as $u)
+                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
+                            {{ $u->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-            <a href="/applications/create" class="btn-create">✍️ Yeni Başvuru Gönder</a>
-        </div>
-
-        <!-- Başvurular Tablosu -->
-        <div class="card">
-            @if($applications->isEmpty())
-                <div class="empty-state">
-                    <div style="font-size: 40px; margin-bottom: 12px;">📭</div>
-                    <h3>Henüz kayıtlı başvuru bulunmuyor</h3>
-                    <p>İş ilanlarına başvuru yapıldığında aday kayıtları burada listelenecektir.</p>
-                </div>
-            @else
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#ID</th>
-                                <th>Aday (Öğrenci / Mezun)</th>
-                                <th>Hedef İş İlanı</th>
-                                <th>Özgeçmiş / CV</th>
-                                <th>Ön Yazı / Not</th>
-                                <th>Başvuru Tarihi</th>
-                                <th>Durum Değiştir</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($applications as $application)
-                                <tr>
-                                    <td style="color: #64748b; font-weight: 700;">#{{ $application->id }}</td>
-                                    <td>
-                                        <strong>{{ $application->user ? $application->user->name : 'Kullanıcı #' . $application->user_id }}</strong><br>
-                                        <small style="color: #94a3b8;">{{ $application->user ? $application->user->email : '' }}</small><br>
-                                        <small style="color: #38bdf8;">{{ $application->user ? $application->user->department : '' }}</small>
-                                    </td>
-                                    <td>
-                                        @if($application->jobPosting)
-                                            <a href="/job-postings/{{ $application->jobPosting->id }}" style="color: #ffffff; font-weight: 600; text-decoration: none;">
-                                                💼 {{ $application->jobPosting->title }}
-                                            </a><br>
-                                            <small style="color: #94a3b8;">🏢 {{ $application->jobPosting->company }} ({{ $application->jobPosting->location }})</small>
-                                        @else
-                                            <span style="color: #64748b;">Silinmiş İlan (#{{ $application->job_posting_id }})</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($application->resume_url)
-                                            <a href="{{ $application->resume_url }}" target="_blank" style="color: #38bdf8; text-decoration: underline;">
-                                                📄 CV Görüntüle ↗
-                                            </a>
-                                        @else
-                                            <span style="color: #64748b;">Belirtilmedi</span>
-                                        @endif
-                                    </td>
-                                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        {{ $application->cover_letter ?? '-' }}
-                                    </td>
-                                    <td>
-                                        {{ \Carbon\Carbon::parse($application->applied_at)->format('d.m.Y H:i') }}
-                                    </td>
-                                    <td>
-                                        <form action="/applications/{{ $application->id }}/status" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <select name="status" class="status-select" onchange="this.form.submit()">
-                                                <option value="pending" {{ $application->status == 'pending' ? 'selected' : '' }}>⏳ Beklemede</option>
-                                                <option value="reviewing" {{ $application->status == 'reviewing' ? 'selected' : '' }}>🔍 İnceleniyor</option>
-                                                <option value="shortlisted" {{ $application->status == 'shortlisted' ? 'selected' : '' }}>⭐ Kısa Liste</option>
-                                                <option value="accepted" {{ $application->status == 'accepted' ? 'selected' : '' }}>✅ Kabul Edildi</option>
-                                                <option value="rejected" {{ $application->status == 'rejected' ? 'selected' : '' }}>❌ Reddedildi</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form action="/applications/{{ $application->id }}" method="POST" onsubmit="return confirm('Bu başvuruyu silmek istediğinizden emin misiniz?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" style="background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px;">🗑️ Sil</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+            @if (request('status') || request('job_posting_id') || request('user_id'))
+                <a href="/applications" class="btn btn-secondary btn-sm">Filtreleri Temizle ✕</a>
             @endif
-        </div>
-
+        </form>
     </div>
 
-</body>
-</html>
+    <!-- Applications Table Card -->
+    <div class="apps-table-card">
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Aday (Mezun / Öğrenci)</th>
+                        <th>Başvurulan İlan & Kurum</th>
+                        <th>Özgeçmiş / Not</th>
+                        <th>Başvuru Tarihi</th>
+                        <th>Değerlendirme Durumu</th>
+                        <th style="text-align: right;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($applications as $app)
+                        @php
+                            $statusBadges = [
+                                'pending'     => ['label' => 'Beklemede', 'class' => 'badge-amber'],
+                                'reviewing'   => ['label' => 'İnceleniyor', 'class' => 'badge-sapphire'],
+                                'shortlisted' => ['label' => 'Kısa Liste', 'class' => 'badge-gold'],
+                                'accepted'    => ['label' => 'Kabul Edildi', 'class' => 'badge-success'],
+                                'rejected'    => ['label' => 'Reddedildi', 'class' => 'badge-danger'],
+                            ];
+                            $sb = $statusBadges[$app->status] ?? ['label' => $app->status, 'class' => 'badge-neutral'];
+                        @endphp
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--canvas-tint); border: 1px solid var(--border-cream); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--iu-navy); font-size: 14px;">
+                                        {{ mb_substr($app->user ? $app->user->name : 'A', 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--iu-navy);">
+                                            @if ($app->user)
+                                                <a href="/users/{{ $app->user->id }}" style="color: inherit;">
+                                                    {{ $app->user->name }}
+                                                </a>
+                                            @else
+                                                Aday #{{ $app->user_id }}
+                                            @endif
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--ink-secondary);">
+                                            {{ $app->user ? $app->user->email : '' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if ($app->jobPosting)
+                                    <div style="font-weight: 600; color: var(--iu-navy);">
+                                        <a href="/job-postings/{{ $app->jobPosting->id }}" style="color: inherit;">
+                                            {{ $app->jobPosting->title }}
+                                        </a>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--ink-secondary);">
+                                        🏢 {{ $app->jobPosting->company }} • 📍 {{ $app->jobPosting->location }}
+                                    </div>
+                                @else
+                                    <span style="color: var(--ink-muted);">Silinmiş İlan #{{ $app->job_posting_id }}</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                @if ($app->resume_url)
+                                    <div>
+                                        <a href="{{ $app->resume_url }}" target="_blank" rel="noopener" style="color: var(--academic-sapphire); font-weight: 600; font-size: 12.5px;">
+                                            📄 Özgeçmişi Aç ↗
+                                        </a>
+                                    </div>
+                                @endif
+                                @if ($app->cover_letter)
+                                    <div style="font-size: 12px; color: var(--ink-secondary); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $app->cover_letter }}">
+                                        "{{ $app->cover_letter }}"
+                                    </div>
+                                @endif
+                            </td>
+
+                            <td>
+                                <div style="font-size: 12.5px; color: var(--ink-charcoal);">
+                                    {{ \Carbon\Carbon::parse($app->applied_at)->format('d.m.Y') }}
+                                </div>
+                                <div style="font-size: 11px; color: var(--ink-muted);">
+                                    {{ \Carbon\Carbon::parse($app->applied_at)->format('H:i') }}
+                                </div>
+                            </td>
+
+                            <td>
+                                <form action="/applications/{{ $app->id }}/status" method="POST" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <span class="badge-pill {{ $sb['class'] }}" style="font-size: 10px;">
+                                        {{ $sb['label'] }}
+                                    </span>
+                                    <select name="status" class="form-select" style="padding: 4px 8px; font-size: 11px; width: auto;" onchange="this.form.submit();">
+                                        <option value="pending" {{ $app->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
+                                        <option value="reviewing" {{ $app->status === 'reviewing' ? 'selected' : '' }}>İnceleniyor</option>
+                                        <option value="shortlisted" {{ $app->status === 'shortlisted' ? 'selected' : '' }}>Kısa Liste</option>
+                                        <option value="accepted" {{ $app->status === 'accepted' ? 'selected' : '' }}>Kabul</option>
+                                        <option value="rejected" {{ $app->status === 'rejected' ? 'selected' : '' }}>Reddet</option>
+                                    </select>
+                                </form>
+                            </td>
+
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    <a href="/applications/{{ $app->id }}" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" title="İncele">
+                                        👁️
+                                    </a>
+                                    <form action="/applications/{{ $app->id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu başvuru kaydı kalıcı olarak silinsin mi?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px;" title="Sil">
+                                            🗑️
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 48px; color: var(--ink-secondary);">
+                                <div style="font-size: 32px; margin-bottom: 8px;">📑</div>
+                                <h4 style="font-size: 17px; color: var(--iu-navy); margin-bottom: 4px;">Başvuru Bulunamadı</h4>
+                                <p style="font-size: 13px;">Seçilen kriterlere uygun başvuru kaydı bulunmamaktadır.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+@endsection
