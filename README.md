@@ -10,6 +10,17 @@ Maintaining active connections with graduates is a significant challenge for man
 Built with modern web standards, this platform offers a secure, modular, and customizable foundation adaptable to any institution looking to modernize its alumni relations and career support networks.
 
 
+## 📚 Architectural & Design Documentation Hub
+
+| Document | Category | Scope & Summary | Direct Anchor / Link |
+| :--- | :--- | :--- | :---: |
+| [**`brand.md`**](brand.md) | **Brand Identity Guidelines** | İstanbul Üniversitesi brand identity, heritage colors (Crimson `#8A1538`, Navy `#0B1B3D`, Gold `#D4AF37`), typography, voice & tone, and mark guidelines. | [**Open `brand.md` ↗**](brand.md) |
+| [**`DESIGN.md`**](DESIGN.md) | **UI/UX Design System** | Synthesis of Refero benchmarks (Craft Docs, Superr, Officevibe): design tokens, typography scale, multi-layer diffuse shadows, pill ergonomics. | [**Open `DESIGN.md` ↗**](DESIGN.md) |
+| [**`ddd.md`**](ddd.md) | **Data Design Documentation (DDD)** | Entity-Relationship Diagrams (ERD), comprehensive Data Dictionary, MySQL 8.0 schema migrations, validation rules, and cache keys. | [**Open `ddd.md` ↗**](ddd.md) |
+| [**`logs/error.logs`**](logs/error.logs) | **Error Telemetry & Incident Logs** | Dedicated real-time file persistence for 4xx/5xx errors with timestamps, client IP, route path, reasons, and stack coordinates. | [**View Error Logs ↗**](logs/error.logs) |
+| [**Swagger UI**](http://localhost:8000/api/swagger) | **Interactive API Documentation** | Browser-based interactive endpoint exploration and execution ("Try it out") for all RESTful API routes. | [**Launch Swagger ↗**](http://localhost:8000/api/swagger) |
+
+
 ## Technology Stack
 
 | Layer | Technology | Purpose |
@@ -109,6 +120,9 @@ The View layer is responsible for rendering content and presenting data to the u
   - `resources/views/job_postings/`: Full Job Posting CRUD views (`index.blade.php` with search/filters, `create.blade.php`, `show.blade.php` with direct candidate apply form, `edit.blade.php`).
   - `resources/views/applications/`: Full Application views (`index.blade.php` tracking candidate review statuses, `create.blade.php` job application form).
   - `resources/views/errors/404.blade.php`: Modern generic 404 error page with error details, 5-second auto-redirect countdown, pause/resume control, and quick navigation.
+- **Brand Identity & Design System Specifications:**
+  - 🎨 **Brand Identity Guidelines:** Istanbul University heritage colors, typography, voice & tone, and mark guidelines are documented in [**`brand.md`**](brand.md).
+  - 🏛️ **UI/UX Design System:** Refero benchmarks (Craft Docs, Superr, Officevibe), tokens, multi-layer diffuse shadows, and pill button ergonomics are documented in [**`DESIGN.md`**](DESIGN.md).
 - **JSON View Layer:** For REST API endpoints (`/api/*`), views are represented as serialized JSON responses (`response()->json(...)`), providing consistent payloads with status codes (`200 OK`, `201 Created`, `404 Not Found`, `500 Server Error`).
 
 #### 🔹 Controller & Middleware (C) — Request Handling & Business Logic

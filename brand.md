@@ -197,5 +197,6 @@ Logonun veya amblemin etrafında, görsel gücünü korumak adına diğer grafik
 
 > 🔗 **İlgili Mimari Belgeler:**
 > - Sistem genel mimarisi ve MVC yapısı: [`README.md`](README.md)
+> - UI/UX Tasarım Sistemi ve Refero Standartları: [`DESIGN.md`](DESIGN.md)
 > - Veri modelleri, validasyon ve veritabanı şeması: [`ddd.md`](ddd.md)
 > - İnteraktif API Dokümantasyonu: [http://localhost:8000/api/swagger](http://localhost:8000/api/swagger)
