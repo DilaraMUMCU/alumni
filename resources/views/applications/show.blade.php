@@ -29,7 +29,7 @@
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger btn-sm">
-                🗑️ Başvuruyu Sil
+                Başvuruyu Sil
             </button>
         </form>
     </div>
@@ -56,11 +56,11 @@
                 @method('PATCH')
                 <label style="font-size: 12px; font-weight: 700; color: var(--ink-secondary);">Durum:</label>
                 <select name="status" class="form-select" style="padding: 6px 12px; font-size: 13px; width: auto;" onchange="this.form.submit();">
-                    <option value="pending" {{ $app->status === 'pending' ? 'selected' : '' }}>⏳ Beklemede</option>
-                    <option value="reviewing" {{ $app->status === 'reviewing' ? 'selected' : '' }}>🔍 İnceleniyor</option>
-                    <option value="shortlisted" {{ $app->status === 'shortlisted' ? 'selected' : '' }}>⭐ Kısa Liste</option>
-                    <option value="accepted" {{ $app->status === 'accepted' ? 'selected' : '' }}>✅ Kabul Edildi</option>
-                    <option value="rejected" {{ $app->status === 'rejected' ? 'selected' : '' }}>❌ Reddedildi</option>
+                    <option value="pending" {{ $app->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
+                    <option value="reviewing" {{ $app->status === 'reviewing' ? 'selected' : '' }}>İnceleniyor</option>
+                    <option value="shortlisted" {{ $app->status === 'shortlisted' ? 'selected' : '' }}>Kısa Liste</option>
+                    <option value="accepted" {{ $app->status === 'accepted' ? 'selected' : '' }}>Kabul Edildi</option>
+                    <option value="rejected" {{ $app->status === 'rejected' ? 'selected' : '' }}>Reddedildi</option>
                 </select>
             </form>
         </div>
@@ -68,7 +68,7 @@
         <!-- Candidate Profile Matrix -->
         <div style="background: var(--canvas-tint); border: 1px solid var(--border-cream); border-radius: 14px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 14px;">
-                <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--iu-navy); color: #FFFFFF; font-family: var(--font-serif); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--iu-navy); color: #FFFFFF; font-family: var(--font-serif); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
                     {{ mb_substr($app->user ? $app->user->name : 'A', 0, 1) }}
                 </div>
                 <div>
@@ -107,7 +107,7 @@
             </h4>
             @if ($app->resume_url)
                 <a href="{{ $app->resume_url }}" target="_blank" rel="noopener" class="btn btn-sapphire btn-sm">
-                    📄 Ekli Özgeçmişi Görüntüle ↗
+                    Ekli Özgeçmişi Görüntüle ↗
                 </a>
             @else
                 <span style="font-size: 13.5px; color: var(--ink-secondary);">Bu başvuruya harici özgeçmiş linki eklenmemiştir.</span>

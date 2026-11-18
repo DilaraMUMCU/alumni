@@ -50,9 +50,9 @@
                 <div class="form-group">
                     <label class="form-label" for="employment_type">Çalışma Şekli <span class="required">*</span></label>
                     <select id="employment_type" name="employment_type" class="form-select" required>
-                        <option value="full-time" {{ old('employment_type', $job->employment_type) === 'full-time' ? 'selected' : '' }}>💼 Tam Zamanlı</option>
-                        <option value="internship" {{ old('employment_type', $job->employment_type) === 'internship' ? 'selected' : '' }}>🌱 Stajyer</option>
-                        <option value="part-time" {{ old('employment_type', $job->employment_type) === 'part-time' ? 'selected' : '' }}>⏱️ Yarı Zamanlı</option>
+                        <option value="full-time" {{ old('employment_type', $job->employment_type) === 'full-time' ? 'selected' : '' }}>Tam Zamanlı</option>
+                        <option value="internship" {{ old('employment_type', $job->employment_type) === 'internship' ? 'selected' : '' }}>Stajyer</option>
+                        <option value="part-time" {{ old('employment_type', $job->employment_type) === 'part-time' ? 'selected' : '' }}>Yarı Zamanlı</option>
                     </select>
                 </div>
             </div>

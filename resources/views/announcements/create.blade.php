@@ -36,10 +36,10 @@
                 <div class="form-group">
                     <label class="form-label" for="category">Kategori <span class="required">*</span></label>
                     <select id="category" name="category" class="form-select" required>
-                        <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>🎉 Etkinlik</option>
-                        <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>💼 Kariyer</option>
-                        <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>🏛️ Akademik</option>
-                        <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>📢 Genel</option>
+                        <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>Etkinlik</option>
+                        <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>Kariyer</option>
+                        <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>Akademik</option>
+                        <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>Genel</option>
                     </select>
                 </div>
 
@@ -77,7 +77,7 @@
             <div style="display: flex; gap: 24px; margin-bottom: 24px; padding: 14px 18px; background: var(--canvas-tint); border-radius: 12px; border: 1px solid var(--border-cream);">
                 <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer;">
                     <input type="checkbox" name="pinned" value="1" {{ old('pinned') ? 'checked' : '' }}>
-                    <span>📌 Ana Sayfa & Listede Başa Sabitle</span>
+                    <span>Ana Sayfa ve Listede Başa Sabitle</span>
                 </label>
 
                 <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer;">

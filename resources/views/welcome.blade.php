@@ -26,7 +26,7 @@
 <style>
     /* Hero Section Styling */
     .hero-section {
-        padding: 40px 0 60px 0;
+        padding: 30px 0 50px 0;
         text-align: center;
         position: relative;
     }
@@ -62,8 +62,8 @@
 
     .hero-title {
         font-family: var(--font-serif);
-        font-size: 48px;
-        line-height: 1.18;
+        font-size: 46px;
+        line-height: 1.2;
         color: var(--iu-navy);
         max-width: 900px;
         margin: 0 auto 20px auto;
@@ -77,7 +77,7 @@
     }
 
     .hero-subtitle {
-        font-size: 18px;
+        font-size: 17px;
         line-height: 1.6;
         color: var(--ink-secondary);
         max-width: 720px;
@@ -141,9 +141,9 @@
     }
 
     .stat-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -243,7 +243,6 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 20px;
-        font-size: 22px;
     }
 
     .module-card-title {
@@ -364,13 +363,13 @@
     }
 
     .alumni-avatar-circle {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--iu-navy) 0%, #1a3675 100%);
         color: #FFFFFF;
         font-family: var(--font-serif);
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -472,7 +471,7 @@
 
         <div class="stat-box">
             <div class="stat-icon stat-icon-emerald">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             </div>
             <div>
                 <div class="stat-num">{{ $stats['applications_count'] ?? 0 }}</div>
@@ -495,8 +494,8 @@
     <section style="margin-bottom: 70px;">
         <div class="section-header-row">
             <div>
-                <span class="section-tag">Platform Modülleri</span>
-                <h2 class="section-heading">Mezun Ekosistemi Hizmetleri</h2>
+                <span class="section-tag">Platform Hizmetleri</span>
+                <h2 class="section-heading">Mezun Ekosistemi Modülleri</h2>
             </div>
             <a href="/about" class="btn btn-secondary btn-sm">Sistem Mimarisi ↗</a>
         </div>
@@ -504,7 +503,7 @@
         <div class="modules-grid">
             <a href="/users" class="module-card">
                 <div class="module-card-icon" style="background: var(--iu-crimson-soft); color: var(--iu-crimson);">
-                    🎓
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 </div>
                 <h3 class="module-card-title">Mezun Rehberi</h3>
                 <p class="module-card-desc">
@@ -518,7 +517,7 @@
 
             <a href="/job-postings" class="module-card">
                 <div class="module-card-icon" style="background: var(--academic-sapphire-soft); color: var(--academic-sapphire);">
-                    💼
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 </div>
                 <h3 class="module-card-title">Kariyer Kapısı</h3>
                 <p class="module-card-desc">
@@ -532,7 +531,7 @@
 
             <a href="/applications" class="module-card">
                 <div class="module-card-icon" style="background: var(--mint-success-soft); color: #059669;">
-                    📑
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 </div>
                 <h3 class="module-card-title">Başvuru Takibi</h3>
                 <p class="module-card-desc">
@@ -546,7 +545,7 @@
 
             <a href="/announcements" class="module-card">
                 <div class="module-card-icon" style="background: var(--iu-gold-soft); color: #B8860B;">
-                    📢
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 </div>
                 <h3 class="module-card-title">Üniversite Duyuruları</h3>
                 <p class="module-card-desc">
@@ -584,15 +583,16 @@
                                     {{ $job->title }}
                                 </h4>
                                 <div style="font-size: 12.5px; color: var(--ink-secondary); display: flex; gap: 12px; align-items: center;">
-                                    <span>🏢 {{ $job->company }}</span>
-                                    <span>📍 {{ $job->location }}</span>
+                                    <span>{{ $job->company }}</span>
+                                    <span>•</span>
+                                    <span>{{ $job->location }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span class="badge-pill {{ $job->employment_type === 'internship' ? 'badge-amber' : ($job->employment_type === 'part-time' ? 'badge-sapphire' : 'badge-crimson') }}">
-                                {{ $job->employment_type_label ?? $job->employment_type }}
+                                {{ $job->employment_type_label ?? ($job->employment_type === 'internship' ? 'Staj' : ($job->employment_type === 'part-time' ? 'Yarı Zamanlı' : 'Tam Zamanlı')) }}
                             </span>
                             <span class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;">Başvur ↗</span>
                         </div>
@@ -649,7 +649,7 @@
     <section style="margin-bottom: 80px;">
         <div class="section-header-row">
             <div>
-                <span class="section-tag">Kariyer İlhamı</span>
+                <span class="section-tag">Kariyer Başarıları</span>
                 <h2 class="section-heading">Öne Çıkan Mezunlarımız</h2>
             </div>
             <a href="/users" class="btn btn-secondary btn-sm">Tüm Mezun Dizini ↗</a>
@@ -672,7 +672,7 @@
                     </div>
                     @if ($user->graduation_year)
                         <span class="badge-pill badge-neutral" style="font-size: 11px;">
-                            🎓 {{ $user->graduation_year }} Mezunu
+                            {{ $user->graduation_year }} Mezuniyeti
                         </span>
                     @endif
                     <div style="margin-top: 16px;">
@@ -705,7 +705,7 @@
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <a href="/api/swagger" class="btn btn-gold btn-lg">
-                <span>Swagger UI'ı Aç ↗</span>
+                <span>Swagger UI Dokümantasyonu ↗</span>
             </a>
             <a href="/DESIGN.md" target="_blank" class="btn btn-secondary btn-lg" style="background: rgba(255, 255, 255, 0.1); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.25);">
                 <span>DESIGN.md İncele</span>

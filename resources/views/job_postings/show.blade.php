@@ -90,13 +90,13 @@
 
         <div style="display: flex; gap: 8px;">
             <a href="/job-postings/{{ $job->id }}/edit" class="btn btn-secondary btn-sm">
-                ✏️ İlanı Düzenle
+                İlanı Düzenle
             </a>
             <form action="/job-postings/{{ $job->id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu ilan kalıcı olarak silinsin mi?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm">
-                    🗑️ İlanı Sil
+                    İlanı Sil
                 </button>
             </form>
         </div>
@@ -116,7 +116,7 @@
                         {{ $job->title }}
                     </h1>
                     <div style="font-size: 15px; color: var(--ink-charcoal); font-weight: 600;">
-                        🏢 {{ $job->company }} • 📍 {{ $job->location }}
+                        {{ $job->company }} • {{ $job->location }}
                     </div>
                 </div>
 
@@ -138,7 +138,7 @@
 
                 <div class="job-spec-item">
                     <div class="job-spec-label">Lokasyon</div>
-                    <div class="job-spec-val">📍 {{ $job->location }}</div>
+                    <div class="job-spec-val">{{ $job->location }}</div>
                 </div>
 
                 <div class="job-spec-item">
@@ -193,7 +193,7 @@
                                 $statusBadges = [
                                     'pending'     => ['label' => 'Beklemede', 'class' => 'badge-amber'],
                                     'reviewing'   => ['label' => 'İnceleniyor', 'class' => 'badge-sapphire'],
-                                    'shortlisted' => ['label' => 'Kısa Listede', 'class' => 'badge-gold'],
+                                    'shortlisted' => ['label' => 'Kısa Liste', 'class' => 'badge-gold'],
                                     'accepted'    => ['label' => 'Kabul Edildi', 'class' => 'badge-success'],
                                     'rejected'    => ['label' => 'Reddedildi', 'class' => 'badge-danger'],
                                 ];
@@ -214,7 +214,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 12px;">
                             @if ($app->resume_url)
                                 <a href="{{ $app->resume_url }}" target="_blank" rel="noopener" style="color: var(--academic-sapphire); font-weight: 600;">
-                                    📄 Özgeçmiş (CV) Linki ↗
+                                    Özgeçmiş Belgesi (CV) ↗
                                 </a>
                             @else
                                 <span style="color: var(--ink-muted);">CV eklenmemiş</span>
@@ -229,7 +229,7 @@
                                     <option value="reviewing" {{ $app->status === 'reviewing' ? 'selected' : '' }}>İnceleniyor</option>
                                     <option value="shortlisted" {{ $app->status === 'shortlisted' ? 'selected' : '' }}>Kısa Liste</option>
                                     <option value="accepted" {{ $app->status === 'accepted' ? 'selected' : '' }}>Kabul</option>
-                                    <option value="rejected" {{ $app->status === 'rejected' ? 'selected' : '' }}>Red</option>
+                                    <option value="rejected" {{ $app->status === 'rejected' ? 'selected' : '' }}>Reddet</option>
                                 </select>
                             </form>
                         </div>

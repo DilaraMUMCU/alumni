@@ -94,8 +94,8 @@
     }
 
     .user-avatar {
-        width: 52px;
-        height: 52px;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--iu-navy) 0%, #1e3a8a 100%);
         color: #FFFFFF;
@@ -173,7 +173,7 @@
             <div class="card-header" style="margin-bottom: 16px;">
                 <div>
                     <span class="badge-pill badge-gold" style="font-size: 10.5px;">Hızlı Kayıt</span>
-                    <h3 class="card-title" style="font-size: 18px; margin-top: 4px;">Yeni Mezun / Öğrenci</h3>
+                    <h3 class="card-title" style="font-size: 18px; margin-top: 4px;">Yeni Profil Kaydı</h3>
                 </div>
             </div>
 
@@ -218,7 +218,7 @@
 
                 <div class="form-group">
                     <label class="form-label" for="current_company">Çalıştığı Kurum</label>
-                    <input type="text" id="current_company" name="current_company" class="form-control" placeholder="Örn: Google / ASELSAN" value="{{ old('current_company') }}">
+                    <input type="text" id="current_company" name="current_company" class="form-control" placeholder="Örn: ASELSAN / Google" value="{{ old('current_company') }}">
                 </div>
 
                 <div class="form-group">
@@ -295,7 +295,7 @@
                                 @endif
                                 @if ($uDept)
                                     <div style="color: var(--ink-secondary); font-size: 12.5px;">
-                                        🏛️ {{ $uDept }} {{ $uYear ? "('{$uYear})" : '' }}
+                                        {{ $uDept }} {{ $uYear ? "('{$uYear})" : '' }}
                                     </div>
                                 @endif
                             </div>
@@ -319,13 +319,13 @@
                             </a>
                             <div style="display: flex; gap: 6px;">
                                 <a href="/users/{{ $uId }}/edit" class="btn btn-secondary btn-sm" style="padding: 5px 10px; font-size: 12px;" title="Düzenle">
-                                    ✏️
+                                    Düzenle
                                 </a>
                                 <form action="/users/{{ $uId }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ $uName }} profili silinsin mi?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px; font-size: 12px;" title="Sil">
-                                        🗑️
+                                        Sil
                                     </button>
                                 </form>
                             </div>
@@ -333,7 +333,6 @@
                     </div>
                 @empty
                     <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--ink-secondary);">
-                        <div style="font-size: 32px; margin-bottom: 8px;">🎓</div>
                         <h4 style="font-size: 18px; color: var(--iu-navy); margin-bottom: 6px;">Kayıtlı Profil Bulunamadı</h4>
                         <p style="font-size: 13.5px;">Soldaki formu kullanarak platforma ilk mezunumuzu veya öğrencimizi kaydedebilirsiniz.</p>
                     </div>

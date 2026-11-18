@@ -62,9 +62,9 @@
                 <div class="form-group">
                     <label class="form-label" for="role">Üyelik Rolü <span class="required">*</span></label>
                     <select id="role" name="role" class="form-select" required>
-                        <option value="alumni" {{ old('role', $uRole) === 'alumni' ? 'selected' : '' }}>🎓 Mezun</option>
-                        <option value="student" {{ old('role', $uRole) === 'student' ? 'selected' : '' }}>📚 Öğrenci</option>
-                        <option value="academician" {{ old('role', $uRole) === 'academician' ? 'selected' : '' }}>🏛️ Akademisyen</option>
+                        <option value="alumni" {{ old('role', $uRole) === 'alumni' ? 'selected' : '' }}>Mezun</option>
+                        <option value="student" {{ old('role', $uRole) === 'student' ? 'selected' : '' }}>Öğrenci</option>
+                        <option value="academician" {{ old('role', $uRole) === 'academician' ? 'selected' : '' }}>Akademisyen</option>
                     </select>
                 </div>
 

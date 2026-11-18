@@ -187,10 +187,7 @@
     <!-- Institutional Brand Topbar -->
     <header class="topbar-iu">
         <a href="/" class="brand-block" title="Ana Sayfaya Dön">
-            <div class="brand-seal">
-                <span class="seal-iu">İÜ</span>
-                <span class="seal-year">1453</span>
-            </div>
+            <img src="/images/iu-logo.svg" alt="İstanbul Üniversitesi Logo" style="width: 40px; height: 40px; object-fit: contain;">
             <div>
                 <div class="brand-title">İSTANBUL ÜNİVERSİTESİ</div>
                 <div class="brand-subtitle">RESTful API • OpenAPI 3.0 Dokümantasyonu</div>
@@ -199,16 +196,16 @@
 
         <div class="topbar-actions">
             <a href="/api/swagger.json" target="_blank" class="btn-pill btn-gold">
-                <span>📄 Saf JSON (/api/swagger.json)</span>
+                <span>Saf JSON (/api/swagger.json)</span>
             </a>
             <a href="/" class="btn-pill btn-ghost">
-                <span>🏠 Portala Dön</span>
+                <span>Portala Dön</span>
             </a>
             <a href="/users" class="btn-pill btn-ghost">
-                <span>🎓 Mezunlar</span>
+                <span>Mezunlar</span>
             </a>
             <a href="/job-postings" class="btn-pill btn-ghost">
-                <span>💼 İlanlar</span>
+                <span>İlanlar</span>
             </a>
         </div>
     </header>

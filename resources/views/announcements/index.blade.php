@@ -130,10 +130,10 @@
                     <div class="form-group">
                         <label class="form-label" for="category">Kategori <span class="required">*</span></label>
                         <select id="category" name="category" class="form-select" required>
-                            <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>🎉 Etkinlik</option>
-                            <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>💼 Kariyer</option>
-                            <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>🏛️ Akademik</option>
-                            <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>📢 Genel</option>
+                            <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>Etkinlik</option>
+                            <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>Kariyer</option>
+                            <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>Akademik</option>
+                            <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>Genel</option>
                         </select>
                     </div>
 
@@ -171,7 +171,7 @@
                 <div style="margin-bottom: 18px; display: flex; gap: 16px;">
                     <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
                         <input type="checkbox" name="pinned" value="1" {{ old('pinned') ? 'checked' : '' }}>
-                        <span>📌 Başa Sabitle</span>
+                        <span>Başa Sabitle</span>
                     </label>
 
                     <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
@@ -194,10 +194,10 @@
                 <button class="filter-pill active" onclick="filterAnnouncements('all')">
                     Tüm Duyurular ({{ count($announcements) }})
                 </button>
-                <button class="filter-pill" onclick="filterAnnouncements('Etkinlik')">🎉 Etkinlik</button>
-                <button class="filter-pill" onclick="filterAnnouncements('Kariyer')">💼 Kariyer</button>
-                <button class="filter-pill" onclick="filterAnnouncements('Akademik')">🏛️ Akademik</button>
-                <button class="filter-pill" onclick="filterAnnouncements('Genel')">📢 Genel</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Etkinlik')">Etkinlik</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Kariyer')">Kariyer</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Akademik')">Akademik</button>
+                <button class="filter-pill" onclick="filterAnnouncements('Genel')">Genel</button>
             </div>
 
             <!-- List -->
@@ -220,7 +220,7 @@
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 @if ($aPinned)
                                     <span class="badge-pill badge-gold" style="font-size: 10px;">
-                                        📌 SABİTLENDİ
+                                        SABİTLENDİ
                                     </span>
                                 @endif
                                 <span class="badge-pill badge-crimson" style="font-size: 10.5px;">
@@ -228,11 +228,11 @@
                                 </span>
                                 @if ($aPriority === 'Acil' || $aPriority === 'Yüksek')
                                     <span class="badge-pill badge-danger" style="font-size: 10px;">
-                                        ⚠️ {{ $aPriority }}
+                                        {{ $aPriority }}
                                     </span>
                                 @endif
                                 <span class="badge-pill badge-neutral" style="font-size: 10.5px;">
-                                    👥 Hedef: {{ $aTarget }}
+                                    Hedef Kitle: {{ $aTarget }}
                                 </span>
                             </div>
 
@@ -248,7 +248,7 @@
                         </h2>
 
                         <div class="announcement-meta">
-                            <span>🏛️ {{ $aAuthor }}</span>
+                            <span>{{ $aAuthor }}</span>
                         </div>
 
                         <div class="announcement-content-excerpt">
@@ -262,13 +262,13 @@
 
                             <div style="display: flex; gap: 6px;">
                                 <a href="/announcements/{{ $aId }}/edit" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" title="Düzenle">
-                                    ✏️
+                                    Düzenle
                                 </a>
                                 <form action="/announcements/{{ $aId }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu duyuru kalıcı olarak silinsin mi?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px;" title="Sil">
-                                        🗑️
+                                        Sil
                                     </button>
                                 </form>
                             </div>
@@ -276,7 +276,6 @@
                     </article>
                 @empty
                     <div class="card" style="text-align: center; padding: 48px; color: var(--ink-secondary);">
-                        <div style="font-size: 32px; margin-bottom: 8px;">📢</div>
                         <h4 style="font-size: 18px; color: var(--iu-navy); margin-bottom: 6px;">Duyuru Bulunamadı</h4>
                         <p style="font-size: 13.5px;">Soldaki formu kullanarak üniversitemiz için ilk duyuruyu yayınlayabilirsiniz.</p>
                     </div>
@@ -291,7 +290,6 @@
 @push('scripts')
 <script>
     function filterAnnouncements(category) {
-        // Toggle pill active classes
         const pills = document.querySelectorAll('.filter-pill');
         pills.forEach(p => p.classList.remove('active'));
         event.target.classList.add('active');

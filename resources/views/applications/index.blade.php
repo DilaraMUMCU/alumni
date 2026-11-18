@@ -73,13 +73,13 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
             <div>
                 <span class="badge-pill badge-mint" style="background: var(--mint-success-soft); color: #065F46; border: 1px solid var(--mint-success-border); margin-bottom: 8px;">
-                    Kariyer Pipeline
+                    Aday Başvuruları
                 </span>
                 <h1 style="font-size: 36px; color: var(--iu-navy); margin-bottom: 8px;">
-                    Aday Başvuru <em>Takip Paneli</em>
+                    İş ve Staj <em>Başvuru Takibi</em>
                 </h1>
                 <p style="color: var(--ink-secondary); max-width: 700px;">
-                    Açılan pozisyonlara gelen aday başvurularını inceleyin, değerlendirme durumlarını yönetin ve iletişimi sürdürün.
+                    Yayınlanan pozisyonlara gelen aday başvurularını inceleyin, değerlendirme durumlarını yönetin.
                 </p>
             </div>
 
@@ -97,19 +97,19 @@
                 <span>Tüm Başvurular ({{ count($applications) }})</span>
             </a>
             <a href="/applications?status=pending" class="filter-pill {{ request('status') === 'pending' ? 'active' : '' }}">
-                <span>⏳ Beklemede</span>
+                <span>Beklemede</span>
             </a>
             <a href="/applications?status=reviewing" class="filter-pill {{ request('status') === 'reviewing' ? 'active' : '' }}">
-                <span>🔍 İnceleniyor</span>
+                <span>İnceleniyor</span>
             </a>
             <a href="/applications?status=shortlisted" class="filter-pill {{ request('status') === 'shortlisted' ? 'active' : '' }}">
-                <span>⭐ Kısa Liste</span>
+                <span>Kısa Liste</span>
             </a>
             <a href="/applications?status=accepted" class="filter-pill {{ request('status') === 'accepted' ? 'active' : '' }}">
-                <span>✅ Kabul</span>
+                <span>Kabul</span>
             </a>
             <a href="/applications?status=rejected" class="filter-pill {{ request('status') === 'rejected' ? 'active' : '' }}">
-                <span>❌ Reddedildi</span>
+                <span>Reddedildi</span>
             </a>
         </div>
 
@@ -141,7 +141,7 @@
             </div>
 
             @if (request('status') || request('job_posting_id') || request('user_id'))
-                <a href="/applications" class="btn btn-secondary btn-sm">Filtreleri Temizle ✕</a>
+                <a href="/applications" class="btn btn-secondary btn-sm">Filtreleri Temizle</a>
             @endif
         </form>
     </div>
@@ -203,7 +203,7 @@
                                         </a>
                                     </div>
                                     <div style="font-size: 12px; color: var(--ink-secondary);">
-                                        🏢 {{ $app->jobPosting->company }} • 📍 {{ $app->jobPosting->location }}
+                                        {{ $app->jobPosting->company }} • {{ $app->jobPosting->location }}
                                     </div>
                                 @else
                                     <span style="color: var(--ink-muted);">Silinmiş İlan #{{ $app->job_posting_id }}</span>
@@ -214,7 +214,7 @@
                                 @if ($app->resume_url)
                                     <div>
                                         <a href="{{ $app->resume_url }}" target="_blank" rel="noopener" style="color: var(--academic-sapphire); font-weight: 600; font-size: 12.5px;">
-                                            📄 Özgeçmişi Aç ↗
+                                            Özgeçmiş Belgesi ↗
                                         </a>
                                     </div>
                                 @endif
@@ -254,13 +254,13 @@
                             <td style="text-align: right;">
                                 <div style="display: inline-flex; gap: 6px;">
                                     <a href="/applications/{{ $app->id }}" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" title="İncele">
-                                        👁️
+                                        İncele
                                     </a>
                                     <form action="/applications/{{ $app->id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu başvuru kaydı kalıcı olarak silinsin mi?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px;" title="Sil">
-                                            🗑️
+                                            Sil
                                         </button>
                                     </form>
                                 </div>
@@ -269,7 +269,6 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 48px; color: var(--ink-secondary);">
-                                <div style="font-size: 32px; margin-bottom: 8px;">📑</div>
                                 <h4 style="font-size: 17px; color: var(--iu-navy); margin-bottom: 4px;">Başvuru Bulunamadı</h4>
                                 <p style="font-size: 13px;">Seçilen kriterlere uygun başvuru kaydı bulunmamaktadır.</p>
                             </td>

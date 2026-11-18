@@ -99,10 +99,9 @@
 <div class="container guardian-container">
 
     <div class="guardian-card">
-        <!-- University Heritage Seal -->
-        <div class="guardian-emblem-badge">
-            <span style="font-family: var(--font-serif); font-size: 26px; font-weight: 700; line-height: 1;">İÜ</span>
-            <span style="font-size: 10px; font-weight: 800; color: var(--iu-gold); line-height: 1; margin-top: 2px;">1453</span>
+        <!-- University Logo -->
+        <div style="margin: 0 auto 20px auto; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;">
+            <img src="/images/iu-logo.svg" alt="İstanbul Üniversitesi Logo" style="width: 72px; height: 72px; object-fit: contain;">
         </div>
 
         <div class="guardian-code">404</div>
@@ -126,7 +125,7 @@
             </div>
             <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
                 <button type="button" id="pauseBtn" class="btn btn-secondary btn-sm" style="font-size: 11.5px; padding: 4px 12px;">
-                    ⏸️ Geri Sayımı Durdur
+                    Geri Sayımı Durdur
                 </button>
             </div>
         </div>
@@ -158,13 +157,13 @@
                 <span>Hemen Ana Sayfaya Dön</span>
             </a>
             <a href="/users" class="btn btn-secondary">
-                🎓 Mezun Dizini
+                Mezun Dizini
             </a>
             <a href="/job-postings" class="btn btn-secondary">
-                💼 Kariyer İlanları
+                Kariyer İlanları
             </a>
             <a href="/announcements" class="btn btn-secondary">
-                📢 Duyurular
+                Duyurular
             </a>
         </div>
     </div>
@@ -196,11 +195,11 @@
         pauseBtn.addEventListener('click', () => {
             isPaused = !isPaused;
             if (isPaused) {
-                pauseBtn.innerHTML = '▶️ Devam Ettir';
+                pauseBtn.textContent = 'Devam Ettir';
                 pauseBtn.classList.add('btn-primary');
                 pauseBtn.classList.remove('btn-secondary');
             } else {
-                pauseBtn.innerHTML = '⏸️ Geri Sayımı Durdur';
+                pauseBtn.textContent = 'Geri Sayımı Durdur';
                 pauseBtn.classList.remove('btn-primary');
                 pauseBtn.classList.add('btn-secondary');
             }

@@ -162,71 +162,24 @@
             font-weight: 400;
         }
 
-        /* Top Institutional Heritage Bar */
-        .top-heritage-bar {
-            background: var(--iu-navy);
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-            position: relative;
-            z-index: 101;
-        }
-        .top-heritage-bar .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .heritage-tagline {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-        .heritage-tagline .gate-badge {
-            background: linear-gradient(135deg, #D4AF37, #B8860B);
-            color: #0B1B3D;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-        .top-heritage-links {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .top-heritage-links a {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 11px;
-            font-weight: 500;
-        }
-        .top-heritage-links a:hover {
-            color: var(--iu-gold);
-        }
-
         /* Floating Glass Navigation Bar (DESIGN.md Benchmark) */
         .navbar-wrapper {
             position: sticky;
-            top: 16px;
+            top: 20px;
             z-index: 100;
             padding: 0 24px;
-            margin-bottom: 28px;
+            margin-bottom: 32px;
         }
 
         .navbar-floating {
             max-width: 1240px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--border-cream);
             border-radius: var(--radius-pill);
-            padding: 10px 18px 10px 24px;
+            padding: 10px 18px 10px 22px;
             box-shadow: var(--shadow-navbar);
             display: flex;
             align-items: center;
@@ -238,46 +191,20 @@
         .brand-seal {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             text-decoration: none;
         }
 
-        .brand-emblem-badge {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--iu-crimson) 0%, var(--iu-crimson-hover) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #FFFFFF;
-            box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35);
-            border: 2px solid var(--iu-gold);
+        .brand-logo-img {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
             flex-shrink: 0;
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease;
         }
 
-        .brand-seal:hover .brand-emblem-badge {
-            transform: scale(1.05) rotate(-3deg);
-        }
-
-        .brand-emblem-badge .iu-initials {
-            font-family: var(--font-serif);
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            line-height: 1;
-            color: #FFFFFF;
-        }
-
-        .brand-emblem-badge .iu-year {
-            font-size: 8px;
-            font-weight: 800;
-            color: var(--iu-gold);
-            letter-spacing: 0.5px;
-            line-height: 1;
-            margin-top: 1px;
+        .brand-seal:hover .brand-logo-img {
+            transform: scale(1.06);
         }
 
         .brand-texts {
@@ -286,7 +213,7 @@
         }
 
         .brand-title {
-            font-size: 14px;
+            font-size: 14.5px;
             font-weight: 800;
             letter-spacing: -0.02em;
             color: var(--iu-navy);
@@ -297,8 +224,9 @@
         .brand-subtitle {
             font-size: 11px;
             color: var(--ink-secondary);
-            font-weight: 500;
+            font-weight: 600;
             line-height: 1.2;
+            letter-spacing: 0.2px;
         }
 
         /* Navigation Links */
@@ -830,30 +758,12 @@
 </head>
 <body>
 
-    <!-- 1. Top Institutional Heritage Bar -->
-    <header class="top-heritage-bar">
-        <div class="container">
-            <div class="heritage-tagline">
-                <span class="gate-badge">1453</span>
-                <span>İstanbul Üniversitesi • Mezun ve Kariyer İletişim Portalı</span>
-            </div>
-            <div class="top-heritage-links">
-                <a href="https://istanbul.edu.tr" target="_blank" rel="noopener">istanbul.edu.tr ↗</a>
-                <a href="/api/swagger">Swagger UI ↗</a>
-                <a href="/about">Hakkımızda</a>
-            </div>
-        </div>
-    </header>
-
-    <!-- 2. Floating Glass Navbar -->
+    <!-- Floating Glass Navbar -->
     <div class="navbar-wrapper">
         <nav class="navbar-floating">
-            <!-- Brand Logo with Emblem Seal -->
+            <!-- Official Istanbul University Logo -->
             <a href="/" class="brand-seal" title="İstanbul Üniversitesi Mezun Portalı">
-                <div class="brand-emblem-badge">
-                    <span class="iu-initials">İÜ</span>
-                    <span class="iu-year">1453</span>
-                </div>
+                <img src="/images/iu-logo.svg" alt="İstanbul Üniversitesi Logo" class="brand-logo-img">
                 <div class="brand-texts">
                     <span class="brand-title">İSTANBUL ÜNİVERSİTESİ</span>
                     <span class="brand-subtitle">Mezun Takip & Kariyer Ağı</span>
@@ -907,7 +817,7 @@
         </nav>
     </div>
 
-    <!-- 3. Global Flash Notification Alerts -->
+    <!-- Global Flash Notification Alerts -->
     <div class="container flash-alerts">
         @if (session('success'))
             <div class="alert-pill alert-pill-success" role="alert">
@@ -954,29 +864,26 @@
         @endif
     </div>
 
-    <!-- 4. Main Body Content -->
+    <!-- Main Body Content -->
     <main class="main-content">
         @yield('content')
     </main>
 
-    <!-- 5. Institutional Academic Footer -->
+    <!-- Institutional Academic Footer -->
     <footer class="footer-institutional">
         <div class="container">
             <div class="footer-grid">
                 <!-- Col 1: Heritage & Brand -->
                 <div class="footer-col">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <div class="brand-emblem-badge" style="width: 38px; height: 38px;">
-                            <span class="iu-initials" style="font-size: 13px;">İÜ</span>
-                            <span class="iu-year" style="font-size: 7px;">1453</span>
-                        </div>
+                        <img src="/images/iu-logo.svg" alt="İstanbul Üniversitesi Logo" style="width: 44px; height: 44px; object-fit: contain;">
                         <div>
                             <div style="font-weight: 800; font-size: 13px; color: #FFFFFF; letter-spacing: 0.5px;">İSTANBUL ÜNİVERSİTESİ</div>
                             <div style="font-size: 11px; color: var(--iu-gold);">Mezun & Kariyer Portalı</div>
                         </div>
                     </div>
                     <p class="footer-brand-bio">
-                        1453'ten günümüze yarım binyılı aşan akademik gelenekle, mezunlarımızı, akademisyenlerimizi ve öğrencilerimizi geleceğin lider kariyer ekosisteminde buluşturuyoruz.
+                        1453'ten günümüze yarım binyılı aşan akademik gelenekle, mezunlarımızı, akademisyenlerimizi ve öğrencilerimizi geleceğin profesyonel ekosisteminde buluşturuyoruz.
                     </p>
                 </div>
 
@@ -997,11 +904,11 @@
                 <div class="footer-col">
                     <h4>Mimari & Standartlar</h4>
                     <ul class="footer-links">
-                        <li><a href="/brand.md" target="_blank">🎨 brand.md (Marka Kimliği)</a></li>
-                        <li><a href="/DESIGN.md" target="_blank">🏛️ DESIGN.md (Refero UI/UX)</a></li>
-                        <li><a href="/ddd.md" target="_blank">📊 ddd.md (Veri Modelleri)</a></li>
-                        <li><a href="/api/swagger">⚡ Swagger / OpenAPI 3.0</a></li>
-                        <li><a href="/api/health">🛡️ API Health Check</a></li>
+                        <li><a href="/brand.md" target="_blank">brand.md (Marka Kimliği)</a></li>
+                        <li><a href="/DESIGN.md" target="_blank">DESIGN.md (Tasarım Sistemi)</a></li>
+                        <li><a href="/ddd.md" target="_blank">ddd.md (Veri Modelleri)</a></li>
+                        <li><a href="/api/swagger">Swagger / OpenAPI 3.0</a></li>
+                        <li><a href="/api/health">API Sağlık Kontrolü</a></li>
                     </ul>
                 </div>
 
@@ -1009,10 +916,10 @@
                 <div class="footer-col">
                     <h4>Beyazıt Yerleşkesi</h4>
                     <ul class="footer-links" style="font-size: 13px; color: #94A3B8;">
-                        <li>📍 Beyazıt Meydanı, 34452 Fatih / İstanbul</li>
-                        <li>📞 +90 (212) 440 00 00</li>
-                        <li>✉️ mezun@istanbul.edu.tr</li>
-                        <li>🏛️ Rektörlük Binası, Zemin Kat</li>
+                        <li>Beyazıt Meydanı, 34452 Fatih / İstanbul</li>
+                        <li>Tel: +90 (212) 440 00 00</li>
+                        <li>E-posta: mezun@istanbul.edu.tr</li>
+                        <li>Rektörlük Binası, Beyazıt Yerleşkesi</li>
                     </ul>
                 </div>
             </div>
@@ -1024,7 +931,7 @@
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <span class="footer-bottom-badge">
-                        <span style="color: #10B981;">●</span> WCAG 2.1 AAA Uyumlu
+                        WCAG 2.1 AAA Uyumlu
                     </span>
                     <span class="footer-bottom-badge">
                         Docker & Nginx • Laravel 11 MVC

@@ -47,13 +47,13 @@
     }
 
     .profile-avatar-large {
-        width: 88px;
-        height: 88px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--iu-navy) 0%, #1e3a8a 100%);
         color: #FFFFFF;
         font-family: var(--font-serif);
-        font-size: 32px;
+        font-size: 30px;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -122,13 +122,13 @@
 
         <div style="display: flex; gap: 8px;">
             <a href="/users/{{ $uId }}/edit" class="btn btn-secondary btn-sm">
-                ✏️ Profili Düzenle
+                Profili Düzenle
             </a>
             <form action="/users/{{ $uId }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu profil kalıcı olarak silinsin mi?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm">
-                    🗑️ Sil
+                    Sil
                 </button>
             </form>
         </div>
@@ -159,7 +159,7 @@
                 </div>
 
                 <div style="font-size: 14px; color: var(--ink-secondary);">
-                    {{ $uCompany ? "🏢 {$uCompany}" : '' }} {{ $uDept ? "• 🏛️ {$uDept}" : '' }}
+                    {{ $uCompany ? "Kurum: {$uCompany}" : '' }} {{ $uDept ? "• Fakülte: {$uDept}" : '' }}
                 </div>
             </div>
 
@@ -190,7 +190,7 @@
                 <div class="info-tile-label">Mezuniyet Yılı</div>
                 <div class="info-tile-val">
                     @if ($uYear)
-                        🎓 {{ $uYear }}
+                        {{ $uYear }} Mezuniyeti
                     @else
                         Belirtilmedi
                     @endif

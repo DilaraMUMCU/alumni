@@ -71,14 +71,14 @@
     }
 
     .company-logo-avatar {
-        width: 52px;
-        height: 52px;
+        width: 48px;
+        height: 48px;
         border-radius: 12px;
         background: var(--canvas-tint);
         border: 1px solid var(--border-cream);
         color: var(--iu-navy);
         font-family: var(--font-serif);
-        font-size: 20px;
+        font-size: 19px;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -156,13 +156,13 @@
                 <span style="font-size: 11px; opacity: 0.8;">({{ count($jobs) }})</span>
             </a>
             <a href="/job-postings?employment_type=full-time{{ request('search') ? '&search='.urlencode(request('search')) : '' }}" class="filter-pill {{ request('employment_type') === 'full-time' ? 'active' : '' }}">
-                <span>💼 Tam Zamanlı</span>
+                <span>Tam Zamanlı</span>
             </a>
             <a href="/job-postings?employment_type=internship{{ request('search') ? '&search='.urlencode(request('search')) : '' }}" class="filter-pill {{ request('employment_type') === 'internship' ? 'active' : '' }}">
-                <span>🌱 Staj</span>
+                <span>Staj</span>
             </a>
             <a href="/job-postings?employment_type=part-time{{ request('search') ? '&search='.urlencode(request('search')) : '' }}" class="filter-pill {{ request('employment_type') === 'part-time' ? 'active' : '' }}">
-                <span>⏱️ Yarı Zamanlı</span>
+                <span>Yarı Zamanlı</span>
             </a>
         </div>
 
@@ -180,7 +180,7 @@
             </div>
 
             @if (request('search') || request('employment_type'))
-                <a href="/job-postings" class="btn btn-secondary btn-sm">Temizle ✕</a>
+                <a href="/job-postings" class="btn btn-secondary btn-sm">Filtreleri Temizle</a>
             @endif
         </form>
     </div>
@@ -206,8 +206,9 @@
                                 </span>
                             </div>
                             <div class="job-card-company">
-                                <span>🏢 {{ $job->company }}</span>
-                                <span>• 📍 {{ $job->location }}</span>
+                                <span>{{ $job->company }}</span>
+                                <span>•</span>
+                                <span>{{ $job->location }}</span>
                             </div>
                         </div>
                     </div>
@@ -219,17 +220,17 @@
                     <div class="job-meta-chips">
                         @if ($job->deadline)
                             <span class="badge-pill badge-neutral" style="font-size: 11px;">
-                                ⏳ Son Başvuru: {{ \Carbon\Carbon::parse($job->deadline)->format('d.m.Y') }}
+                                Son Başvuru: {{ \Carbon\Carbon::parse($job->deadline)->format('d.m.Y') }}
                             </span>
                         @endif
 
                         <span class="badge-pill badge-neutral" style="font-size: 11px;">
-                            👥 {{ count($job->applications ?? []) }} Başvuru
+                            {{ count($job->applications ?? []) }} Başvuru
                         </span>
 
                         @if ($job->user)
                             <span class="badge-pill badge-neutral" style="font-size: 11px;">
-                                👤 İlan Sahibi: {{ $job->user->name }}
+                                İlan Sahibi: {{ $job->user->name }}
                             </span>
                         @endif
                     </div>
@@ -247,13 +248,13 @@
 
                     <div style="display: flex; gap: 6px;">
                         <a href="/job-postings/{{ $job->id }}/edit" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" title="Düzenle">
-                            ✏️
+                            Düzenle
                         </a>
                         <form action="/job-postings/{{ $job->id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu ilan kalıcı olarak silinsin mi?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm" style="padding: 5px 10px;" title="Sil">
-                                🗑️
+                                Sil
                             </button>
                         </form>
                     </div>
@@ -261,7 +262,6 @@
             </div>
         @empty
             <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 48px; color: var(--ink-secondary);">
-                <div style="font-size: 32px; margin-bottom: 8px;">💼</div>
                 <h4 style="font-size: 18px; color: var(--iu-navy); margin-bottom: 6px;">Aktif İlan Bulunamadı</h4>
                 <p style="font-size: 13.5px; margin-bottom: 16px;">Arama kriterlerinize uygun ilan bulunmamaktadır.</p>
                 <a href="/job-postings/create" class="btn btn-primary btn-sm">+ Yeni İlan Ekleyin</a>

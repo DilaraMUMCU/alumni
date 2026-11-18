@@ -27,13 +27,13 @@
 
         <div style="display: flex; gap: 8px;">
             <a href="/announcements/{{ $aId }}/edit" class="btn btn-secondary btn-sm">
-                ✏️ Duyuruyu Düzenle
+                <span>Duyuruyu Düzenle</span>
             </a>
             <form action="/announcements/{{ $aId }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bu duyuru kalıcı olarak silinsin mi?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm">
-                    🗑️ Sil
+                    <span>Sil</span>
                 </button>
             </form>
         </div>
@@ -43,13 +43,13 @@
     <article class="card" style="padding: 40px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
             @if ($aPinned)
-                <span class="badge-pill badge-gold">📌 Sabitlendi</span>
+                <span class="badge-pill badge-gold">Sabitlendi</span>
             @endif
             <span class="badge-pill badge-crimson">{{ $aCategory }}</span>
             @if ($aPriority === 'Acil' || $aPriority === 'Yüksek')
-                <span class="badge-pill badge-danger">⚠️ {{ $aPriority }}</span>
+                <span class="badge-pill badge-danger">{{ $aPriority }}</span>
             @endif
-            <span class="badge-pill badge-neutral">👥 Hedef Kitle: {{ $aTarget }}</span>
+            <span class="badge-pill badge-neutral">Hedef Kitle: {{ $aTarget }}</span>
         </div>
 
         <h1 style="font-size: 32px; color: var(--iu-navy); line-height: 1.25; margin-bottom: 16px;">
@@ -57,8 +57,8 @@
         </h1>
 
         <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--ink-secondary); padding-bottom: 20px; border-bottom: 1px solid var(--border-cream); margin-bottom: 28px; flex-wrap: wrap;">
-            <span>🏛️ <strong>Yayınlayan:</strong> {{ $aAuthor }}</span>
-            <span>📅 <strong>Yayın Tarihi:</strong> {{ $aDate ? \Carbon\Carbon::parse($aDate)->format('d.m.Y H:i') : 'Güncel' }}</span>
+            <span><strong>Yayınlayan:</strong> {{ $aAuthor }}</span>
+            <span><strong>Yayın Tarihi:</strong> {{ $aDate ? \Carbon\Carbon::parse($aDate)->format('d.m.Y H:i') : 'Güncel' }}</span>
         </div>
 
         <div style="font-size: 16px; line-height: 1.8; color: var(--ink-charcoal); white-space: pre-line; margin-bottom: 36px;">
