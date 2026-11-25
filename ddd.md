@@ -12,9 +12,14 @@ This document provides a comprehensive specification of the data architecture, d
    - [3.1. User Entity](#31-user-entity)
    - [3.2. Announcement Entity](#32-announcement-entity)
    - [3.3. Future / Planned Entities (JobPosting, Application, Event, Mentorship)](#33-future--planned-entities)
-4. [Data Access Layer (DAL) and CRUD Mechanics](#4-data-access-layer-dal-and-crud-mechanics)
-5. [Data Integrity, Type Casting, and Security](#5-data-integrity-type-casting-and-security)
-6. [Relational Database (MySQL 8.0) Migration Roadmap](#6-relational-database-mysql-80-migration-roadmap)
+4. [User Roles and Authorization Architecture (RBAC)](#4-user-roles-and-authorization-architecture-rbac)
+   - [4.1. Role Taxonomy and Definitions](#41-role-taxonomy-and-definitions)
+   - [4.2. Role-Based Access Control (RBAC) Matrix](#42-role-based-access-control-rbac-matrix)
+   - [4.3. Core Authorization Rules & Workflows](#43-core-authorization-rules--workflows)
+   - [4.4. Technical Implementation Specification (Middleware, Policies, Gates)](#44-technical-implementation-specification)
+5. [Data Access Layer (DAL) and CRUD Mechanics](#5-data-access-layer-dal-and-crud-mechanics)
+6. [Data Integrity, Type Casting, and Security](#6-data-integrity-type-casting-and-security)
+7. [Relational Database (MySQL 8.0) Migration Roadmap](#7-relational-database-mysql-80-migration-roadmap)
 
 ---
 
@@ -60,20 +65,21 @@ The following diagram models the relationships between the active domain entitie
 
 ```mermaid
 erDiagram
-    USER ||--o{ ANNOUNCEMENT : "publishes / targets"
-    USER ||--o{ JOB_POSTING : "publishes"
-    USER ||--o{ APPLICATION : "submits"
+    USER ||--o{ ANNOUNCEMENT : "publishes (academics, admin)"
+    USER ||--o{ JOB_POSTING : "publishes (alumni, admin)"
+    USER ||--o{ APPLICATION : "submits (student, alumni)"
     JOB_POSTING ||--o{ APPLICATION : "receives"
+    USER ||--o{ EVENT : "creates / organizes (academics, admin)"
     USER ||--o{ EVENT_REGISTRATION : "registers"
     EVENT ||--o{ EVENT_REGISTRATION : "has attendees"
-    USER ||--o{ MENTORSHIP : "acts as mentor"
-    USER ||--o{ MENTORSHIP : "acts as mentee"
+    USER ||--o{ MENTORSHIP : "acts as mentor (alumni, academics)"
+    USER ||--o{ MENTORSHIP : "acts as mentee (student, alumni)"
 
     USER {
         int id PK "Auto-increment Unique Identifier"
         string name "Full Name"
         string email UK "Institutional / Contact Email"
-        string role "Role: student, alumni, admin"
+        string role "Role: student, alumni, academics, admin"
         string department "Faculty / Department"
         int graduation_year "Graduation Year"
         string current_company "Current Employer"
@@ -90,7 +96,7 @@ erDiagram
         text content "Full Announcement Body"
         string category "Category: event, career, mentorship, academic, general"
         string author "Publishing Department / Person"
-        string target_audience "Target Audience: all, alumni, students"
+        string target_audience "Target Audience: all, alumni, students, academics"
         string priority "Priority: normal, important, urgent"
         boolean is_active "Publishing Status (Active/Archived)"
         boolean pinned "Top Pinned Flag"
@@ -100,7 +106,7 @@ erDiagram
 
     JOB_POSTING {
         int id PK "Auto-increment Unique Identifier"
-        int user_id FK "Alumni Publisher"
+        int user_id FK "Alumni / Admin Publisher"
         string title "Job Title (Required, Max 120 chars)"
         string company "Company Name (Required)"
         string city "City / Location (Optional)"
@@ -115,7 +121,7 @@ erDiagram
     APPLICATION {
         int id PK "Auto-increment Unique Identifier"
         int job_posting_id FK "Target Job Posting"
-        int user_id FK "Applicant Candidate"
+        int user_id FK "Applicant Candidate (Student / Alumni)"
         string resume_url "Resume / CV Document Link"
         text cover_letter "Candidate Note / Cover Letter"
         string status "Status: pending, reviewing, shortlisted, accepted, rejected"
@@ -125,25 +131,29 @@ erDiagram
     }
 
     EVENT {
-        int id PK
+        int id PK "Auto-increment Unique Identifier"
+        int organizer_id FK "Organizer (Academics / Admin)"
         string title "Event Title"
+        text description "Event Details"
         datetime event_date "Date and Time"
         string location "Physical Venue / Online Link"
         int capacity "Capacity Limit"
+        datetime created_at "Created Timestamp"
+        datetime updated_at "Updated Timestamp"
     }
 
     EVENT_REGISTRATION {
-        int id PK
-        int user_id FK
-        int event_id FK
-        datetime registered_at
+        int id PK "Auto-increment Unique Identifier"
+        int user_id FK "Attendee (Student, Alumni, Academics, Admin)"
+        int event_id FK "Target Event"
+        datetime registered_at "Registration Timestamp"
         string status "Confirmed, Waitlist, Cancelled"
     }
 
     MENTORSHIP {
-        int id PK
-        int mentor_id FK "Alumni Mentor"
-        int mentee_id FK "Student Mentee"
+        int id PK "Auto-increment Unique Identifier"
+        int mentor_id FK "Mentor (Alumni / Academics)"
+        int mentee_id FK "Mentee (Student / Alumni)"
         string focus_area "Software, Career, Academic"
         string status "Active, Completed"
     }
@@ -154,7 +164,7 @@ erDiagram
 ## 3. Detailed Data Dictionary
 
 ### 3.1. User Entity
-The User model represents university alumni, current students, and system administrators.
+The User model represents university alumni, current students, academic staff/faculty, and system administrators. Unauthenticated visitors are represented at the application gateway as `guests`.
 
 - **Model Class:** `App\Models\User`
 - **Cache Key:** `alumni_users`
@@ -165,9 +175,9 @@ The User model represents university alumni, current students, and system admini
 | `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique record identifier. | `1` |
 | `name` | `string` | `VARCHAR(191)` | ❌ No | `'Dilara Mumcu'` | User's full name. Required in all forms. | `'Dilara MUMCU'` |
 | `email` | `string` | `VARCHAR(191) UNIQUE` | ❌ No | `'dilara@alumni.edu'` | Primary contact email. Must be globally unique. | `'dilara@ogr.iu.edu.tr'` |
-| `role` | `string` | `ENUM('student','alumni','admin')` | ❌ No | `'alumni'` | User role governing permissions and visibility. | `'alumni'` |
+| `role` | `string` | `ENUM('student','alumni','academics','admin')` | ❌ No | `'alumni'` | User role governing permissions and system access control (`student`, `alumni`, `academics`, `admin`). Unauthenticated visitors operate under the `guests` authorization tier. | `'student'` |
 | `department` | `string` | `VARCHAR(191)` | ❌ No | `'Computer Engineering'` | Academic department or faculty attended. | `'Computer Engineering'` |
-| `graduation_year` | `?int` | `SMALLINT UNSIGNED` | ⚠️ Yes | `2024` | Graduation year. Valid range between 1950 and 2035. | `2024` |
+| `graduation_year` | `?int` | `SMALLINT UNSIGNED` | ⚠️ Yes | `2024` | Graduation year. Valid range between 1950 and 2035 (null for faculty/staff). | `2024` |
 | `current_company` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Google'` | Current employer or affiliated institution. | `'Google DeepMind'` |
 | `job_title` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Software Engineer'` | Professional designation / job title. | `'Senior AI Engineer'` |
 | `linkedin_url` | `?string` | `VARCHAR(255)` | ⚠️ Yes | `null` | Public LinkedIn profile URL. | `'https://linkedin.com/in/dilaramumcu'` |
@@ -267,22 +277,272 @@ The Application entity enables alumni and students to apply for published job po
 
 #### C. Event & EventRegistration (Events & Attendance)
 - **Tables:** `events`, `event_registrations`
-- **Fields (Event):** `id`, `title`, `description`, `event_date`, `location`, `capacity`, `created_at`.
-- **Fields (Registration):** `id`, `user_id` (FK), `event_id` (FK), `registered_at`, `status` (confirmed, waitlist, cancelled).
-- **Relationship:** Multiple users can RSVP to an event (Many-to-Many `N:M` resolved via the `event_registrations` pivot table).
+- **Fields (Event):** `id`, `organizer_id` (BIGINT UNSIGNED FK -> users.id, restricted to `academics` and `admin`), `title`, `description`, `event_date`, `location`, `capacity`, `created_at`, `updated_at`.
+- **Fields (Registration):** `id`, `user_id` (FK -> users.id), `event_id` (FK -> events.id), `registered_at`, `status` (confirmed, waitlist, cancelled).
+- **Relationship:** Multiple users can RSVP to an event (Many-to-Many `N:M` resolved via the `event_registrations` pivot table). An academic or admin user organizes multiple events (`1:N`).
 
 #### D. Mentorship (Mentorship Pairing)
 - **Table:** `mentorship_relationships`
-- **Fields:** `id`, `mentor_id` (FK -> users.id), `mentee_id` (FK -> users.id), `status` (pending, active, completed), `start_date`, `end_date`, `notes`.
-- **Relationship:** Dual user relationship between an alumni mentor and a student mentee (`User -> User`).
+- **Fields:** `id`, `mentor_id` (FK -> users.id, restricted to `alumni` and `academics`), `mentee_id` (FK -> users.id, restricted to `student` and junior `alumni`), `status` (pending, active, completed), `start_date`, `end_date`, `notes`.
+- **Relationship:** Dual user relationship between an alumni/academic mentor and a student/alumni mentee (`User -> User`).
 
 ---
 
-## 4. Data Access Layer (DAL) and CRUD Mechanics
+## 4. User Roles and Authorization Architecture (RBAC)
+
+The application enforces a comprehensive **Role-Based Access Control (RBAC)** architecture that governs access boundaries, identity segregation, and domain operational rights.
+
+### 4.1. Role Taxonomy and Definitions
+
+| Role Identifier | Role Name | Intended Audience | Authentication Status | Core Architectural Scope |
+| :--- | :--- | :--- | :---: | :--- |
+| **`guests`** | **Guest / Anonymous Visitor** | Prospective students, public visitors, recruiters. | Unauthenticated (`Auth::guest()`) | Public landing page, general announcements, public event calendar preview. Read-only, no write access. |
+| **`student`** | **Active University Student** | Undergraduate, graduate, and PhD students. | Authenticated (`role = 'student'`) | Verified student portal access. **Can apply to jobs/internships**, track applications, search alumni directory, RSVP to events, request mentorship. |
+| **`alumni`** | **Graduated Alumnus / Alumna** | Verified Istanbul University graduates. | Authenticated (`role = 'alumni'`) | Verified alumni network access. **Can apply to jobs**, publish company job listings, review applicant candidates, RSVP to events, act as mentors. |
+| **`academics`** | **Academician & Faculty Member**| Professors, docents, lecturers, research assistants. | Authenticated (`role = 'academics'`) | Academic authority. **Can create and manage campus events**, publish academic announcements, supervise student research, provide academic mentorship. |
+| **`admin`** | **System & Portal Administrator** | Rectorate, Career Center, IT Operations. | Authenticated (`role = 'admin'`) | Full administrative oversight. **Can create events**, manage all users and roles, verify/moderate job postings, manage announcements, inspect audit logs. |
+
+---
+
+### 4.2. Role-Based Access Control (RBAC) Matrix
+
+The table below details explicit authorization capabilities across every system domain:
+
+| Feature / Domain Module | Action / Endpoint | `guests` | `student` | `alumni` | `academics` | `admin` | Business Authorization Rule |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Public Portal & Landing** | `GET /` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open public access to all visitors. |
+| **Directory & Network** | `GET /users` | ⚠️ Limited | ✅ Full | ✅ Full | ✅ Full | ✅ Full | Guests see aggregate counters; authenticated members browse directory. |
+| **Own Profile Editing** | `PUT /users/{id}` | ❌ Denied | 👤 Own Only | 👤 Own Only | 👤 Own Only | ✅ All | Users update their own credentials; Admin can edit any record. |
+| **Role Assignment & Mutation** | `PATCH /users/{id}/role` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | **Strictly Admin-only.** Prevents unauthorized privilege escalation. |
+| **Job Postings Viewing** | `GET /job-postings` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public visibility to maximize career opportunity outreach. |
+| **Job Posting Publishing** | `POST /job-postings` | ❌ Denied | ❌ Denied | ✅ **Alumni** | ❌ Denied | ✅ **Admin** | **Alumni** publish company positions; **Admin** has supervisory publishing rights. |
+| **Job Posting Editing / Deletion**| `PUT/DELETE /job-postings/{id}` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni can only edit their own postings (`user_id == auth()->id()`). |
+| **Job Applications (Apply)** | `POST /applications` | ❌ Denied | ✅ **Apply** | ✅ **Apply** | ❌ Denied | ⚠️ Audit | **Students and alumni can apply for jobs and internships.** |
+| **Own Applications Tracking**| `GET /applications/me` | ❌ Denied | ✅ Own | ✅ Own | ❌ Denied | ✅ All | Candidates track submission statuses (`pending`, `reviewing`, etc.). |
+| **Applicant Review (Employer)**| `GET /job-postings/{id}/apps` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni review candidates who applied to their postings; Admin can audit all. |
+| **Application Status Update** | `PATCH /applications/{id}` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Posting authors and Admins accept, reject, or shortlist applicants. |
+| **Announcements Viewing** | `GET /announcements` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public access to university and alumni announcements. |
+| **Announcement Creation** | `POST /announcements` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Publish** | ✅ **Publish** | **Academics** publish academic/faculty notices; **Admin** publishes institutional news. |
+| **Announcement Moderation** | `PUT/DELETE /announcements/{id}`| ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ✅ All | Authors modify their notices; Admin can pin, archive, or delete any notice. |
+| **Events Viewing** | `GET /events` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open event calendar, seminars, summits, and workshop listings. |
+| **Event Creation** | `POST /events` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Create** | ✅ **Create** | **Admins and academics create events** (conferences, panels, workshops, seminars). |
+| **Event Management** | `PUT/DELETE /events/{id}` | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Organizer | ✅ All | Academics manage their organized events; Admin oversees all events and quotas. |
+| **Event RSVP / Registration** | `POST /events/{id}/register` | ❌ Denied | ✅ Register | ✅ Register | ✅ Register | ✅ Register | Authenticated university members can register for event attendance. |
+| **Mentorship (As Mentee)** | `POST /mentorship/request` | ❌ Denied | ✅ Mentee | ✅ Mentee | ❌ Denied | ⚠️ Manage | Students and junior alumni can request mentorship pairings. |
+| **Mentorship (As Mentor)** | `POST /mentorship/offer` | ❌ Denied | ❌ Denied | ✅ Mentor | ✅ Mentor | ⚠️ Manage | Experienced alumni and academics can register to mentor students. |
+| **System Cache & Diagnostics**| `POST /api/*/reset`, `/logs` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | Diagnostic panels, cache resets, and error log telemetry inspection. |
+
+---
+
+### 4.3. Core Authorization Rules & Workflows
+
+#### 1. Job Applications Authorization (`student` & `alumni`)
+- **Core Rule:** Only **Students** and **Alumni** possess authorization to submit applications to job postings (`POST /applications`).
+- **Authorization Gate:**
+  ```php
+  Gate::define('apply-job', function (User $user) {
+      return in_array($user->role, ['student', 'alumni'], true);
+  });
+  ```
+- **Domain Workflow:**
+  1. A candidate visits a job posting detail page (`GET /job-postings/{id}`).
+  2. If the user is unauthenticated (`guests`), the UI displays a `"Giriş Yaparak Başvur"` button redirecting to login.
+  3. If authenticated as `student` or `alumni`, the `"Hemen Başvur"` action form is enabled.
+  4. If an `academics` user navigates to the endpoint, the application gate rejects the submission with `403 Forbidden` (`'Yalnızca öğrenciler ve mezunlar iş başvurusu yapabilir.'`).
+  5. The submission records candidate `user_id` and attaches resume link and motivation note.
+
+#### 2. Event Creation & Management Authorization (`academics` & `admin`)
+- **Core Rule:** Only **Academics** and **Administrators** can create and schedule university events (`POST /events`).
+- **Authorization Gate:**
+  ```php
+  Gate::define('create-event', function (User $user) {
+      return in_array($user->role, ['academics', 'admin'], true);
+  });
+  ```
+- **Domain Workflow:**
+  1. Academics (professors, docents, lecturers) and Admins can access `GET /events/create`.
+  2. The creation button is conditionally hidden from `student`, `alumni`, and `guests` via `@can('create-event')`.
+  3. When submitted, the system verifies `in_array(auth()->user()->role, ['academics', 'admin'])`.
+  4. The event is linked to `organizer_id = auth()->id()`.
+  5. Unauthorized creation attempts return `403 Forbidden` (`'Etkinlik oluşturma yetkisi yalnızca akademisyenler ve yöneticilere aittir.'`).
+
+#### 3. Job Posting Publishing Authorization (`alumni` & `admin`)
+- **Core Rule:** Only **Alumni** (sharing career openings from their employers) and **Administrators** can publish job listings (`POST /job-postings`).
+- **Authorization Gate:**
+  ```php
+  Gate::define('create-job-posting', function (User $user) {
+      return in_array($user->role, ['alumni', 'admin'], true);
+  });
+  ```
+
+#### 4. Official Announcements Authorization (`academics` & `admin`)
+- **Core Rule:** Only **Academics** (departmental notices, symposiums, exams) and **Administrators** (rectorate press releases, university alerts) can broadcast announcements (`POST /announcements`).
+
+#### 5. Role Assignment & Account Security (`admin` only)
+- **Core Rule:** Role changes (`PATCH /users/{id}/role`) can only be executed by the `admin` role. No user can self-promote or alter their own authorization level.
+
+---
+
+### 4.4. Technical Implementation Specification
+
+The application enforces authorization across multiple defensive boundaries:
+
+#### A. Route Middleware (`App\Http\Middleware\EnsureUserRole`)
+```php
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class EnsureUserRole
+{
+    /**
+     * Handle incoming request and verify user role against allowed list.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  ...$roles Allowed role names
+     */
+    public function handle(Request $request, Closure $next, string ...$roles): Response
+    {
+        if (!auth()->check()) {
+            return redirect()->guest('/login')->with('warning', 'Lütfen devam etmek için giriş yapınız.');
+        }
+
+        if (!in_array($request->user()->role, $roles, true)) {
+            abort(403, 'Bu işlem için yetkiniz bulunmamaktadır.');
+        }
+
+        return $next($request);
+    }
+}
+```
+
+#### B. Laravel Policies (Entity-Level Authorization)
+
+##### 1. ApplicationPolicy (`App\Policies\ApplicationPolicy`)
+```php
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Application;
+use App\Models\JobPosting;
+
+class ApplicationPolicy
+{
+    /**
+     * Determine whether the user can apply for a job posting.
+     * Rule: Students and alumni can apply for jobs.
+     */
+    public function apply(User $user, JobPosting $jobPosting): bool
+    {
+        return in_array($user->role, ['student', 'alumni'], true);
+    }
+
+    /**
+     * Determine whether the user can view the application details.
+     */
+    public function view(User $user, Application $application): bool
+    {
+        return $user->id === $application->user_id
+            || $user->id === $application->jobPosting->user_id
+            || $user->role === 'admin';
+    }
+
+    /**
+     * Determine whether the user can update the application status.
+     */
+    public function updateStatus(User $user, Application $application): bool
+    {
+        return $user->id === $application->jobPosting->user_id
+            || $user->role === 'admin';
+    }
+}
+```
+
+##### 2. EventPolicy (`App\Policies\EventPolicy`)
+```php
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Event;
+
+class EventPolicy
+{
+    /**
+     * Determine whether the user can create an event.
+     * Rule: Admins and academics can create events.
+     */
+    public function create(User $user): bool
+    {
+        return in_array($user->role, ['academics', 'admin'], true);
+    }
+
+    /**
+     * Determine whether the user can edit or delete an event.
+     */
+    public function update(User $user, Event $event): bool
+    {
+        return $user->id === $event->organizer_id || $user->role === 'admin';
+    }
+
+    /**
+     * Determine whether the user can register for an event.
+     */
+    public function register(User $user, Event $event): bool
+    {
+        return auth()->check();
+    }
+}
+```
+
+#### C. User Model Declarative Role Helpers (`App\Models\User`)
+```php
+public function isGuest(): bool      { return !auth()->check(); }
+public function isStudent(): bool    { return $this->role === 'student'; }
+public function isAlumni(): bool     { return $this->role === 'alumni'; }
+public function isAcademics(): bool  { return $this->role === 'academics'; }
+public function isAdmin(): bool      { return $this->role === 'admin'; }
+
+// Domain Capability Predicates
+public function canApplyToJobs(): bool  { return in_array($this->role, ['student', 'alumni'], true); }
+public function canCreateEvents(): bool { return in_array($this->role, ['academics', 'admin'], true); }
+public function canPublishJobs(): bool  { return in_array($this->role, ['alumni', 'admin'], true); }
+```
+
+#### D. Declarative Blade Directives in Views
+```blade
+{{-- 1. Job Application Button: Visible only to students & alumni --}}
+@auth
+    @if (auth()->user()->canApplyToJobs())
+        <a href="/applications/create?job_posting_id={{ $job->id }}" class="btn btn-primary">
+            Başvuru Yap
+        </a>
+    @endif
+@else
+    <a href="/login" class="btn btn-secondary">
+        Giriş Yaparak Başvur
+    </a>
+@endauth
+
+{{-- 2. Event Creation Button: Visible only to academics & admin --}}
+@auth
+    @if (auth()->user()->canCreateEvents())
+        <a href="/events/create" class="btn btn-primary">
+            Yeni Etkinlik Düzenle
+        </a>
+    @endif
+@endauth
+```
+
+---
+
+## 5. Data Access Layer (DAL) and CRUD Mechanics
 
 Without requiring an external database, the models provide complete **Repository and Data Mapper** functionality:
 
-### 4.1. CRUD Method Standards
+### 5.1. CRUD Method Standards
 Each model class implements the following standard method signatures:
 
 ```php
@@ -308,25 +568,25 @@ Model::deleteById(int|string $id): ?self;
 Model::reset(): array<self>;
 ```
 
-### 4.2. PUT and PATCH Semantics
+### 5.2. PUT and PATCH Semantics
 Data updates strictly conform to RFC-7231 standards:
 - **PUT (Full Replacement):** Omitted fields are reset to null or their respective defaults.
 - **PATCH (Partial Update):** Only supplied keys are modified; omitted fields preserve their existing values.
 
 ---
 
-## 5. Data Integrity, Type Casting, and Security
+## 6. Data Integrity, Type Casting, and Security
 
-### 5.1. Type Casting and Array Parsing
+### 6.1. Type Casting and Array Parsing
 - **Skills:** Comma-separated strings submitted via HTML forms (`"PHP, Laravel, Docker"`) are automatically converted into sanitized string arrays (`['PHP', 'Laravel', 'Docker']`) at the model layer.
 - **Boolean Flags (`is_active`, `pinned`):** Sanitized using `filter_var($val, FILTER_VALIDATE_BOOLEAN)` to handle `'1'`, `'true'`, `1`, and HTML form checkbox values uniformly.
 - **Numeric Fields (`graduation_year`, `id`):** Strongly cast using `(int)` to guarantee integer safety.
 
-### 5.2. Data Security and Sanitization
+### 6.2. Data Security and Sanitization
 - **Payload Isolation:** Controller actions invoke `$request->except(['_token', '_method'])` to ensure internal form control fields do not contaminate model attributes.
 - **CSRF Protection & Exemptions:** Web Blade forms mandate `@csrf`. To enable seamless Postman, cURL, and automated testing, `users/*`, `announcements/*`, `job-postings/*`, and `applications/*` routes are exempted from CSRF verification in `bootstrap/app.php`.
 
-### 5.3. Exception Handling, Error Guardians & Audit Telemetry
+### 6.3. Exception Handling, Error Guardians & Audit Telemetry
 To ensure reliability and prevent uncaught domain errors from disrupting user experience:
 - **404 Guardian (`Guardian404Middleware`):** Catches missing domain models (`ModelNotFoundException`) and invalid URLs (`NotFoundHttpException`). Resolves human-readable failure reasons, redirects browser requests to `/404` with state details, and returns JSON error schemas for API callers.
 - **5xx Guardian (`Guardian5xxMiddleware`):** Catches server exceptions (`5xx`), hides internal server stack traces from public disclosure, and provides contextual problem descriptions.
@@ -335,17 +595,17 @@ To ensure reliability and prevent uncaught domain errors from disrupting user ex
 
 ---
 
-## 6. Relational Database (MySQL 8.0) Migration Roadmap
+## 7. Relational Database (MySQL 8.0) Migration Roadmap
 
 Existing models are architected to map 1:1 to MySQL tables and Eloquent ORM.
 
-### 6.1. Sample Users Migration (`database/migrations/xxxx_create_users_table.php`)
+### 7.1. Sample Users Migration (`database/migrations/xxxx_create_users_table.php`)
 ```php
 Schema::create('users', function (Blueprint $table) {
     $table->id();
     $table->string('name');
     $table->string('email')->unique();
-    $table->enum('role', ['student', 'alumni', 'admin'])->default('alumni');
+    $table->enum('role', ['student', 'alumni', 'academics', 'admin'])->default('alumni');
     $table->string('department');
     $table->unsignedSmallInteger('graduation_year')->nullable();
     $table->string('current_company')->nullable();
@@ -359,7 +619,7 @@ Schema::create('users', function (Blueprint $table) {
 });
 ```
 
-### 6.2. Sample Announcements Migration (`database/migrations/xxxx_create_announcements_table.php`)
+### 7.2. Sample Announcements Migration (`database/migrations/xxxx_create_announcements_table.php`)
 ```php
 Schema::create('announcements', function (Blueprint $table) {
     $table->id();
@@ -367,7 +627,7 @@ Schema::create('announcements', function (Blueprint $table) {
     $table->text('content');
     $table->enum('category', ['event', 'career', 'mentorship', 'academic', 'general'])->default('general');
     $table->string('author')->nullable();
-    $table->enum('target_audience', ['all', 'alumni', 'students'])->default('all');
+    $table->enum('target_audience', ['all', 'alumni', 'students', 'academics'])->default('all');
     $table->enum('priority', ['normal', 'important', 'urgent'])->default('normal');
     $table->boolean('is_active')->default(true);
     $table->boolean('pinned')->default(false);
@@ -378,7 +638,7 @@ Schema::create('announcements', function (Blueprint $table) {
 });
 ```
 
-### 6.3. Sample Job Postings Migration (`database/migrations/xxxx_create_job_postings_table.php`)
+### 7.3. Sample Job Postings Migration (`database/migrations/xxxx_create_job_postings_table.php`)
 ```php
 Schema::create('job_postings', function (Blueprint $table) {
     $table->id();
@@ -398,7 +658,7 @@ Schema::create('job_postings', function (Blueprint $table) {
 });
 ```
 
-### 6.4. Sample Applications Migration (`database/migrations/xxxx_create_applications_table.php`)
+### 7.4. Sample Applications Migration (`database/migrations/xxxx_create_applications_table.php`)
 ```php
 Schema::create('applications', function (Blueprint $table) {
     $table->id();
@@ -413,6 +673,23 @@ Schema::create('applications', function (Blueprint $table) {
     $table->unique(['job_posting_id', 'user_id']);
     $table->index('status');
     $table->index(['job_posting_id', 'status']);
+});
+```
+
+### 7.5. Sample Events Migration (`database/migrations/xxxx_create_events_table.php`)
+```php
+Schema::create('events', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('organizer_id')->constrained('users')->cascadeOnDelete(); // Academics or Admin
+    $table->string('title');
+    $table->text('description');
+    $table->dateTime('event_date');
+    $table->string('location');
+    $table->unsignedInteger('capacity')->nullable();
+    $table->timestamps();
+
+    $table->index('event_date');
+    $table->index('organizer_id');
 });
 ```
 
