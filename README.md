@@ -321,6 +321,54 @@ flowchart LR
 
 ---
 
+## Authentication, User Roles & Authorization (RBAC)
+
+The application implements session-based authentication alongside a **6-tier Role-Based Access Control (RBAC)** architecture that governs route access, dynamic navigation, user-specific workspaces, and administrative oversight.
+
+### 1. User Roles & Permissions Overview
+
+| Role | Status | Key Capabilities & Restrictions |
+| :--- | :---: | :--- |
+| **`guests`** | Unauthenticated | Read-only access to public pages (`/`, `/job-postings`, `/announcements`, `/about`), plus `/register` and `/login`. |
+| **`unverified`** | Authenticated (Pending Verification) | Default role automatically assigned to all first-time users registering via `/register`. Can view public listings and manage their own profile/password (`/profile/settings`), but **blocked (`403`)** from applying to jobs, publishing listings, or creating events until verified. |
+| **`student`** | Verified | Can **apply to jobs and internships** (`/applications`), track personal applications, browse the directory, and manage profile settings. |
+| **`alumni`** | Verified | Can **apply to jobs**, **publish and manage job postings** (`/job-postings/create`), review applicants, and browse the directory. |
+| **`academics`** | Verified | Can **create and manage campus events and academic announcements** (`/announcements/create`) and browse the directory. |
+| **`admin`** | Verified (Elevated) | Full access to the **Admin Control Panel** (`/admin`), user role management/verification (`PATCH /admin/users/{id}/role`), application/announcement/job moderation, and event creation. |
+
+### 2. Auth, Profile & Admin Endpoints
+
+| Endpoint | Method | Middleware | Controller / Purpose |
+| :--- | :---: | :--- | :--- |
+| `/register` | `GET`, `POST` | Public | First-time user registration (`RegisterController`). Hashes passwords via Bcrypt and strictly forces `role = 'unverified'`. |
+| `/api/register` | `POST` | Public (JSON) | JSON registration endpoint returning `201 Created` with `assigned_role: "unverified"` and `verification_status: "pending"`. |
+| `/login` | `GET`, `POST` | Public | Session authentication (`RegisterController@login`). Redirects `admin` users to `/admin` and other roles to their profile. |
+| `/logout` | `POST` | `auth.portal` | Terminates and invalidates the active user session. |
+| `/profile/settings` | `GET`, `PUT` | `auth.portal` | User-specific profile settings (`ProfileController`). Users can update their own info without self-escalating their role. |
+| `/profile/password` | `PATCH` | `auth.portal` | Secure password update verifying current password via `Hash::check`. |
+| `/profile/dashboard` | `GET` | `auth.portal` | Personal activity dashboard showing the signed-in user's applications, published jobs, and event registrations. |
+| `/admin` | `GET` | `role:admin` | Centralized Admin Control Panel (`AdminController`) for KPIs, user/role updates, application statuses, and announcement/job moderation. |
+
+### 3. Auth Middleware (`app/Http/Middleware/AuthMiddleware.php`)
+Registered in `bootstrap/app.php` under the aliases **`auth.portal`** and **`role`**:
+- **Unauthenticated (`guests`):** Redirects web requests to `/login` with a flash warning; returns `401 Unauthorized` JSON (`UNAUTHENTICATED`) for API requests.
+- **Unverified (`unverified`) & Unauthorized Roles:** Renders the dedicated institutional **`403` explanation view** (`resources/views/errors/403.blade.php`) clearly displaying the user's current role, the required role(s), and why the action is restricted (never throwing a `500` error); returns structured `403 Forbidden` JSON (`ACCOUNT_UNVERIFIED` / `FORBIDDEN_ROLE`) for API requests.
+- **Route Enforcement Examples:**
+  ```php
+  Route::post('/applications', [ApplicationController::class, 'store'])->middleware('role:student,alumni,admin');
+  Route::post('/job-postings', [JobPostingController::class, 'store'])->middleware('role:alumni,admin');
+  Route::post('/announcements', [AnnouncementController::class, 'store'])->middleware('role:academics,admin');
+  Route::prefix('admin')->middleware('role:admin')->group(...);
+  ```
+
+### 4. Dynamic Role-Based Navigation
+The floating navbar (`resources/views/layouts/app.blade.php`) dynamically adapts menu items and primary CTA buttons via `User::navigationItems()` and `User::primaryNavAction()` so each role only sees relevant links (e.g., `Admin Paneli` for `admin`, `Başvurularım` & `Başvuru Yap` for `student`, `İlan Yayınla` for `alumni`, `Duyuru Yayınla` for `academics`, and `Giriş Yap` / `Kayıt Ol` for `guests`).
+
+> For the complete RBAC matrix, database schema, and policy specifications, see [**`ddd.md` — Section 4: User Roles & Authorization Architecture**](ddd.md#4-user-roles-and-authorization-architecture-rbac).
+
+
+---
+
 ## 📊 Data Design & Schema Documentation (DDD)
 
 For complete details regarding the system's data architecture, entity fields, cache, and database persistence strategies, refer to the dedicated data design documentation:

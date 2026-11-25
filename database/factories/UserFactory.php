@@ -89,6 +89,29 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is a newly registered unverified user.
+     */
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_UNVERIFIED,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an academician / faculty member.
+     */
+    public function academics(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role'            => User::ROLE_ACADEMICS,
+            'graduation_year' => null,
+            'job_title'       => 'Faculty Member / Professor',
+            'current_company' => 'Istanbul University',
+        ]);
+    }
+
+    /**
      * Indicate that the user is a system administrator.
      */
     public function admin(): static

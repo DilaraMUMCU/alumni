@@ -137,6 +137,20 @@
     <!-- Main Profile Card -->
     <div class="profile-hero-card">
 
+        @if ($uRole === 'unverified')
+            <div style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; margin-bottom: 24px; background: var(--canvas-tint); border: 1px solid var(--iu-gold-border); border-left: 4px solid var(--iu-gold); border-radius: 12px; font-size: 13.5px; color: var(--ink-charcoal);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--iu-crimson); flex-shrink: 0; margin-top: 2px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div>
+                    <strong>Doğrulama Bekleniyor (Unverified):</strong>
+                    Bu hesap ilk kullanıcı kaydı aşamasında oluşturulmuştur ve doğrulama süreci henüz tamamlanmamıştır. Doğrulama onaylanana kadar iş başvurusu yapma veya etkinlik oluşturma gibi rol bazlı yetkiler kısıtlıdır.
+                </div>
+            </div>
+        @endif
+
         <!-- Header -->
         <div class="profile-header-flex">
             <div class="profile-avatar-large">
@@ -148,8 +162,8 @@
                     <h1 style="font-size: 28px; color: var(--iu-navy); margin: 0;">
                         {{ $uName }}
                     </h1>
-                    <span class="badge-pill {{ $uRole === 'student' ? 'badge-amber' : ($uRole === 'academician' ? 'badge-gold' : 'badge-crimson') }}">
-                        {{ $uRole === 'student' ? 'Öğrenci' : ($uRole === 'academician' ? 'Akademisyen' : 'Mezun') }}
+                    <span class="badge-pill {{ \App\Models\User::formatRoleBadgeClass($uRole) }}">
+                        {{ \App\Models\User::formatRoleLabel($uRole) }}
                     </span>
                     <span class="badge-pill badge-neutral" style="font-size: 11px;">#{{ $uId }}</span>
                 </div>

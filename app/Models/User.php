@@ -3,19 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
- * User Model (Eloquent ORM with Two-Tier & Factory Support)
- * 
- * Provides complete CRUD operations mapping to the MySQL 'users' table.
- * Fully compatible with Eloquent Factories, Relationships, and legacy helper methods.
+ * User Model (Eloquent ORM & Authenticatable with Role-Based Helpers)
+ *
+ * Provides complete CRUD operations mapping to the MySQL 'users' table,
+ * authentication contracts, and RBAC helper predicates.
  */
-class User extends Model
+class User extends Authenticatable
 {
     use HasFactory;
+
+    public const ROLE_UNVERIFIED = 'unverified';
+    public const ROLE_STUDENT    = 'student';
+    public const ROLE_ALUMNI     = 'alumni';
+    public const ROLE_ACADEMICS  = 'academics';
+    public const ROLE_ADMIN      = 'admin';
 
     /**
      * Cache key for backward compatibility.
@@ -37,6 +43,7 @@ class User extends Model
     protected $fillable = [
         'name',
         'email',
+        'password',
         'role',
         'department',
         'graduation_year',
@@ -44,6 +51,16 @@ class User extends Model
         'job_title',
         'linkedin_url',
         'skills',
+    ];
+
+    /**
+     * Attributes hidden from array and JSON serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -55,6 +72,166 @@ class User extends Model
         'skills'          => 'array',
         'graduation_year' => 'integer',
     ];
+
+    /* -------------------------------------------------------------------------- */
+    /*                          ROLE & RBAC PREDICATES                            */
+    /* -------------------------------------------------------------------------- */
+
+    public function isUnverified(): bool
+    {
+        return $this->role === self::ROLE_UNVERIFIED;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->role !== self::ROLE_UNVERIFIED;
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->role === self::ROLE_STUDENT;
+    }
+
+    public function isAlumni(): bool
+    {
+        return $this->role === self::ROLE_ALUMNI;
+    }
+
+    public function isAcademics(): bool
+    {
+        return in_array($this->role, [self::ROLE_ACADEMICS, 'academician'], true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function canApplyToJobs(): bool
+    {
+        return in_array($this->role, [self::ROLE_STUDENT, self::ROLE_ALUMNI], true);
+    }
+
+    public function canCreateEvents(): bool
+    {
+        return in_array($this->role, [self::ROLE_ACADEMICS, 'academician', self::ROLE_ADMIN], true);
+    }
+
+    public function canPublishJobs(): bool
+    {
+        return in_array($this->role, [self::ROLE_ALUMNI, self::ROLE_ADMIN], true);
+    }
+
+    /**
+     * Resolve human-readable Turkish role label.
+     */
+    public static function formatRoleLabel(?string $role): string
+    {
+        return match ($role) {
+            self::ROLE_UNVERIFIED => 'Doğrulanmamış',
+            self::ROLE_STUDENT    => 'Öğrenci',
+            self::ROLE_ALUMNI     => 'Mezun',
+            self::ROLE_ACADEMICS, 'academician' => 'Akademisyen',
+            self::ROLE_ADMIN      => 'Yönetici',
+            default               => 'Doğrulanmamış',
+        };
+    }
+
+    /**
+     * Resolve CSS badge class for a given role.
+     */
+    public static function formatRoleBadgeClass(?string $role): string
+    {
+        return match ($role) {
+            self::ROLE_UNVERIFIED => 'badge-neutral',
+            self::ROLE_STUDENT    => 'badge-amber',
+            self::ROLE_ALUMNI     => 'badge-crimson',
+            self::ROLE_ACADEMICS, 'academician' => 'badge-gold',
+            self::ROLE_ADMIN      => 'badge-navy',
+            default               => 'badge-neutral',
+        };
+    }
+
+    /**
+     * Dynamically build navigation menu items based on the current user's role.
+     *
+     * @return array<int, array{label: string, url: string, pattern: string}>
+     */
+    public static function navigationItems(?self $user = null): array
+    {
+        // Guests (Unauthenticated visitors)
+        if (!$user) {
+            return [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'İş & Staj İlanları', 'url' => '/job-postings', 'pattern' => 'job-postings*'],
+                ['label' => 'Duyurular', 'url' => '/announcements', 'pattern' => 'announcements*'],
+                ['label' => 'Hakkımızda', 'url' => '/about', 'pattern' => 'about'],
+            ];
+        }
+
+        $role = $user->role === 'academician' ? self::ROLE_ACADEMICS : $user->role;
+
+        return match ($role) {
+            self::ROLE_ADMIN => [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'Admin Paneli', 'url' => '/admin', 'pattern' => 'admin*'],
+                ['label' => 'Mezunlar & Öğrenciler', 'url' => '/users', 'pattern' => 'users*'],
+                ['label' => 'İş & Staj İlanları', 'url' => '/job-postings', 'pattern' => 'job-postings*'],
+                ['label' => 'Başvurular', 'url' => '/applications', 'pattern' => 'applications*'],
+                ['label' => 'Duyurular', 'url' => '/announcements', 'pattern' => 'announcements*'],
+            ],
+            self::ROLE_ACADEMICS => [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'Mezunlar & Öğrenciler', 'url' => '/users', 'pattern' => 'users*'],
+                ['label' => 'Duyurular & Etkinlikler', 'url' => '/announcements', 'pattern' => 'announcements*'],
+                ['label' => 'Hakkımızda', 'url' => '/about', 'pattern' => 'about'],
+            ],
+            self::ROLE_ALUMNI => [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'Mezunlar & Öğrenciler', 'url' => '/users', 'pattern' => 'users*'],
+                ['label' => 'İş & Staj İlanları', 'url' => '/job-postings', 'pattern' => 'job-postings*'],
+                ['label' => 'Başvurular', 'url' => '/applications', 'pattern' => 'applications*'],
+                ['label' => 'Duyurular', 'url' => '/announcements', 'pattern' => 'announcements*'],
+            ],
+            self::ROLE_STUDENT => [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'Mezunlar & Öğrenciler', 'url' => '/users', 'pattern' => 'users*'],
+                ['label' => 'İş & Staj İlanları', 'url' => '/job-postings', 'pattern' => 'job-postings*'],
+                ['label' => 'Başvurularım', 'url' => '/applications?user_id=' . $user->id, 'pattern' => 'applications*'],
+                ['label' => 'Duyurular', 'url' => '/announcements', 'pattern' => 'announcements*'],
+            ],
+            // Default / Unverified new users
+            default => [
+                ['label' => 'Ana Sayfa', 'url' => '/', 'pattern' => '/'],
+                ['label' => 'Profilim', 'url' => '/users/' . $user->id, 'pattern' => 'users/' . $user->id . '*'],
+                ['label' => 'İş & Staj İlanları', 'url' => '/job-postings', 'pattern' => 'job-postings*'],
+                ['label' => 'Duyurular', 'url' => '/announcements', 'pattern' => 'announcements*'],
+                ['label' => 'Hakkımızda', 'url' => '/about', 'pattern' => 'about'],
+            ],
+        };
+    }
+
+    /**
+     * Dynamically resolve the primary CTA button in the navbar based on user role.
+     *
+     * @return array{label: string, url: string, class: string}|null
+     */
+    public static function primaryNavAction(?self $user = null): ?array
+    {
+        if (!$user) {
+            return ['label' => 'Kayıt Ol', 'url' => '/register', 'class' => 'btn btn-primary btn-sm'];
+        }
+
+        $role = $user->role === 'academician' ? self::ROLE_ACADEMICS : $user->role;
+
+        return match ($role) {
+            self::ROLE_ADMIN     => ['label' => 'İlan Yayınla', 'url' => '/job-postings/create', 'class' => 'btn btn-primary btn-sm'],
+            self::ROLE_ALUMNI    => ['label' => 'İlan Yayınla', 'url' => '/job-postings/create', 'class' => 'btn btn-primary btn-sm'],
+            self::ROLE_ACADEMICS => ['label' => 'Duyuru Yayınla', 'url' => '/announcements/create', 'class' => 'btn btn-primary btn-sm'],
+            self::ROLE_STUDENT   => ['label' => 'Başvuru Yap', 'url' => '/applications/create', 'class' => 'btn btn-primary btn-sm'],
+            default              => null, // 'unverified' users have no privileged creation CTA
+        };
+    }
 
     /* -------------------------------------------------------------------------- */
     /*                                 MUTATORS                                   */

@@ -79,7 +79,8 @@ erDiagram
         int id PK "Auto-increment Unique Identifier"
         string name "Full Name"
         string email UK "Institutional / Contact Email"
-        string role "Role: student, alumni, academics, admin"
+        string password "Hashed Password (Bcrypt)"
+        string role "Role: unverified, student, alumni, academics, admin"
         string department "Faculty / Department"
         int graduation_year "Graduation Year"
         string current_company "Current Employer"
@@ -164,7 +165,7 @@ erDiagram
 ## 3. Detailed Data Dictionary
 
 ### 3.1. User Entity
-The User model represents university alumni, current students, academic staff/faculty, and system administrators. Unauthenticated visitors are represented at the application gateway as `guests`.
+The User model represents newly registered unverified accounts (`unverified`), university alumni (`alumni`), current students (`student`), academic staff/faculty (`academics`), and system administrators (`admin`). Unauthenticated visitors are represented at the application gateway as `guests`.
 
 - **Model Class:** `App\Models\User`
 - **Cache Key:** `alumni_users`
@@ -175,7 +176,8 @@ The User model represents university alumni, current students, academic staff/fa
 | `id` | `int` | `BIGINT UNSIGNED AUTO_INCREMENT` | ❌ No | Auto | Unique record identifier. | `1` |
 | `name` | `string` | `VARCHAR(191)` | ❌ No | `'Dilara Mumcu'` | User's full name. Required in all forms. | `'Dilara MUMCU'` |
 | `email` | `string` | `VARCHAR(191) UNIQUE` | ❌ No | `'dilara@alumni.edu'` | Primary contact email. Must be globally unique. | `'dilara@ogr.iu.edu.tr'` |
-| `role` | `string` | `ENUM('student','alumni','academics','admin')` | ❌ No | `'alumni'` | User role governing permissions and system access control (`student`, `alumni`, `academics`, `admin`). Unauthenticated visitors operate under the `guests` authorization tier. | `'student'` |
+| `password` | `?string` | `VARCHAR(255)` | ⚠️ Yes | `null` | Bcrypt-hashed account password (`Hash::make()`). Required during self-registration (`/register`); hidden in JSON serialization. | `'$2y$12$...'` |
+| `role` | `string` | `ENUM('unverified','student','alumni','academics','admin')` | ❌ No | `'unverified'` | User role governing permissions and system access control. Newly self-registered users default to `'unverified'` until institutional/admin verification is completed. Unauthenticated visitors operate as `guests`. | `'unverified'` |
 | `department` | `string` | `VARCHAR(191)` | ❌ No | `'Computer Engineering'` | Academic department or faculty attended. | `'Computer Engineering'` |
 | `graduation_year` | `?int` | `SMALLINT UNSIGNED` | ⚠️ Yes | `2024` | Graduation year. Valid range between 1950 and 2035 (null for faculty/staff). | `2024` |
 | `current_company` | `?string` | `VARCHAR(191)` | ⚠️ Yes | `'Google'` | Current employer or affiliated institution. | `'Google DeepMind'` |
@@ -290,54 +292,83 @@ The Application entity enables alumni and students to apply for published job po
 
 ## 4. User Roles and Authorization Architecture (RBAC)
 
-The application enforces a comprehensive **Role-Based Access Control (RBAC)** architecture that governs access boundaries, identity segregation, and domain operational rights.
+The application enforces a comprehensive **Role-Based Access Control (RBAC)** architecture that governs access boundaries, onboarding verification states, identity segregation, and domain operational rights.
 
 ### 4.1. Role Taxonomy and Definitions
 
 | Role Identifier | Role Name | Intended Audience | Authentication Status | Core Architectural Scope |
 | :--- | :--- | :--- | :---: | :--- |
-| **`guests`** | **Guest / Anonymous Visitor** | Prospective students, public visitors, recruiters. | Unauthenticated (`Auth::guest()`) | Public landing page, general announcements, public event calendar preview. Read-only, no write access. |
-| **`student`** | **Active University Student** | Undergraduate, graduate, and PhD students. | Authenticated (`role = 'student'`) | Verified student portal access. **Can apply to jobs/internships**, track applications, search alumni directory, RSVP to events, request mentorship. |
+| **`guests`** | **Guest / Anonymous Visitor** | Prospective students, public visitors, recruiters. | Unauthenticated (`Auth::guest()`) | Public landing page, general announcements, public event calendar preview, and access to `/register`. Read-only, no write access. |
+| **`unverified`** | **Unverified New User** | First-time users who have registered via `/register` and **have not yet completed verification**. | Authenticated (`role = 'unverified'`) | Default onboarding role assigned automatically upon initial registration. Can view public/portal listings and view/update their own profile, but **cannot** apply to jobs, publish job postings, create/register for events, or join mentorship until verification is completed (verification completion is intentionally deferred to a separate workflow). |
+| **`student`** | **Active University Student** | Verified undergraduate, graduate, and PhD students. | Authenticated (`role = 'student'`) | Verified student portal access. **Can apply to jobs/internships**, track applications, search alumni directory, RSVP to events, request mentorship. |
 | **`alumni`** | **Graduated Alumnus / Alumna** | Verified Istanbul University graduates. | Authenticated (`role = 'alumni'`) | Verified alumni network access. **Can apply to jobs**, publish company job listings, review applicant candidates, RSVP to events, act as mentors. |
-| **`academics`** | **Academician & Faculty Member**| Professors, docents, lecturers, research assistants. | Authenticated (`role = 'academics'`) | Academic authority. **Can create and manage campus events**, publish academic announcements, supervise student research, provide academic mentorship. |
-| **`admin`** | **System & Portal Administrator** | Rectorate, Career Center, IT Operations. | Authenticated (`role = 'admin'`) | Full administrative oversight. **Can create events**, manage all users and roles, verify/moderate job postings, manage announcements, inspect audit logs. |
+| **`academics`** | **Academician & Faculty Member**| Verified professors, docents, lecturers, research assistants. | Authenticated (`role = 'academics'`) | Academic authority. **Can create and manage campus events**, publish academic announcements, supervise student research, provide academic mentorship. |
+| **`admin`** | **System & Portal Administrator** | Rectorate, Career Center, IT Operations. | Authenticated (`role = 'admin'`) | Full administrative oversight. **Can create events**, verify `unverified` accounts and assign roles, verify/moderate job postings, manage announcements, inspect audit logs. |
 
 ---
 
 ### 4.2. Role-Based Access Control (RBAC) Matrix
 
-The table below details explicit authorization capabilities across every system domain:
+The table below details explicit authorization capabilities across every system domain, including the **`unverified`** onboarding tier:
 
-| Feature / Domain Module | Action / Endpoint | `guests` | `student` | `alumni` | `academics` | `admin` | Business Authorization Rule |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Public Portal & Landing** | `GET /` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open public access to all visitors. |
-| **Directory & Network** | `GET /users` | ⚠️ Limited | ✅ Full | ✅ Full | ✅ Full | ✅ Full | Guests see aggregate counters; authenticated members browse directory. |
-| **Own Profile Editing** | `PUT /users/{id}` | ❌ Denied | 👤 Own Only | 👤 Own Only | 👤 Own Only | ✅ All | Users update their own credentials; Admin can edit any record. |
-| **Role Assignment & Mutation** | `PATCH /users/{id}/role` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | **Strictly Admin-only.** Prevents unauthorized privilege escalation. |
-| **Job Postings Viewing** | `GET /job-postings` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public visibility to maximize career opportunity outreach. |
-| **Job Posting Publishing** | `POST /job-postings` | ❌ Denied | ❌ Denied | ✅ **Alumni** | ❌ Denied | ✅ **Admin** | **Alumni** publish company positions; **Admin** has supervisory publishing rights. |
-| **Job Posting Editing / Deletion**| `PUT/DELETE /job-postings/{id}` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni can only edit their own postings (`user_id == auth()->id()`). |
-| **Job Applications (Apply)** | `POST /applications` | ❌ Denied | ✅ **Apply** | ✅ **Apply** | ❌ Denied | ⚠️ Audit | **Students and alumni can apply for jobs and internships.** |
-| **Own Applications Tracking**| `GET /applications/me` | ❌ Denied | ✅ Own | ✅ Own | ❌ Denied | ✅ All | Candidates track submission statuses (`pending`, `reviewing`, etc.). |
-| **Applicant Review (Employer)**| `GET /job-postings/{id}/apps` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni review candidates who applied to their postings; Admin can audit all. |
-| **Application Status Update** | `PATCH /applications/{id}` | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Posting authors and Admins accept, reject, or shortlist applicants. |
-| **Announcements Viewing** | `GET /announcements` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public access to university and alumni announcements. |
-| **Announcement Creation** | `POST /announcements` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Publish** | ✅ **Publish** | **Academics** publish academic/faculty notices; **Admin** publishes institutional news. |
-| **Announcement Moderation** | `PUT/DELETE /announcements/{id}`| ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ✅ All | Authors modify their notices; Admin can pin, archive, or delete any notice. |
-| **Events Viewing** | `GET /events` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open event calendar, seminars, summits, and workshop listings. |
-| **Event Creation** | `POST /events` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Create** | ✅ **Create** | **Admins and academics create events** (conferences, panels, workshops, seminars). |
-| **Event Management** | `PUT/DELETE /events/{id}` | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Organizer | ✅ All | Academics manage their organized events; Admin oversees all events and quotas. |
-| **Event RSVP / Registration** | `POST /events/{id}/register` | ❌ Denied | ✅ Register | ✅ Register | ✅ Register | ✅ Register | Authenticated university members can register for event attendance. |
-| **Mentorship (As Mentee)** | `POST /mentorship/request` | ❌ Denied | ✅ Mentee | ✅ Mentee | ❌ Denied | ⚠️ Manage | Students and junior alumni can request mentorship pairings. |
-| **Mentorship (As Mentor)** | `POST /mentorship/offer` | ❌ Denied | ❌ Denied | ✅ Mentor | ✅ Mentor | ⚠️ Manage | Experienced alumni and academics can register to mentor students. |
-| **System Cache & Diagnostics**| `POST /api/*/reset`, `/logs` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | Diagnostic panels, cache resets, and error log telemetry inspection. |
+| Feature / Domain Module | Action / Endpoint | `guests` | `unverified` | `student` | `alumni` | `academics` | `admin` | Business Authorization Rule |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Public Portal & Landing** | `GET /` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open public access to all visitors. |
+| **First-Time Registration** | `GET/POST /register` | ✅ Register | 🔄 Redirect | 🔄 Redirect | 🔄 Redirect | 🔄 Redirect | 🔄 Redirect | Creates account with forced `role = 'unverified'`. |
+| **Directory & Network** | `GET /users` | ⚠️ Limited | ⚠️ Read-Only | ✅ Full | ✅ Full | ✅ Full | ✅ Full | Guests see aggregate counters; `unverified` has read-only preview; verified members have full networking. |
+| **Own Profile Viewing / Editing**| `GET/PUT /users/{id}` | ❌ Denied | 👤 Own Only | 👤 Own Only | 👤 Own Only | 👤 Own Only | ✅ All | `unverified` and verified users can edit their own profile fields (excluding `role`); Admin edits any record. |
+| **Role Assignment & Verification**| `PATCH /users/{id}/role` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | **Strictly Admin-only** (or future automated verification workflow). Prevents privilege escalation. |
+| **Job Postings Viewing** | `GET /job-postings` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public visibility to maximize career opportunity outreach. |
+| **Job Posting Publishing** | `POST /job-postings` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Alumni** | ❌ Denied | ✅ **Admin** | **Alumni** publish company positions; **Admin** has supervisory publishing rights. |
+| **Job Posting Editing / Deletion**| `PUT/DELETE /job-postings/{id}` | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni can only edit their own postings (`user_id == auth()->id()`). |
+| **Job Applications (Apply)** | `POST /applications` | ❌ Denied | ❌ Denied | ✅ **Apply** | ✅ **Apply** | ❌ Denied | ⚠️ Audit | **Only verified `student` and `alumni` roles can apply for jobs.** `unverified` users must complete verification first. |
+| **Own Applications Tracking**| `GET /applications/me` | ❌ Denied | ❌ Denied | ✅ Own | ✅ Own | ❌ Denied | ✅ All | Verified candidates track submission statuses (`pending`, `reviewing`, etc.). |
+| **Applicant Review (Employer)**| `GET /job-postings/{id}/apps` | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Alumni review candidates who applied to their postings; Admin can audit all. |
+| **Application Status Update** | `PATCH /applications/{id}` | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ❌ Denied | ✅ All | Posting authors and Admins accept, reject, or shortlist applicants. |
+| **Announcements Viewing** | `GET /announcements` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Public access to university and alumni announcements. |
+| **Announcement Creation** | `POST /announcements` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Publish** | ✅ **Publish** | **Academics** publish academic/faculty notices; **Admin** publishes institutional news. |
+| **Announcement Moderation** | `PUT/DELETE /announcements/{id}`| ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Author Only | ✅ All | Authors modify their notices; Admin can pin, archive, or delete any notice. |
+| **Events Viewing** | `GET /events` | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | ✅ Read | Open event calendar, seminars, summits, and workshop listings. |
+| **Event Creation** | `POST /events` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ **Create** | ✅ **Create** | **Admins and academics create events** (conferences, panels, workshops, seminars). |
+| **Event Management** | `PUT/DELETE /events/{id}` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | 👤 Organizer | ✅ All | Academics manage their organized events; Admin oversees all events and quotas. |
+| **Event RSVP / Registration** | `POST /events/{id}/register` | ❌ Denied | ❌ Denied | ✅ Register | ✅ Register | ✅ Register | ✅ Register | Verified university community members can register for event attendance. |
+| **Mentorship (As Mentee)** | `POST /mentorship/request` | ❌ Denied | ❌ Denied | ✅ Mentee | ✅ Mentee | ❌ Denied | ⚠️ Manage | Verified students and junior alumni can request mentorship pairings. |
+| **Mentorship (As Mentor)** | `POST /mentorship/offer` | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Mentor | ✅ Mentor | ⚠️ Manage | Verified alumni and academics can register to mentor students. |
+| **System Cache & Diagnostics**| `POST /api/*/reset`, `/logs` | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ❌ Denied | ✅ Admin | Diagnostic panels, cache resets, and error log telemetry inspection. |
 
 ---
 
 ### 4.3. Core Authorization Rules & Workflows
 
+#### 0. First-Time User Registration & `unverified` Onboarding State (`GET /register`, `POST /register`)
+- **Core Rule:** Any first-time visitor registering through the public registration portal (`POST /register` or `POST /api/register`) is **strictly and automatically assigned `role = 'unverified'`**. Client-supplied `role` inputs are ignored during registration to prevent privilege escalation.
+- **Verification Scope Note:** The verification completion subsystem (institutional email token confirmation / diploma check / admin approval workflow) is **intentionally decoupled and not executed during registration**; newly registered accounts remain in the `unverified` state with a clear pending-verification notice until promoted.
+- **Registration Form Inputs & Validation Contract:**
+  - `name` (`required|string|min:2|max:191`) — Full Name
+  - `email` (`required|string|email|max:191|unique:users,email`) — Institutional or personal contact email
+  - `password` (`required|string|min:8|confirmed`) — Account password + `password_confirmation`
+  - `department` (`required|string|max:191`) — Academic Faculty / Department
+  - `graduation_year` (`nullable|integer|min:1950|max:2035`) — Graduation or expected graduation year
+  - `current_company` (`nullable|string|max:191`) — Current employer / institution
+  - `job_title` (`nullable|string|max:191`) — Current job title / academic designation
+  - `linkedin_url` (`nullable|url|max:255`) — Public LinkedIn profile URL
+  - `skills` (`nullable|string|max:500`) — Comma-separated technical/professional skills (auto-cast to JSON array)
+  - `terms` (`accepted` on web form) — Institutional terms & KVKK consent acknowledgment
+- **Onboarding Lifecycle:**
+  ```
+  [Guest Visitor] ──(POST /register)──► [User Created: role = 'unverified']
+                                                │
+                                 (Session Auth::login($user))
+                                                │
+                                                ▼
+                          [Profile Page w/ "Pending Verification" Status]
+                          (Restricted from applying to jobs / creating events
+                           until future verification step promotes role to
+                           'student', 'alumni', or 'academics')
+  ```
+
 #### 1. Job Applications Authorization (`student` & `alumni`)
-- **Core Rule:** Only **Students** and **Alumni** possess authorization to submit applications to job postings (`POST /applications`).
+- **Core Rule:** Only verified **Students** and **Alumni** possess authorization to submit applications to job postings (`POST /applications`). Users with `role = 'unverified'` cannot submit job applications until verified.
 - **Authorization Gate:**
   ```php
   Gate::define('apply-job', function (User $user) {
@@ -346,10 +377,11 @@ The table below details explicit authorization capabilities across every system 
   ```
 - **Domain Workflow:**
   1. A candidate visits a job posting detail page (`GET /job-postings/{id}`).
-  2. If the user is unauthenticated (`guests`), the UI displays a `"Giriş Yaparak Başvur"` button redirecting to login.
-  3. If authenticated as `student` or `alumni`, the `"Hemen Başvur"` action form is enabled.
-  4. If an `academics` user navigates to the endpoint, the application gate rejects the submission with `403 Forbidden` (`'Yalnızca öğrenciler ve mezunlar iş başvurusu yapabilir.'`).
-  5. The submission records candidate `user_id` and attaches resume link and motivation note.
+  2. If the user is unauthenticated (`guests`), the UI displays a `"Giriş Yaparak Başvur"` button redirecting to login/registration.
+  3. If authenticated as `unverified`, the UI informs the user that account verification is pending before job applications are unlocked.
+  4. If authenticated as `student` or `alumni`, the `"Hemen Başvur"` action form is enabled.
+  5. If an `unverified` or `academics` user submits directly to the endpoint, the application gate rejects the submission with `403 Forbidden` (`'Yalnızca doğrulanmış öğrenciler ve mezunlar iş başvurusu yapabilir.'`).
+  6. The submission records candidate `user_id` and attaches resume link and motivation note.
 
 #### 2. Event Creation & Management Authorization (`academics` & `admin`)
 - **Core Rule:** Only **Academics** and **Administrators** can create and schedule university events (`POST /events`).
@@ -361,7 +393,7 @@ The table below details explicit authorization capabilities across every system 
   ```
 - **Domain Workflow:**
   1. Academics (professors, docents, lecturers) and Admins can access `GET /events/create`.
-  2. The creation button is conditionally hidden from `student`, `alumni`, and `guests` via `@can('create-event')`.
+  2. The creation button is conditionally hidden from `unverified`, `student`, `alumni`, and `guests` via `@can('create-event')`.
   3. When submitted, the system verifies `in_array(auth()->user()->role, ['academics', 'admin'])`.
   4. The event is linked to `organizer_id = auth()->id()`.
   5. Unauthorized creation attempts return `403 Forbidden` (`'Etkinlik oluşturma yetkisi yalnızca akademisyenler ve yöneticilere aittir.'`).
@@ -378,8 +410,8 @@ The table below details explicit authorization capabilities across every system 
 #### 4. Official Announcements Authorization (`academics` & `admin`)
 - **Core Rule:** Only **Academics** (departmental notices, symposiums, exams) and **Administrators** (rectorate press releases, university alerts) can broadcast announcements (`POST /announcements`).
 
-#### 5. Role Assignment & Account Security (`admin` only)
-- **Core Rule:** Role changes (`PATCH /users/{id}/role`) can only be executed by the `admin` role. No user can self-promote or alter their own authorization level.
+#### 5. Role Assignment & Account Verification (`admin` only)
+- **Core Rule:** Role changes (`PATCH /users/{id}/role`, such as promoting an `unverified` user to `student`, `alumni`, or `academics`) can only be executed by the `admin` role (or a dedicated future verification service). No user can self-promote or alter their own authorization level.
 
 ---
 
@@ -407,7 +439,11 @@ class EnsureUserRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!auth()->check()) {
-            return redirect()->guest('/login')->with('warning', 'Lütfen devam etmek için giriş yapınız.');
+            return redirect()->guest('/register')->with('warning', 'Lütfen devam etmek için kayıt olun veya giriş yapınız.');
+        }
+
+        if ($request->user()->role === 'unverified' && !in_array('unverified', $roles, true)) {
+            abort(403, 'Hesabınız henüz doğrulanmamıştır. Bu özelliği kullanmak için doğrulama aşamasının tamamlanması gerekmektedir.');
         }
 
         if (!in_array($request->user()->role, $roles, true)) {
@@ -433,7 +469,7 @@ class ApplicationPolicy
 {
     /**
      * Determine whether the user can apply for a job posting.
-     * Rule: Students and alumni can apply for jobs.
+     * Rule: Only verified students and alumni can apply for jobs.
      */
     public function apply(User $user, JobPosting $jobPosting): bool
     {
@@ -489,21 +525,24 @@ class EventPolicy
 
     /**
      * Determine whether the user can register for an event.
+     * Rule: Only verified community members can register.
      */
     public function register(User $user, Event $event): bool
     {
-        return auth()->check();
+        return in_array($user->role, ['student', 'alumni', 'academics', 'admin'], true);
     }
 }
 ```
 
 #### C. User Model Declarative Role Helpers (`App\Models\User`)
 ```php
-public function isGuest(): bool      { return !auth()->check(); }
-public function isStudent(): bool    { return $this->role === 'student'; }
-public function isAlumni(): bool     { return $this->role === 'alumni'; }
-public function isAcademics(): bool  { return $this->role === 'academics'; }
-public function isAdmin(): bool      { return $this->role === 'admin'; }
+public function isGuest(): bool       { return !auth()->check(); }
+public function isUnverified(): bool  { return $this->role === 'unverified'; }
+public function isVerified(): bool    { return $this->role !== 'unverified'; }
+public function isStudent(): bool     { return $this->role === 'student'; }
+public function isAlumni(): bool      { return $this->role === 'alumni'; }
+public function isAcademics(): bool   { return $this->role === 'academics'; }
+public function isAdmin(): bool       { return $this->role === 'admin'; }
 
 // Domain Capability Predicates
 public function canApplyToJobs(): bool  { return in_array($this->role, ['student', 'alumni'], true); }
@@ -513,16 +552,18 @@ public function canPublishJobs(): bool  { return in_array($this->role, ['alumni'
 
 #### D. Declarative Blade Directives in Views
 ```blade
-{{-- 1. Job Application Button: Visible only to students & alumni --}}
+{{-- 1. Job Application Button: Visible only to verified students & alumni --}}
 @auth
     @if (auth()->user()->canApplyToJobs())
         <a href="/applications/create?job_posting_id={{ $job->id }}" class="btn btn-primary">
             Başvuru Yap
         </a>
+    @elseif (auth()->user()->isUnverified())
+        <span class="badge-pill badge-neutral">Doğrulama Bekleniyor</span>
     @endif
 @else
-    <a href="/login" class="btn btn-secondary">
-        Giriş Yaparak Başvur
+    <a href="/register" class="btn btn-secondary">
+        Kayıt Ol ve Başvur
     </a>
 @endauth
 
@@ -605,13 +646,15 @@ Schema::create('users', function (Blueprint $table) {
     $table->id();
     $table->string('name');
     $table->string('email')->unique();
-    $table->enum('role', ['student', 'alumni', 'academics', 'admin'])->default('alumni');
+    $table->string('password')->nullable();
+    $table->enum('role', ['unverified', 'student', 'alumni', 'academics', 'admin'])->default('unverified');
     $table->string('department');
     $table->unsignedSmallInteger('graduation_year')->nullable();
     $table->string('current_company')->nullable();
     $table->string('job_title')->nullable();
     $table->string('linkedin_url')->nullable();
     $table->json('skills')->nullable();
+    $table->rememberToken();
     $table->timestamps();
 
     $table->index('role');

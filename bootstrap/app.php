@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\LoggerMiddleware;
 use App\Http\Middleware\Guardian404Middleware;
 use App\Http\Middleware\Guardian5xxMiddleware;
@@ -27,8 +28,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // 3. 404 Guardian Middleware (intercepts and guards against 404 not found errors)
         $middleware->append(Guardian404Middleware::class);
 
+        // 4. Auth & Role-Based Access Control (RBAC) Middleware Aliases
+        $middleware->alias([
+            'auth.portal' => AuthMiddleware::class,
+            'role'        => AuthMiddleware::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'api/*',
+            'register',
+            'login',
+            'logout',
+            'admin/*',
             'users',
             'users/*',
             'announcements',
@@ -50,8 +61,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Ensure uncaught 5xx Server Errors & Throwables are caught by 5xx Guardian
         $exceptions->render(function (Throwable $e, Request $request) {
-            if ($e instanceof NotFoundHttpException || ($e instanceof HttpExceptionInterface && $e->getStatusCode() < 500)) {
-                return null; // Let 404 Guardian or client HTTP error handlers process 4xx errors
+            if (
+                $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof NotFoundHttpException
+                || ($e instanceof HttpExceptionInterface && $e->getStatusCode() < 500)
+            ) {
+                return null; // Let Laravel's native validation/auth/4xx handlers process these
             }
 
             $statusCode = ($e instanceof HttpExceptionInterface) ? $e->getStatusCode() : 500;

@@ -36,19 +36,20 @@
                 <div class="form-group">
                     <label class="form-label" for="category">Kategori <span class="required">*</span></label>
                     <select id="category" name="category" class="form-select" required>
-                        <option value="Etkinlik" {{ old('category') === 'Etkinlik' ? 'selected' : '' }}>Etkinlik</option>
-                        <option value="Kariyer" {{ old('category') === 'Kariyer' ? 'selected' : '' }}>Kariyer</option>
-                        <option value="Akademik" {{ old('category') === 'Akademik' ? 'selected' : '' }}>Akademik</option>
-                        <option value="Genel" {{ old('category') === 'Genel' ? 'selected' : '' }}>Genel</option>
+                        <option value="event" {{ old('category') === 'event' ? 'selected' : '' }}>Etkinlik</option>
+                        <option value="career" {{ old('category') === 'career' ? 'selected' : '' }}>Kariyer</option>
+                        <option value="mentorship" {{ old('category') === 'mentorship' ? 'selected' : '' }}>Mentorluk</option>
+                        <option value="academic" {{ old('category') === 'academic' ? 'selected' : '' }}>Akademik</option>
+                        <option value="general" {{ old('category', 'general') === 'general' ? 'selected' : '' }}>Genel</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="priority">Öncelik Derecesi</label>
                     <select id="priority" name="priority" class="form-select">
-                        <option value="Normal" {{ old('priority') === 'Normal' ? 'selected' : '' }}>Normal</option>
-                        <option value="Yüksek" {{ old('priority') === 'Yüksek' ? 'selected' : '' }}>Yüksek</option>
-                        <option value="Acil" {{ old('priority') === 'Acil' ? 'selected' : '' }}>Acil</option>
+                        <option value="normal" {{ old('priority', 'normal') === 'normal' ? 'selected' : '' }}>Normal</option>
+                        <option value="important" {{ old('priority') === 'important' ? 'selected' : '' }}>Yüksek / Önemli</option>
+                        <option value="urgent" {{ old('priority') === 'urgent' ? 'selected' : '' }}>Acil</option>
                     </select>
                 </div>
             </div>
@@ -62,9 +63,9 @@
                 <div class="form-group">
                     <label class="form-label" for="target_audience">Hedef Kitle</label>
                     <select id="target_audience" name="target_audience" class="form-select">
-                        <option value="Tümü" {{ old('target_audience') === 'Tümü' ? 'selected' : '' }}>Tümü (Mezunlar & Öğrenciler)</option>
-                        <option value="Mezunlar" {{ old('target_audience') === 'Mezunlar' ? 'selected' : '' }}>Yalnızca Mezunlar</option>
-                        <option value="Öğrenciler" {{ old('target_audience') === 'Öğrenciler' ? 'selected' : '' }}>Yalnızca Öğrenciler</option>
+                        <option value="all" {{ old('target_audience', 'all') === 'all' ? 'selected' : '' }}>Tümü (Mezunlar & Öğrenciler)</option>
+                        <option value="alumni" {{ old('target_audience') === 'alumni' ? 'selected' : '' }}>Yalnızca Mezunlar</option>
+                        <option value="students" {{ old('target_audience') === 'students' ? 'selected' : '' }}>Yalnızca Öğrenciler</option>
                     </select>
                 </div>
             </div>

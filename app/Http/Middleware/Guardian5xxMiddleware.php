@@ -26,8 +26,14 @@ class Guardian5xxMiddleware
         try {
             $response = $next($request);
         } catch (Throwable $e) {
-            // Let 4xx client errors pass through to 404 Guardian / client handlers
-            if ($e instanceof HttpExceptionInterface && $e->getStatusCode() < 500) {
+            // Let 4xx client errors & standard Laravel validation/auth exceptions pass through
+            if (
+                $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || ($e instanceof HttpExceptionInterface && $e->getStatusCode() < 500)
+            ) {
                 throw $e;
             }
 

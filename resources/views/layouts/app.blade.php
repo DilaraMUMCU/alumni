@@ -770,46 +770,53 @@
                 </div>
             </a>
 
-            <!-- Navigation Links -->
+            @php
+                $navUser = auth()->user();
+                $navItems = \App\Models\User::navigationItems($navUser);
+                $primaryAction = \App\Models\User::primaryNavAction($navUser);
+            @endphp
+
+            <!-- Dynamic Role-Based Navigation Links -->
             <ul class="nav-links" id="mainNavLinks">
-                <li>
-                    <a href="/" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
-                        <span>Ana Sayfa</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/users" class="nav-link {{ request()->is('users*') ? 'active' : '' }}">
-                        <span>Mezunlar & Öğrenciler</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/job-postings" class="nav-link {{ request()->is('job-postings*') ? 'active' : '' }}">
-                        <span>İş & Staj İlanları</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/applications" class="nav-link {{ request()->is('applications*') ? 'active' : '' }}">
-                        <span>Başvurular</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/announcements" class="nav-link {{ request()->is('announcements*') ? 'active' : '' }}">
-                        <span>Duyurular</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/about" class="nav-link {{ request()->is('about') ? 'active' : '' }}">
-                        <span>Hakkımızda</span>
-                    </a>
-                </li>
+                @foreach ($navItems as $item)
+                    <li>
+                        <a href="{{ $item['url'] }}" class="nav-link {{ request()->is($item['pattern']) ? 'active' : '' }}">
+                            <span>{{ $item['label'] }}</span>
+                        </a>
+                    </li>
+                @endforeach
             </ul>
 
-            <!-- Right Actions & Mobile Hamburger -->
+            <!-- Dynamic Right Actions & Mobile Hamburger -->
             <div class="nav-actions">
-                <a href="/job-postings/create" class="btn btn-primary btn-sm">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>İlan Yayınla</span>
-                </a>
+                @auth
+                    <a href="/profile/settings" class="btn btn-secondary btn-sm" title="Profil ve Hesap Ayarları">
+                        <span>{{ $navUser->name }}</span>
+                        <span class="badge-pill {{ \App\Models\User::formatRoleBadgeClass($navUser->role) }}" style="font-size: 10px; padding: 2px 7px;">
+                            {{ \App\Models\User::formatRoleLabel($navUser->role) }}
+                        </span>
+                    </a>
+                    @if ($primaryAction)
+                        <a href="{{ $primaryAction['url'] }}" class="{{ $primaryAction['class'] }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>{{ $primaryAction['label'] }}</span>
+                        </a>
+                    @endif
+                    <form action="/logout" method="POST" style="margin: 0; display: inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary btn-sm">Çıkış</button>
+                    </form>
+                @else
+                    <a href="/login" class="btn btn-secondary btn-sm">
+                        <span>Giriş Yap</span>
+                    </a>
+                    @if ($primaryAction)
+                        <a href="{{ $primaryAction['url'] }}" class="{{ $primaryAction['class'] }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                            <span>{{ $primaryAction['label'] }}</span>
+                        </a>
+                    @endif
+                @endauth
                 <button class="mobile-toggle" id="mobileNavToggle" aria-label="Menüyü Aç/Kapat">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
@@ -892,6 +899,7 @@
                     <h4>Hızlı Erişim</h4>
                     <ul class="footer-links">
                         <li><a href="/">Ana Sayfa</a></li>
+                        <li><a href="/register">Yeni Üye Kaydı</a></li>
                         <li><a href="/users">Mezun & Öğrenci Dizini</a></li>
                         <li><a href="/job-postings">Kariyer & Staj İlanları</a></li>
                         <li><a href="/applications">Başvuru Takibi</a></li>

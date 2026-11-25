@@ -194,9 +194,11 @@
                     <div class="form-group">
                         <label class="form-label" for="role">Rol</label>
                         <select id="role" name="role" class="form-select">
-                            <option value="alumni" {{ old('role') === 'alumni' ? 'selected' : '' }}>Mezun</option>
+                            <option value="unverified" {{ old('role') === 'unverified' ? 'selected' : '' }}>Doğrulanmamış</option>
                             <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>Öğrenci</option>
-                            <option value="academician" {{ old('role') === 'academician' ? 'selected' : '' }}>Akademisyen</option>
+                            <option value="alumni" {{ old('role', 'alumni') === 'alumni' ? 'selected' : '' }}>Mezun</option>
+                            <option value="academics" {{ in_array(old('role'), ['academics', 'academician'], true) ? 'selected' : '' }}>Akademisyen</option>
+                            <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Yönetici</option>
                         </select>
                     </div>
 
@@ -279,8 +281,8 @@
                                         <h3 class="user-meta-name" title="{{ $uName }}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                             {{ $uName }}
                                         </h3>
-                                        <span class="badge-pill {{ $uRole === 'student' ? 'badge-amber' : ($uRole === 'academician' ? 'badge-gold' : 'badge-crimson') }}" style="font-size: 10px; padding: 2px 8px;">
-                                            {{ $uRole === 'student' ? 'Öğrenci' : ($uRole === 'academician' ? 'Akademisyen' : 'Mezun') }}
+                                        <span class="badge-pill {{ \App\Models\User::formatRoleBadgeClass($uRole) }}" style="font-size: 10px; padding: 2px 8px;">
+                                            {{ \App\Models\User::formatRoleLabel($uRole) }}
                                         </span>
                                     </div>
                                     <div class="user-meta-email">{{ $uEmail }}</div>

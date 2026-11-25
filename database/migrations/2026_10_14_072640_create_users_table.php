@@ -15,13 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->enum('role', ['student', 'alumni', 'admin'])->default('alumni');
+            $table->string('password')->nullable();
+            $table->enum('role', ['unverified', 'student', 'alumni', 'academics', 'admin'])->default('unverified');
             $table->string('department');
             $table->unsignedSmallInteger('graduation_year')->nullable();
             $table->string('current_company')->nullable();
             $table->string('job_title')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->json('skills')->nullable();
+            $table->rememberToken();
             $table->timestamps();
 
             $table->index('role');

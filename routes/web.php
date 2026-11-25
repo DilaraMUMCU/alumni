@@ -10,6 +10,9 @@ use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\ApiJobPostingController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ApiApplicationController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
 use App\Http\SwaggerSpec;
 use App\Http\Middleware\Guardian404Middleware;
 use App\Http\Middleware\ErrorLogWriter;
@@ -29,7 +32,7 @@ Route::get('/', function () {
         ];
         $latestJobs = JobPosting::with('applications')->latest()->take(4)->get();
         $latestAnnouncements = Announcement::where('is_active', true)->latest()->take(3)->get();
-        $spotlightUsers = User::latest()->take(4)->get();
+        $spotlightUsers = User::where('role', '!=', 'unverified')->latest()->take(4)->get();
     } catch (\Throwable $e) {
         $stats = [
             'users_count'         => 0,
@@ -73,6 +76,39 @@ Route::get('/api/health', function () {
 });
 
 /* -------------------------------------------------------------------------- */
+/*       Auth Routes: Register ('unverified'), Login, Logout                  */
+/* -------------------------------------------------------------------------- */
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
+Route::post('/api/register', [RegisterController::class, 'register'])->name('api.register');
+Route::get('/login', [RegisterController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [RegisterController::class, 'login'])->name('login.submit');
+Route::post('/logout', [RegisterController::class, 'logout'])->middleware('auth.portal')->name('logout');
+
+/* -------------------------------------------------------------------------- */
+/*       User-Specific Pages (Protected by auth.portal — Own Account Only)    */
+/* -------------------------------------------------------------------------- */
+Route::prefix('profile')->middleware('auth.portal')->name('profile.')->group(function () {
+    Route::get('/dashboard', [ProfileController::class, 'dashboard'])->name('dashboard');
+    Route::get('/settings', [ProfileController::class, 'settings'])->name('settings');
+    Route::put('/settings', [ProfileController::class, 'updateProfile'])->name('settings.update');
+    Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+});
+
+/* -------------------------------------------------------------------------- */
+/*          Admin Control Panel Routes (Protected by role:admin)              */
+/* -------------------------------------------------------------------------- */
+Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    Route::patch('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
+    Route::patch('/applications/{id}/status', [AdminController::class, 'updateApplicationStatus'])->name('applications.status');
+    Route::patch('/announcements/{id}/toggle', [AdminController::class, 'toggleAnnouncement'])->name('announcements.toggle');
+    Route::delete('/announcements/{id}', [AdminController::class, 'deleteAnnouncement'])->name('announcements.delete');
+    Route::delete('/job-postings/{id}', [AdminController::class, 'deleteJobPosting'])->name('jobs.delete');
+});
+
+/* -------------------------------------------------------------------------- */
 /*                 API User Routes (ApiUserController - JSON CRUD)            */
 /* -------------------------------------------------------------------------- */
 Route::get('/api/users', [ApiUserController::class, 'index']);
@@ -87,12 +123,12 @@ Route::post('/api/users/reset', [ApiUserController::class, 'reset']);
 /*                 Web User Routes (UserController - Web CRUD)                */
 /* -------------------------------------------------------------------------- */
 Route::get('/users', [UserController::class, 'index'])->name('users.index');
-Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-Route::post('/users', [UserController::class, 'store'])->name('users.store');
+Route::get('/users/create', [UserController::class, 'create'])->middleware('role:admin')->name('users.create');
+Route::post('/users', [UserController::class, 'store'])->middleware('role:admin')->name('users.store');
 Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::get('/users/{id}/edit', [UserController::class, 'edit'])->middleware('role:admin')->name('users.edit');
+Route::put('/users/{id}', [UserController::class, 'update'])->middleware('role:admin')->name('users.update');
+Route::delete('/users/{id}', [UserController::class, 'destroy'])->middleware('role:admin')->name('users.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*       API Announcement Routes (ApiAnnouncementController - JSON CRUD)      */
@@ -109,33 +145,33 @@ Route::post('/api/announcements/reset', [ApiAnnouncementController::class, 'rese
 /*       Web Announcement Routes (AnnouncementController - Web CRUD)          */
 /* -------------------------------------------------------------------------- */
 Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
-Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+Route::get('/announcements/create', [AnnouncementController::class, 'create'])->middleware('role:academics,admin')->name('announcements.create');
+Route::post('/announcements', [AnnouncementController::class, 'store'])->middleware('role:academics,admin')->name('announcements.store');
 Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])->name('announcements.show');
-Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
-Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
-Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->middleware('role:academics,admin')->name('announcements.edit');
+Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->middleware('role:academics,admin')->name('announcements.update');
+Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->middleware('role:academics,admin')->name('announcements.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*       Web Job Posting Routes (JobPostingController - Web CRUD)             */
 /* -------------------------------------------------------------------------- */
 Route::get('/job-postings', [JobPostingController::class, 'index'])->name('job-postings.index');
-Route::get('/job-postings/create', [JobPostingController::class, 'create'])->name('job-postings.create');
-Route::post('/job-postings', [JobPostingController::class, 'store'])->name('job-postings.store');
+Route::get('/job-postings/create', [JobPostingController::class, 'create'])->middleware('role:alumni,admin')->name('job-postings.create');
+Route::post('/job-postings', [JobPostingController::class, 'store'])->middleware('role:alumni,admin')->name('job-postings.store');
 Route::get('/job-postings/{id}', [JobPostingController::class, 'show'])->name('job-postings.show');
-Route::get('/job-postings/{id}/edit', [JobPostingController::class, 'edit'])->name('job-postings.edit');
-Route::put('/job-postings/{id}', [JobPostingController::class, 'update'])->name('job-postings.update');
-Route::delete('/job-postings/{id}', [JobPostingController::class, 'destroy'])->name('job-postings.destroy');
+Route::get('/job-postings/{id}/edit', [JobPostingController::class, 'edit'])->middleware('role:alumni,admin')->name('job-postings.edit');
+Route::put('/job-postings/{id}', [JobPostingController::class, 'update'])->middleware('role:alumni,admin')->name('job-postings.update');
+Route::delete('/job-postings/{id}', [JobPostingController::class, 'destroy'])->middleware('role:alumni,admin')->name('job-postings.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*       Web Application Routes (ApplicationController - Web CRUD)            */
 /* -------------------------------------------------------------------------- */
-Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
-Route::get('/applications/create', [ApplicationController::class, 'create'])->name('applications.create');
-Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
-Route::get('/applications/{id}', [ApplicationController::class, 'show'])->name('applications.show');
-Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus'])->name('applications.status');
-Route::delete('/applications/{id}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
+Route::get('/applications', [ApplicationController::class, 'index'])->middleware('role:student,alumni,admin')->name('applications.index');
+Route::get('/applications/create', [ApplicationController::class, 'create'])->middleware('role:student,alumni,admin')->name('applications.create');
+Route::post('/applications', [ApplicationController::class, 'store'])->middleware('role:student,alumni,admin')->name('applications.store');
+Route::get('/applications/{id}', [ApplicationController::class, 'show'])->middleware('role:student,alumni,admin')->name('applications.show');
+Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus'])->middleware('role:alumni,admin')->name('applications.status');
+Route::delete('/applications/{id}', [ApplicationController::class, 'destroy'])->middleware('role:student,alumni,admin')->name('applications.destroy');
 
 /* -------------------------------------------------------------------------- */
 /*       API Job Posting Routes (ApiJobPostingController - Direct & Nested)    */

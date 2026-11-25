@@ -43,9 +43,11 @@
                 <div class="form-group">
                     <label class="form-label" for="role">Üyelik Rolü <span class="required">*</span></label>
                     <select id="role" name="role" class="form-select" required>
-                        <option value="alumni" {{ old('role') === 'alumni' ? 'selected' : '' }}>Mezun</option>
+                        <option value="unverified" {{ old('role') === 'unverified' ? 'selected' : '' }}>Doğrulanmamış</option>
                         <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>Öğrenci</option>
-                        <option value="academician" {{ old('role') === 'academician' ? 'selected' : '' }}>Akademisyen</option>
+                        <option value="alumni" {{ old('role', 'alumni') === 'alumni' ? 'selected' : '' }}>Mezun</option>
+                        <option value="academics" {{ in_array(old('role'), ['academics', 'academician'], true) ? 'selected' : '' }}>Akademisyen</option>
+                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Yönetici</option>
                     </select>
                 </div>
 

@@ -10,7 +10,7 @@
         ];
         $latestJobs = $latestJobs ?? \App\Models\JobPosting::with('applications')->latest()->take(4)->get();
         $latestAnnouncements = $latestAnnouncements ?? \App\Models\Announcement::where('is_active', true)->latest()->take(3)->get();
-        $spotlightUsers = $spotlightUsers ?? \App\Models\User::latest()->take(4)->get();
+        $spotlightUsers = $spotlightUsers ?? \App\Models\User::where('role', '!=', 'unverified')->latest()->take(4)->get();
     } catch (\Throwable $e) {
         $stats = $stats ?? ['users_count' => 0, 'announcements_count' => 0, 'job_postings_count' => 0, 'applications_count' => 0];
         $latestJobs = $latestJobs ?? collect();
@@ -433,7 +433,7 @@
         </p>
 
         <div class="hero-actions">
-            <a href="/users/create" class="btn btn-primary btn-lg">
+            <a href="/register" class="btn btn-primary btn-lg">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
                 <span>Mezun Ağına Katıl</span>
             </a>
@@ -665,7 +665,7 @@
                         {{ $user->name }}
                     </h4>
                     <div style="font-size: 13px; font-weight: 600; color: var(--iu-crimson); margin-bottom: 4px;">
-                        {{ $user->job_title ?? 'Mezun' }}
+                        {{ $user->job_title ?? \App\Models\User::formatRoleLabel($user->role) }}
                     </div>
                     <div style="font-size: 12.5px; color: var(--ink-secondary); margin-bottom: 12px;">
                         {{ $user->current_company ?? $user->department }}
