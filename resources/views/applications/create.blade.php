@@ -42,15 +42,16 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="user_id">Başvuran Mezun / Öğrenci Profili <span class="required">*</span></label>
-                <select id="user_id" name="user_id" class="form-select" required>
-                    <option value="">Lütfen profilinizi seçiniz...</option>
-                    @foreach ($users as $u)
-                        <option value="{{ $u->id }}" {{ old('user_id') == $u->id ? 'selected' : '' }}>
-                            {{ $u->name }} ({{ $u->email }}) {{ $u->current_company ? "— {$u->current_company}" : '' }}
-                        </option>
-                    @endforeach
-                </select>
+                <label class="form-label">Başvuran Profil (Oturumunuz)</label>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--canvas-tint); border: 1px solid var(--border-cream); border-radius: 12px;">
+                    <div>
+                        <div style="font-weight: 700; color: var(--iu-navy); font-size: 14.5px;">{{ auth()->user()->name }}</div>
+                        <div style="font-size: 12.5px; color: var(--ink-secondary);">{{ auth()->user()->email }} {{ auth()->user()->department ? "• " . auth()->user()->department : '' }}</div>
+                    </div>
+                    <span class="badge-pill {{ \App\Models\User::formatRoleBadgeClass(auth()->user()->role) }}" style="font-size: 11px;">
+                        {{ \App\Models\User::formatRoleLabel(auth()->user()->role) }}
+                    </span>
+                </div>
             </div>
 
             <div class="form-group">

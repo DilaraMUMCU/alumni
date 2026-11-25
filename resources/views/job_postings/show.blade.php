@@ -251,38 +251,55 @@
                 </div>
             </div>
 
-            <form action="/applications" method="POST">
-                @csrf
-                <input type="hidden" name="job_posting_id" value="{{ $job->id }}">
-                <input type="hidden" name="redirect_to" value="/job-postings/{{ $job->id }}">
+            @auth
+                @if (auth()->user()->canApplyToJobs() || auth()->user()->isAdmin())
+                    <form action="/applications" method="POST">
+                        @csrf
+                        <input type="hidden" name="job_posting_id" value="{{ $job->id }}">
+                        <input type="hidden" name="redirect_to" value="/job-postings/{{ $job->id }}">
 
-                <div class="form-group">
-                    <label class="form-label" for="user_id">Başvuran Mezun / Öğrenci <span class="required">*</span></label>
-                    <select id="user_id" name="user_id" class="form-select" required>
-                        <option value="">Lütfen profilinizi seçiniz...</option>
-                        @foreach ($users as $u)
-                            <option value="{{ $u->id }}" {{ old('user_id') == $u->id ? 'selected' : '' }}>
-                                {{ $u->name }} ({{ $u->email }})
-                            </option>
-                        @endforeach
-                    </select>
+                        <div class="form-group">
+                            <label class="form-label">Başvuran Hesap</label>
+                            <div style="padding: 10px 14px; background: var(--canvas-tint); border: 1px solid var(--border-cream); border-radius: 10px;">
+                                <div style="font-weight: 700; color: var(--iu-navy); font-size: 13.5px;">{{ auth()->user()->name }}</div>
+                                <div style="font-size: 12px; color: var(--ink-secondary);">{{ auth()->user()->email }}</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="resume_url">Özgeçmiş / Portfolyo Bağlantısı</label>
+                            <input type="url" id="resume_url" name="resume_url" class="form-control" placeholder="https://drive.google.com/... veya LinkedIn" value="{{ old('resume_url') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="cover_letter">Ön Yazı / Motivasyon Notu</label>
+                            <textarea id="cover_letter" name="cover_letter" class="form-control" rows="4" placeholder="Neden bu pozisyona uygun olduğunuzu ve deneyimlerinizi kısaca aktarınız...">{{ old('cover_letter') }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Başvuruyu Tamamla</span>
+                        </button>
+                    </form>
+                @elseif (auth()->user()->isUnverified())
+                    <div style="padding: 16px; background: var(--canvas-tint); border: 1px solid var(--iu-gold-border); border-left: 4px solid var(--iu-gold); border-radius: 12px; font-size: 13px; line-height: 1.6; color: var(--ink-charcoal);">
+                        <strong>Hesabınız Doğrulanmamış:</strong> İş ve staj ilanlarına başvurabilmek için hesap doğrulama sürecinin tamamlanması gerekmektedir.
+                    </div>
+                    <a href="/profile/settings" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 14px;">Profil Ayarlarım</a>
+                @else
+                    <div style="padding: 16px; background: var(--canvas-tint); border: 1px solid var(--border-cream); border-radius: 12px; font-size: 13px; line-height: 1.6; color: var(--ink-charcoal);">
+                        Mevcut rolünüz (<strong>{{ \App\Models\User::formatRoleLabel(auth()->user()->role) }}</strong>) ile iş başvurusu yapılamaz. Başvurular yalnızca doğrulanmış <strong>Öğrenci</strong> ve <strong>Mezun</strong> hesaplarına açıktır.
+                    </div>
+                @endif
+            @else
+                <div style="padding: 16px; background: var(--canvas-tint); border: 1px solid var(--border-cream); border-radius: 12px; font-size: 13px; line-height: 1.6; color: var(--ink-charcoal); margin-bottom: 14px;">
+                    Bu pozisyona başvurabilmek için lütfen öğrenci veya mezun hesabınızla giriş yapınız.
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="resume_url">Özgeçmiş / Portfolyo Bağlantısı</label>
-                    <input type="url" id="resume_url" name="resume_url" class="form-control" placeholder="https://drive.google.com/... veya LinkedIn" value="{{ old('resume_url') }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="/login" class="btn btn-primary" style="width: 100%; justify-content: center;">Giriş Yap ve Başvur</a>
+                    <a href="/register" class="btn btn-secondary" style="width: 100%; justify-content: center;">Yeni Hesap Oluştur</a>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="cover_letter">Ön Yazı / Motivasyon Notu</label>
-                    <textarea id="cover_letter" name="cover_letter" class="form-control" rows="4" placeholder="Neden bu pozisyona uygun olduğunuzu ve deneyimlerinizi kısaca aktarınız...">{{ old('cover_letter') }}</textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    <span>Başvuruyu Tamamla</span>
-                </button>
-            </form>
+            @endauth
         </aside>
 
     </div>

@@ -47,30 +47,33 @@ class ApplicationController extends Controller
     {
         $selectedJobId = $request->query('job_posting_id');
         $jobPostings = JobPosting::all();
-        $users = User::all();
+        $currentUser = auth()->user();
 
-        return view('applications.create', compact('jobPostings', 'users', 'selectedJobId'));
+        return view('applications.create', compact('jobPostings', 'currentUser', 'selectedJobId'));
     }
 
     /**
      * Store a newly created application (POST /applications).
+     * Strictly uses the authenticated user's ID (no cross-user spoofing).
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'job_posting_id' => 'required|exists:job_postings,id',
-            'user_id'        => 'required|exists:users,id',
             'resume_url'     => 'nullable|url|max:255',
             'cover_letter'   => 'nullable|string',
         ]);
 
+        $applicantId = auth()->id();
+        $validated['user_id'] = $applicantId;
+
         // Duplicate check
         $exists = Application::where('job_posting_id', $validated['job_posting_id'])
-            ->where('user_id', $validated['user_id'])
+            ->where('user_id', $applicantId)
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->with('error', 'Seçilen kullanıcı bu ilana daha önce başvuru yapmıştır (Mükerrer başvuru engellendi).');
+            return back()->withInput()->with('error', 'Bu ilana daha önce başvuru yaptınız (Mükerrer başvuru engellendi).');
         }
 
         $validated['status'] = 'pending';
